@@ -47,15 +47,30 @@ class AppColors {
   static const Color musicNameColor = Color(0xff333333);
 
   // 歌手名称颜色
-  static const Color musicSingerColor = Color(0xff999999);
+  static const Color musicSingerColor = Color(0xff666666);
 
   // 音乐时间颜色
-  static const Color musicTimeColor = Color(0xff333333);
+  static const Color musicTimeColor = Color(0xff666666);
 
   // 音乐进度条颜色
   static const Color musicProgressColor = Color(0xff95cffd);
 
   // 收藏按钮颜色
   static const Color likeIconColor = Color(0xffff5f57);
+
+  // 歌单名称颜色
+  static const Color playlistNameColor = Color(0xff333333);
+
+  // 播放全部按钮颜色
+  static const Color playAllButtonColor = Color(0xFF64AFFF);
+
+  // 歌曲数量显示颜色
+  static const Color musicQuantityColor = Color(0xff666666);
+
+  // 歌曲索引显示颜色
+  static const Color musicIndexColor = Color(0xff666666);
+
+  // 专辑名称颜色
+  static const Color albumNameColor = Color(0xff666666);
 }
 

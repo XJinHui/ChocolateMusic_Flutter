@@ -2,14 +2,15 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/Type.dart';
+import 'package:chocolate_music/Management.dart';
 
 class ChocolateNavBar extends StatefulWidget {
-  final selectedIndex;
+  // final selectedPage;
   final Function(String) onDestinationSelected; // 添加回调函数参数
 
   const ChocolateNavBar({
     Key? key,
-    required this.selectedIndex,
+    // required this.selectedPage,
     required this.onDestinationSelected,
   }) : super(key: key);
 
@@ -19,6 +20,8 @@ class ChocolateNavBar extends StatefulWidget {
 
 class _ChocolateNavBarState extends State<ChocolateNavBar> {
   @override
+  late String selectedIndex = 'RecommendPage';
+
   List navItems = [
     {
       'icon': BootstrapIcons.house_door,
@@ -92,9 +95,15 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                   icon: navItems[i]['icon'],
                   selectedIcon: navItems[i]['selectedIcon'],
                   title: navItems[i]['title'],
-                  isSelected: widget.selectedIndex == navItems[i]['pageId'],
-                  onTap: () =>
-                      widget.onDestinationSelected(navItems[i]['pageId']),
+                  isSelected: selectedIndex == navItems[i]['pageId'],
+                  onTap: () {
+                    selectedIndex = navItems[i]['pageId'];
+                    widget.onDestinationSelected(navItems[i]['pageId']);
+                    if(navItems[i]['pageId'] == 'LikedPage') {
+                      Management().displayList = Playlist(name: '我喜欢', listId: 'starred', cover: '', audioCount: 0);
+                      Management().displayListType = 'Playlist';
+                    }
+                  }
                 ),
                 if (i != navItems.length - 1) const SizedBox(height: 5),
               ],
@@ -137,8 +146,13 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
               itemBuilder: (context, index) {
                 return playlistItem(
                   playlist: playlists[index],
-                  isSelected: widget.selectedIndex == playlists[index].listId,
-                  onTap: () => widget.onDestinationSelected(playlists[index].listId),
+                  isSelected: selectedIndex == playlists[index].listId,
+                  onTap: () {
+                    selectedIndex = playlists[index].listId;
+                    widget.onDestinationSelected('PlaylistPage');
+                    Management().displayList = playlists[index];
+                    Management().displayListType = 'Playlist';
+                  },
                 );
               },
             ),

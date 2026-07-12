@@ -107,19 +107,21 @@ class MusicData extends StatelessWidget {
           width: 80,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
-            crossAxisAlignment: CrossAxisAlignment.start, // 水平居中
+            crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
             children: [
               Text(
                 management.setting.name,
                 textAlign: TextAlign.left,
-                style: TextStyle(fontSize: 18, color: AppColors.musicNameColor),
+                style: TextStyle(fontSize: 18, color: AppColors.musicNameColor, fontWeight: FontWeight.bold),
               ),
+
+              SizedBox(height: 5),
 
               Text(
                 management.setting.singer,
                 textAlign: TextAlign.left,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   color: AppColors.musicSingerColor,
                 ),
               ),
@@ -317,7 +319,7 @@ class _VolumeControlState extends State<VolumeControl> {
       children: [
         GestureDetector(
         onTap: () {
-      // TODO: 实现播放/暂停功能
+      // TODO: 实现静音/取消静音功能
           management.setting.volumeType = !management.setting.volumeType;
           setState(() {});
     },

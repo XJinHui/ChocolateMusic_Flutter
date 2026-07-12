@@ -190,67 +190,239 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
           // color: AppColors.panel,
           borderRadius: BorderRadius.circular(16), // 圆角
         ),
-        child: Row(children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
-            child: Image.network(
-              // widget.cover,
-              widget.music.cover,
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-              // 加载失败时，errorBuilder 会被调用
-              errorBuilder: (context, error, stackTrace) {
-                // 返回你的本地图片
-                return Image.asset(
-                  'assets/images/app_photo.png',
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                );
-              },
-            ),
-          ),
-
-          SizedBox(width: 10),
-
-          Expanded(child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
-            crossAxisAlignment: CrossAxisAlignment.start, // 水平居中
-            children: [
-              Text(
-                widget.music.name,
-                textAlign: TextAlign.left,
-                style: TextStyle(fontSize: 18, color: AppColors.musicNameColor,fontWeight: FontWeight.bold),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
+              child: Image.network(
+                // widget.cover,
+                widget.music.cover,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                // 加载失败时，errorBuilder 会被调用
+                errorBuilder: (context, error, stackTrace) {
+                  // 返回你的本地图片
+                  return Image.asset(
+                    'assets/images/app_photo.png',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  );
+                },
               ),
+            ),
 
-              Text(
-                widget.music.singer,
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  fontSize: 17,
-                  color: AppColors.musicSingerColor,
-                  fontWeight: FontWeight.w400,
+            SizedBox(width: 10),
+
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
+                crossAxisAlignment: CrossAxisAlignment.start, // 水平居中
+                children: [
+                  Text(
+                    widget.music.name,
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppColors.musicNameColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  Text(
+                    widget.music.singer,
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 17,
+                      color: AppColors.musicSingerColor,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(width: 10),
+
+            if (isHovering)
+              GestureDetector(
+                onTap: () {
+                  // 处理喜欢按钮点击事件
+                },
+                child: Icon(
+                  BootstrapIcons.heart,
+                  color: AppColors.buttonIcon,
+                  size: 20,
                 ),
               ),
-            ],
-          ),
-          ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-          SizedBox(width: 10),
+class ComputerMusicWidget extends StatefulWidget {
+  final Object displayList;
+  final String displayListType;
+  final Music music;
+  final int num;
 
-          if (isHovering)
-          GestureDetector(
-            onTap: () {
-              // 处理喜欢按钮点击事件
-            },
-            child: Icon(
-              BootstrapIcons.heart,
-              color: AppColors.buttonIcon,
-              size: 20,
+  ComputerMusicWidget({
+    Key? key,
+    required this.music,
+    required this.displayList,
+    required this.displayListType,
+    required this.num,
+  }) : super(key: key);
+
+  @override
+  State<ComputerMusicWidget> createState() => _ComputerMusicWidgetState();
+}
+
+class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
+  String formatTime(double seconds) {
+    final int totalSeconds = seconds.round();
+    final int minutes = totalSeconds ~/ 60;
+    final int secs = totalSeconds % 60;
+    final String m = minutes.toString().padLeft(2, '0');
+    final String s = secs.toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
+  bool isHovering = false;
+
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() {
+          isHovering = true; // 鼠标进入，更新状态
+        });
+      },
+      onExit: (_) {
+        setState(() {
+          isHovering = false; // 鼠标离开，恢复状态
+        });
+      },
+
+      child: Container(
+        height: 80,
+        padding: EdgeInsets.only(bottom: 10, top: 10, left: 15, right: 15),
+        decoration: BoxDecoration(
+          color: isHovering ? AppColors.panel : AppColors.transparent,
+          // color: AppColors.panel,
+          borderRadius: BorderRadius.circular(16), // 圆角
+        ),
+
+        child: Row(
+          children: [
+            Text(
+              widget.num.toString(),
+              textAlign: TextAlign.left,
+              style: TextStyle(fontSize: 16, color: AppColors.musicIndexColor),
             ),
-          ),
-        ]),
+
+            SizedBox(width: 15),
+
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
+              child: Image.network(
+                // widget.cover,
+                widget.music.cover,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                // 加载失败时，errorBuilder 会被调用
+                errorBuilder: (context, error, stackTrace) {
+                  // 返回你的本地图片
+                  return Image.asset(
+                    'assets/images/app_photo.png',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
+            ),
+
+            SizedBox(width: 10),
+
+            Expanded(
+              child: Container(
+                width: 80,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
+                  crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
+                  children: [
+                    Text(
+                      widget.music.name,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: AppColors.musicNameColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    Text(
+                      widget.music.singer,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.musicSingerColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            SizedBox(width: 10),
+
+            GestureDetector(
+              onTap: () {
+                // 处理喜欢按钮点击事件
+              },
+              child: Icon(
+                BootstrapIcons.heart_fill,
+                color: AppColors.likeIconColor,
+                size: 20,
+              ),
+            ),
+
+            SizedBox(width: 50),
+
+            Container(
+              width: 200,
+              child: Text(
+                widget.music.album,
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.albumNameColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            SizedBox(width: 15),
+
+            Container(
+              width: 50,
+              child: Text(
+                formatTime(widget.music.time / 1000),
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.musicTimeColor,
+                  // fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

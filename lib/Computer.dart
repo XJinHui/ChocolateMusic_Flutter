@@ -13,12 +13,12 @@ class ComputerHomePage extends StatefulWidget {
 }
 
 class _ComputerHomePageState extends State<ComputerHomePage> {
-  String selectedIndex = 'RecommendPage';
+  String selectedPage = 'RecommendPage';
 
-  void _onNavDestinationSelected(String newSelectedIndex) {
+  void _onNavDestinationSelected(String newSelectedPage) {
     // 定义一个回调函数
     setState(() {
-      selectedIndex = newSelectedIndex; // 更新状态
+      selectedPage = newSelectedPage; // 更新状态
     });
   }
 
@@ -34,7 +34,7 @@ class _ComputerHomePageState extends State<ComputerHomePage> {
             Row(
               children: [
                 ChocolateNavBar(
-                  selectedIndex: selectedIndex, // 传递当前选中项
+                  // selectedPage: selectedPage,
                   onDestinationSelected:
                       _onNavDestinationSelected, // 传递回调函数给导航栏
                 ),
@@ -44,7 +44,7 @@ class _ComputerHomePageState extends State<ComputerHomePage> {
                     children: [
                       TopToolBar(),
                       SizedBox(height: 10),
-                      Expanded(child: MainView(selectedIndex: selectedIndex)),
+                      Expanded(child: MainView(selectedPage: selectedPage)),
                       SizedBox(height: 10),
                       PlaybackControlBar(),
 

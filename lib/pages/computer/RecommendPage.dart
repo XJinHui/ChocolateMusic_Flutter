@@ -6,10 +6,10 @@ import 'package:chocolate_music/theme/app_colors.dart';
 
 class RecommendPage extends StatefulWidget {
   @override
-  State<RecommendPage> createState() => _MyPageState();
+  State<RecommendPage> createState() => _RecommendPageState();
 }
 
-class _MyPageState extends State<RecommendPage> {
+class _RecommendPageState extends State<RecommendPage> {
   @override
   Widget build(BuildContext context) {
     return Container(

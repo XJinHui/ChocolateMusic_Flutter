@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 
 import 'package:chocolate_music/pages/computer/RecommendPage.dart';
+import 'package:chocolate_music/pages/computer/PlaylistPage.dart';
 
 // 计算机页面
 
 class MainView extends StatefulWidget {
-  final String selectedIndex;
+  final String selectedPage;
 
-  const MainView({Key? key, required this.selectedIndex}) : super(key: key);
+  const MainView({Key? key, required this.selectedPage}) : super(key: key);
 
   @override
   State<MainView> createState() => _MainViewState();
@@ -16,11 +17,15 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   Widget _buildPage() {
-    switch (widget.selectedIndex) {
+    switch (widget.selectedPage) {
       case 'RecommendPage':
         return RecommendPage();
+      case 'LikedPage':
+        return PlaylistPage();
+      case 'PlaylistPage':
+        return PlaylistPage();
       default:
-        return Text(widget.selectedIndex);
+        return Text(widget.selectedPage);
     }
   }
 
