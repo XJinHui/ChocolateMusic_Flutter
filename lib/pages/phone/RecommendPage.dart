@@ -8,12 +8,6 @@ class RecommendPage extends StatefulWidget {
 class _MyPageState extends State<RecommendPage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: [
-          Text('推荐页面'),
-        ],
-      ),
-    );
+    return Container(child: Column(children: [Text('推荐页面')]));
   }
 }

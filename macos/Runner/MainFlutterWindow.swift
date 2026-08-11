@@ -1,6 +1,7 @@
 import Cocoa
 import FlutterMacOS
 import bitsdojo_window_macos
+import desktop_multi_window
 
 class MainFlutterWindow: BitsdojoWindow {
   override func bitsdojo_window_configure() -> UInt {
@@ -15,6 +16,13 @@ class MainFlutterWindow: BitsdojoWindow {
     self.center()
 
     RegisterGeneratedPlugins(registry: flutterViewController)
+
+    // Ensure plugins are registered for each newly created sub-window so
+    // plugins like window_manager and bitsdojo_window are available in
+    // child Flutter engines.
+    FlutterMultiWindowPlugin.setOnWindowCreatedCallback { controller in
+      RegisterGeneratedPlugins(registry: controller)
+    }
 
     super.awakeFromNib()
   }

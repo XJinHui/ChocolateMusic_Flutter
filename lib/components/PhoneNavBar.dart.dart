@@ -14,8 +14,8 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
         overlayColor: WidgetStateProperty.all(Colors.transparent),
         splashFactory: NoSplash.splashFactory,
 
-        labelColor: AppColors.primary,          // 选中颜色（按你的主题改）
-        unselectedLabelColor: Colors.grey,      // 未选中颜色
+        labelColor: AppColors.primary, // 选中颜色（按你的主题改）
+        unselectedLabelColor: Colors.grey, // 未选中颜色
 
         dividerColor: Colors.transparent,
         indicatorColor: Colors.transparent,

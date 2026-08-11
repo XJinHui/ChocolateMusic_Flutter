@@ -112,7 +112,11 @@ class MusicData extends StatelessWidget {
               Text(
                 management.setting.name,
                 textAlign: TextAlign.left,
-                style: TextStyle(fontSize: 18, color: AppColors.musicNameColor, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  color: AppColors.musicNameColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
               SizedBox(height: 5),
@@ -253,18 +257,16 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar> {
     return '$m:$s';
   }
 
-  // 如果你的时间是以毫秒为单位，可以使用此方法：
-  String _formatTimeFromMilliseconds(double milliseconds) {
-    return _formatTime(milliseconds / 1000);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
       crossAxisAlignment: CrossAxisAlignment.center, // 水平居中
       children: [
-        Text(displayTime, style: TextStyle(color: AppColors.musicTimeColor)), // 当前时间
+        Text(
+          displayTime,
+          style: TextStyle(color: AppColors.musicTimeColor),
+        ), // 当前时间
         SizedBox(width: 10), // 时间和进度条之间的间距
 
         Expanded(
@@ -288,7 +290,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar> {
               onChanged: (value) {
                 setState(() {
                   timerValue = value;
-                  displayTime = _formatTime(value/1000);
+                  displayTime = _formatTime(value / 1000);
                 });
               },
             ),
@@ -296,7 +298,10 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar> {
         ),
 
         SizedBox(width: 10), // 时间和进度条之间的间距
-        Text(management.setting.time, style: TextStyle(color: AppColors.musicTimeColor)), // 总时间
+        Text(
+          management.setting.time,
+          style: TextStyle(color: AppColors.musicTimeColor),
+        ), // 总时间
       ],
     );
   }
@@ -304,7 +309,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar> {
 
 class VolumeControl extends StatefulWidget {
   final double volume; // 音量，范围 0 到 100
-  const VolumeControl({Key? key, required this.volume,}) : super(key: key);
+  const VolumeControl({Key? key, required this.volume}) : super(key: key);
 
   @override
   State<VolumeControl> createState() => _VolumeControlState();
@@ -318,18 +323,19 @@ class _VolumeControlState extends State<VolumeControl> {
     return Row(
       children: [
         GestureDetector(
-        onTap: () {
-      // TODO: 实现静音/取消静音功能
-          management.setting.volumeType = !management.setting.volumeType;
-          setState(() {});
-    },
-    child:
-        Icon(
-          !management.setting.volumeType || management.setting.volume == 0 ? BootstrapIcons.volume_mute_fill : BootstrapIcons.volume_up_fill,
-          color: Colors.black,
-          size: 25,
-        ), // 音量图标
-    ),
+          onTap: () {
+            // TODO: 实现静音/取消静音功能
+            management.setting.volumeType = !management.setting.volumeType;
+            setState(() {});
+          },
+          child: Icon(
+            !management.setting.volumeType || management.setting.volume == 0
+                ? BootstrapIcons.volume_mute_fill
+                : BootstrapIcons.volume_up_fill,
+            color: Colors.black,
+            size: 25,
+          ), // 音量图标
+        ),
 
         SizedBox(width: 10), // 图标和滑动条之间的间距
 
@@ -345,7 +351,9 @@ class _VolumeControlState extends State<VolumeControl> {
           child: SizedBox(
             width: 100, // 设置滑动条的宽度
             child: Slider(
-              value: !management.setting.volumeType ? 0 : management.setting.volume , // 当前音量，范围 0.0 到 1.0
+              value: !management.setting.volumeType
+                  ? 0
+                  : management.setting.volume, // 当前音量，范围 0.0 到 1.0
               min: 0,
               max: 100,
               onChanged: (value) {

@@ -21,6 +21,22 @@ class _TopToolBarState extends State<TopToolBar> {
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS) &&
         !_isTestEnvironment;
 
+    final dragContent = Row(
+      children: [
+        const SizedBox(width: 50),
+        const Expanded(child: ToolbarSearchBar()),
+        const SizedBox(width: 50),
+      ],
+    );
+
+    // Keep native drag handling away from the action buttons. MoveWindow
+    // starts a platform drag on pointer down, which can defer child taps.
+    final dragArea = Expanded(
+      child: useDesktopWindowChrome
+          ? MoveWindow(child: dragContent)
+          : dragContent,
+    );
+
     final topBar = Container(
       height: 30,
       decoration: BoxDecoration(
@@ -29,16 +45,14 @@ class _TopToolBarState extends State<TopToolBar> {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 50),
-          const Expanded(child: ToolbarSearchBar()),
-          const SizedBox(width: 50),
+          dragArea,
           const OperationButton(),
         ],
       ),
     );
 
     if (useDesktopWindowChrome) {
-      return WindowTitleBarBox(child: MoveWindow(child: topBar));
+      return WindowTitleBarBox(child: topBar);
     }
 
     return topBar;

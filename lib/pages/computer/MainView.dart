@@ -3,6 +3,8 @@ import 'package:chocolate_music/theme/app_colors.dart';
 
 import 'package:chocolate_music/pages/computer/RecommendPage.dart';
 import 'package:chocolate_music/pages/computer/PlaylistPage.dart';
+import 'package:chocolate_music/pages/computer/AccountPage.dart';
+import 'package:chocolate_music/pages/computer/SettingsPage.dart';
 
 // 计算机页面
 
@@ -24,6 +26,10 @@ class _MainViewState extends State<MainView> {
         return PlaylistPage();
       case 'PlaylistPage':
         return PlaylistPage();
+      case 'AccountPage':
+        return AccountPage();
+      case 'SettingsPage':
+        return SettingsPage();
       default:
         return Text(widget.selectedPage);
     }
@@ -33,15 +39,11 @@ class _MainViewState extends State<MainView> {
   Widget build(BuildContext context) {
     return Container(
       // color: Color(0xffffffdd),
-        decoration: BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.transparent,
         borderRadius: BorderRadius.circular(15), // 圆角
       ),
-      child: Column(
-        children: [
-          Expanded(child: _buildPage(),)
-        ],
-      ),
+      child: Column(children: [Expanded(child: _buildPage())]),
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
-import 'package:chocolate_music/components/ComputerNavBar.dart';
+// import 'package:chocolate_music/components/ComputerNavBar.dart';
 
 class PlaylistWidget extends StatefulWidget {
   final Playlist playlist;
@@ -166,9 +166,9 @@ class RecommendMusicWidget extends StatefulWidget {
 }
 
 class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
-  @override
   bool isHovering = false;
 
+  @override
   Widget build(BuildContext context) {
     return MouseRegion(
       onEnter: (_) {
@@ -291,9 +291,9 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
     return '$m:$s';
   }
 
-  @override
   bool isHovering = false;
 
+  @override
   Widget build(BuildContext context) {
     return MouseRegion(
       onEnter: (_) {

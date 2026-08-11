@@ -1,8 +1,13 @@
+import 'dart:async';
+import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/Management.dart';
+import 'package:chocolate_music/pages/computer/LoginPage.dart';
+import 'package:chocolate_music/pages/computer/SettingsPage.dart';
 
 class ChocolateNavBar extends StatefulWidget {
   // final selectedPage;
@@ -21,6 +26,7 @@ class ChocolateNavBar extends StatefulWidget {
 class _ChocolateNavBarState extends State<ChocolateNavBar> {
   @override
   late String selectedIndex = 'RecommendPage';
+  late Management management = Management();
 
   List navItems = [
     {
@@ -49,10 +55,7 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
     },
   ];
 
-  List<Playlist> playlists = [
-    Playlist(name: '周杰伦', listId: '1', cover: 'https://img2.kuwo.cn/star/albumcover/120/s4s11/89/774616642.jpg', audioCount: 5),
-    Playlist(name: '林俊杰', listId: '2', cover: 'https://img2.kuwo.cn/star/albumcover/120/s4s11/89/774616642.jpg', audioCount: 5),
-  ];
+  bool isAccountHovering = false;
 
   Widget build(BuildContext context) {
     return Container(
@@ -87,6 +90,30 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
           // ),
           // // Text('音乐', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.appName)),
           // SizedBox(height: 20),
+          GestureDetector(
+            onTap: () {
+              if (management.account.type != '') {
+                selectedIndex = 'AccountPage';
+                widget.onDestinationSelected('AccountPage');
+              } else {
+                unawaited(
+                  showDialog<void>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => const _AccountLoginDialog(),
+                  ).whenComplete(() {
+                    management.judgeLoginStatus();
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  }),
+                );
+              }
+            },
+            child: AccountDisplay(),
+          ),
+
+          SizedBox(height: 10),
 
           for (int i = 0; i < navItems.length; i++)
             Column(
@@ -99,11 +126,16 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                   onTap: () {
                     selectedIndex = navItems[i]['pageId'];
                     widget.onDestinationSelected(navItems[i]['pageId']);
-                    if(navItems[i]['pageId'] == 'LikedPage') {
-                      Management().displayList = Playlist(name: '我喜欢', listId: 'starred', cover: '', audioCount: 0);
+                    if (navItems[i]['pageId'] == 'LikedPage') {
+                      Management().displayList = Playlist(
+                        name: '我喜欢',
+                        listId: 'starred',
+                        cover: '',
+                        audioCount: 0,
+                      );
                       Management().displayListType = 'Playlist';
                     }
-                  }
+                  },
                 ),
                 if (i != navItems.length - 1) const SizedBox(height: 5),
               ],
@@ -135,7 +167,7 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
               shrinkWrap: true,
               // 让 ListView 在 Column 中按内容高度显示（配合 Expanded 使用）
               // itemCount: cardList.length,
-              itemCount: playlists.length,
+              itemCount: management.playlists.length,
               separatorBuilder: (context, index) {
                 // 返回一个表示间隙的 Widget
                 // 例如，一个固定高度的 SizedBox 或者带有颜色的 Container
@@ -145,12 +177,13 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
               },
               itemBuilder: (context, index) {
                 return playlistItem(
-                  playlist: playlists[index],
-                  isSelected: selectedIndex == playlists[index].listId,
+                  playlist: management.playlists[index],
+                  isSelected:
+                      selectedIndex == management.playlists[index].listId,
                   onTap: () {
-                    selectedIndex = playlists[index].listId;
+                    selectedIndex = management.playlists[index].listId;
                     widget.onDestinationSelected('PlaylistPage');
-                    Management().displayList = playlists[index];
+                    Management().displayList = management.playlists[index];
                     Management().displayListType = 'Playlist';
                   },
                 );
@@ -159,6 +192,229 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AccountLoginDialog extends StatefulWidget {
+  const _AccountLoginDialog();
+
+  @override
+  State<_AccountLoginDialog> createState() => _AccountLoginDialogState();
+}
+
+class _AccountLoginDialogState extends State<_AccountLoginDialog> {
+  final Management _management = Management();
+  bool _isClosingAfterLogin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _management.loginType = 0;
+    _management.addListener(_handleLoginTypeChanged);
+    unawaited(_loadQrCodesInBackground());
+  }
+
+  @override
+  void dispose() {
+    _management.removeListener(_handleLoginTypeChanged);
+    super.dispose();
+  }
+
+  void _handleLoginTypeChanged() {
+    if (!mounted || _isClosingAfterLogin || _management.loginType != 1) {
+      return;
+    }
+
+    _isClosingAfterLogin = true;
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _loadQrCodesInBackground() async {
+    try {
+      await _management.getQrCode();
+    } catch (_) {
+      // The QR code view renders its own failure state.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.background,
+      clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      insetPadding: const EdgeInsets.all(24),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(24)),
+        side: BorderSide(color: AppColors.border),
+      ),
+      child: SizedBox(
+        width: 400,
+        height: 500,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 48),
+              child: LoginPage(),
+            ),
+            Positioned(
+              top: 4,
+              right: 4,
+              child: IconButton(
+                tooltip: '关闭窗口',
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AccountDisplay extends StatefulWidget {
+  // final Account account;
+
+  // const AccountDisplay({Key? key, required this.account}) : super(key: key);
+
+  @override
+  State<AccountDisplay> createState() => _AccountDisplayState();
+}
+
+class _AccountDisplayState extends State<AccountDisplay> {
+  late bool isAccountHovering = false;
+  late Management management = Management();
+
+  @override
+  void initState() {
+    super.initState();
+    management.addListener(_updateAccountDisplay);
+  }
+
+  @override
+  void dispose() {
+    management.removeListener(_updateAccountDisplay);
+    super.dispose();
+  }
+
+  void _updateAccountDisplay() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() {
+          isAccountHovering = true; // 鼠标进入，更新状态
+        });
+      },
+      onExit: (_) {
+        setState(() {
+          isAccountHovering = false; // 鼠标离开，恢复状态
+        });
+      },
+      child: management.account.type != ''
+          ? Container(
+              padding: EdgeInsets.all(10), // 和边框的间距
+              decoration: BoxDecoration(
+                color: isAccountHovering
+                    ? AppColors.loginButtonColor
+                    : AppColors.panel,
+                borderRadius: BorderRadius.circular(20), // 圆角
+              ),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(40), // 根据需要设置圆角大小
+                    child: Image.network(
+                      // widget.cover,
+                      management.account.cover,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      // 加载失败时，errorBuilder 会被调用
+                      errorBuilder: (context, error, stackTrace) {
+                        // 返回你的本地图片
+                        // return Image.asset(
+                        //   'assets/images/app_photo.png',
+                        //   width: 40,
+                        //   height: 40,
+                        //   fit: BoxFit.cover,
+                        // );
+                        return SvgPicture.asset(
+                          management.account.type == '酷狗音乐' ? 'assets/images/KuGouConcept.svg' :
+                          management.account.type == '网易云' ? 'assets/images/NetEaseCloud.svg' :
+                          'assets/images/Navidrome.svg',
+                          width: 40,
+                          height: 40,
+                        );
+                      },
+                    ),
+                  ),
+
+                  SizedBox(width: 10),
+
+                  Expanded(
+                    child: Column(
+                      // mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
+                      crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
+                      children: [
+                        Text(
+                          management.account.nickname,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.musicNameColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        Text(
+                          '来自 ${management.account.type}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.musicSingerColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Container(
+              alignment: Alignment.center,
+              // ✅ 一行搞定
+              height: 60,
+              width: double.infinity,
+              padding: EdgeInsets.all(10),
+              // 和边框的间距
+              decoration: BoxDecoration(
+                color: isAccountHovering
+                    ? AppColors.loginButtonColor
+                    : AppColors.panel,
+                borderRadius: BorderRadius.circular(20), // 圆角
+              ),
+              child: Text(
+                '未登录',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: AppColors.musicNameColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
     );
   }
 }
@@ -283,7 +539,8 @@ class _playlistItemState extends State<playlistItem> {
           });
         },
         child: Container(
-          padding: EdgeInsets.only(bottom: 10, top: 10, left: 15, right: 15), // 和边框的间距
+          padding: EdgeInsets.only(bottom: 10, top: 10, left: 15, right: 15),
+          // 和边框的间距
           // width: 190,
           height: 60,
           decoration: BoxDecoration(

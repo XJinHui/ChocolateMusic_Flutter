@@ -72,5 +72,10 @@ class AppColors {
 
   // 专辑名称颜色
   static const Color albumNameColor = Color(0xff666666);
-}
 
+  // 登录按钮颜色
+  static const Color loginButtonColor = Color(0xFFE0E0E0);
+
+  // 圆弧边缘颜色
+  static const Color border = Color(0xffeeeeee);
+}

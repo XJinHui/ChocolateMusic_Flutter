@@ -234,7 +234,7 @@ class _RecommendMusicsState extends State<RecommendMusics> {
         double availableWidth = constraints.maxWidth; // 获取可用的最大宽度
 
         double width = (availableWidth - 80) / 3;
-        if (availableWidth > 1275){
+        if (availableWidth > 1275) {
           width = 1235 / 3;
         }
         return Container(
@@ -253,15 +253,15 @@ class _RecommendMusicsState extends State<RecommendMusics> {
                     album: '十一月的萧邦',
                     albumId: '1',
                     cover:
-                      'https://img2.kuwo.cn/star/albumcover/120/s4s11/89/774616642.jpg',
+                        'https://img2.kuwo.cn/star/albumcover/120/s4s11/89/774616642.jpg',
                     time: 253000,
                   ),
                   width: width,
                 ),
             ],
-          )
+          ),
         );
-      }
+      },
     );
   }
 }
