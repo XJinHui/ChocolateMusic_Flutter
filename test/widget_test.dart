@@ -12,6 +12,10 @@ import 'package:chocolate_music/main.dart';
 
 void main() {
   testWidgets('App shell renders', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1100, 740);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
     await tester.pumpWidget(const MyApp());
 
     expect(find.byType(MaterialApp), findsOneWidget);

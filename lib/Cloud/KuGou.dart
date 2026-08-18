@@ -30,7 +30,7 @@ class KuGou implements CloudService{
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
     ),
-  );
+  )..options.validateStatus = (status) => true;
 
   KuGou({required this.accountData, required this.management});
 
@@ -74,10 +74,7 @@ class KuGou implements CloudService{
     int currentSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     if (this.userData.t_expire_time < currentSeconds) {
-      // token 已过期
-      // this.playlistManagement.logining = 2
-
-      return;
+      return false;
     }
 
     try {
@@ -90,21 +87,18 @@ class KuGou implements CloudService{
         print('登录状态检查失败: ${response.data}');
         // this.playlistManagement.logining = 2
 
-        return;
+        return false;
       }
 
       print('登录状态检查响应: ${response.data}');
       await this.getData();
-      // this.playlistManagement.logining = 1
-      // this.playlistManagement.isShowSettings = false
     } catch (error) {
       print('login 异常: ${error}');
-      // this.playlistManagement.logining = 2
-
-      return;
+      return false;
     }
 
     this.refreshToken();
+    return true;
   }
 
   updateAccountData() async {
@@ -121,33 +115,7 @@ class KuGou implements CloudService{
   }
 
   updateAccountLogin(String mainUrl, int index) async {
-    // let userData = this.accountData.data[0][this.accountData.login[1]]
-    // let params: Params = {
-    //   token: userData.token,
-    //   userid: userData.userid,
-    //   dfid: userData.dfid ? userData.dfid : await this.getDfid()
-    // }
-    //
-    // try {
-    //   let url = `${mainUrl}/user/detail`
-    // let response: AxiosResponse = await axios.get(url, {
-    // params: params
-    // })
-    //
-    // if (response.status !== 200 || response.data.status !== 1) {
-    // console.log('登录状态检查失败:', response.data)
-    //
-    // return false
-    // }
-    //
-    // console.log('登录状态检查响应:', JSON.stringify(response.data))
-    // this.accountData.data[0][index].url = mainUrl
-    // return true
-    // } catch (error) {
-    // console.error('updateAccountLogin 异常:', error)
-    //
-    // return false
-    // }
+
   }
 
   getVerificationCode(String mobile, String mainUrl) async {
@@ -322,11 +290,104 @@ class KuGou implements CloudService{
     return true;
   }
 
-  refreshToken() async {}
+  refreshToken() async {
+    var timestamp = DateTime.now().millisecondsSinceEpoch;
 
-  Future<void> getVip() async {}
+    try {
+      var response =await KuGou.dio.get(
+        '/login/token?timestamp=${timestamp}',
+          queryParameters: this.params
+      );
 
-  getVip8() async {}
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('token刷新失败');
+        return false;
+      }
+
+      var data = response.data['data'];
+
+      this.userData = KugouData(
+        token: data['token'] ?? '',
+        userid: data['userid'].toString() ?? '',
+        t_expire_time: data['t_expire_time'].toInt(),
+        cover: response.data['data']['pic'],
+        nickname: data['nickname'] ?? '',
+        dfid: this.params['dfid'].toString(),
+        url: this.mainUrl,
+      );
+
+    this.params['token'] = this.userData.token;
+    this.accountData.data[0][this.accountData.login[1]] = this.userData;
+    this.management.updateAccountData();
+    } catch (error) {
+      print('refreshToken 异常: $error');
+    }
+  }
+
+  Future<void> getVip() async {
+    var response;
+      try {
+        this.getVip8();
+        // 获取 UTC 时间 + 8 小时，然后格式化为日期
+        DateTime beijingDate = DateTime.now().toUtc().add(Duration(hours: 8));
+        String date_str = '${beijingDate.year}-${beijingDate.month.toString().padLeft(2, '0')}-${beijingDate.day.toString().padLeft(2, '0')}';
+        print('北京时间: $date_str');
+        response =await KuGou.dio.get(
+          '/youth/day/vip?receive_day=${date_str}',
+          queryParameters: this.params,
+          options: Options(headers: {'Cookie': 'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}' }),
+        );
+        print('getVip 响应: ${response.data}');
+      } catch (error) {
+        print('getVip 异常: $error');
+      }
+      
+      try {
+        response =await KuGou.dio.get(
+          '/youth/day/vip/upgrade',
+          queryParameters: this.params,
+          options: Options(headers: {'Cookie': 'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}' }),
+        );
+        print('getVip upgrade 响应: ${response.data}');
+      } catch (error) {
+        print('getVip upgrade 异常: $error');
+      }
+  }
+
+  getVip8() async {
+    var timestamp;
+
+    try {
+      for (var i = 0; i < 8; i++) {
+        timestamp = DateTime
+            .now()
+            .millisecondsSinceEpoch;
+        try {
+          var response = await KuGou.dio.get(
+            '/youth/vip?timestamp=${timestamp}',
+            queryParameters: this.params,
+            options: Options(headers: {
+              'Cookie': 'token=${this.params['token']}; userid=${this
+                  .params['userid']}; dfid=${this.params['dfid']}'
+            }),
+          );
+          // console.info(`getVip8 day ${i} 响应:`, JSON.stringify(response.data))
+          print('getVip8 day ${i} 响应: ${response.data}');
+
+          if (response.data.containsKey('error_msg') && response.data['error_msg'] == '今天次数已用光') {
+            return;
+          }
+        } catch (error) {
+          // console.error(`getVip8 day ${i} 异常:`, error)
+          print('getVip8 day ${i} 异常: $error');
+        }
+
+        await Future.delayed(const Duration(milliseconds: 15000));
+      }
+    } catch (error) {
+      print('getVip8 异常: $error');
+    }
+  }
 
   getData() async {
     await Future.wait([

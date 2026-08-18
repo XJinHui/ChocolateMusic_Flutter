@@ -29,30 +29,23 @@ class Navidrome implements CloudService{
   Navidrome({required this.accountData, required this.management});
 
   login() async {
-    // this.params = this.accountData.data[2][this.accountData.login[1]]
-    // this.mainUrl = this.params.url
-    //
-    // if (!await this.checkLogin(this.params)) {
-    // console.log('登录失败')
-    // this.playlistManagement.logining = 2
-    //
-    // return
-    // }
-    //
-    // this.playlistManagement.logining = 1
-    // this.playlistManagement.isShowSettings = false
-    //
-    // this.getData()
+    this.params = this.accountData.data[2][this.accountData.login[1]];
+    this.mainUrl = this.params.url;
+
+    if (!await this.checkLogin(this.params)) {
+      print('登录失败');
+
+      return false;
+    }
+
+    this.getData();
+    return true;
   }
 
   updateAccountData() async {}
-
   getVerificationCode(String mobile, String mainUrl) async {}
-
   getQrCode(String mainUrl) async {}
-
   loginByMobile(String mobile, String mainUrl, String code) async {}
-
   loginByQrCode(String mainUrl) async {}
 
   addLogin(

@@ -48,7 +48,7 @@ class Neteasecloud implements CloudService {
         print('登录状态检查失败: ${response.data}');
         // this.playlistManagement.logining = 2
 
-        return;
+        return false;
       }
 
       print('登录状态检查响应: ${response.data}');
@@ -59,12 +59,14 @@ class Neteasecloud implements CloudService {
       print('login 异常: ${error}');
       // this.playlistManagement.logining = 2
 
-      return;
+      return false;
     }
 
     if (this.accountData.data[1][this.accountData.login[1]].loginType == 1) {
       this.refreshToken();
     }
+
+    return true;
   }
 
   updateAccountData() async {
@@ -246,11 +248,82 @@ class Neteasecloud implements CloudService {
     return true;
   }
 
-  refreshToken() async {}
+  refreshToken() async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/login/refresh',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
 
-  Future<void> getVipCookie() async {}
+      if (response.statusCode != 200 || response.data["code"] != 200) {
+        print('cookie刷新失败 ${response.data}');
+        return false;
+      }
 
-  getVipInfo(String userId) async {}
+      // console.log('cookie刷新响应:', JSON.stringify(response.data))
+      print('cookie刷新响应: ${response.data}');
+
+      var rawCookies = response.data['cookie'];
+      if (rawCookies == '') {
+        print('未获取到cookie');
+        return false;
+      }
+      var cookies = this.extractCookieString(rawCookies);
+      print('cookie刷新成功，获取到cookie: ${cookies}');
+      this.cookies = cookies;
+
+      this.accountData.data[1][this.accountData.login[1]].cookies = cookies;
+      this.management.updateAccountData();
+
+      return true;
+    } catch (error){
+      print('refreshToken 异常: ${error}');
+      return false;
+    }
+  }
+
+  Future<void> getVipCookie() async {
+    final List<NetEaseCloudData> accounts = this
+        .accountData
+        .data[1]
+        .whereType<NetEaseCloudData>()
+        .toList();
+    final List<bool> results = await Future.wait<bool>(
+      accounts.map((account) => this.getVipInfo(account.userid)),
+    );
+
+    for (int i = 0; i < results.length; i++) {
+      if (results[i]) {
+        this.vipCookies = accounts[i].cookies;
+        print('获取到VIP用户cookie: ${this.vipCookies}');
+        return;
+      }
+    }
+  }
+
+  getVipInfo(String userId) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/vip/info?uid=${userId}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      if (response.statusCode != 200 || response.data["code"] != 200) {
+        print('获取VIP信息失败: ${response.data}');
+        return false;
+      }
+
+    if (response.data['data']['redVipAnnualCount'] == -1){
+      print('用户不是VIP');
+      return false;
+    }
+
+      return true;
+    } catch (error) {
+      print('getVipInfo 异常: ${error}');
+      return false;
+    }
+  }
 
   getData() async {
     if (this.vipCookies == ''){

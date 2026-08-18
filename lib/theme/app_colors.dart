@@ -43,6 +43,39 @@ class AppColors {
   // 关闭按钮悬浮颜色
   static const Color closeIconHover = Color(0xffff5f57);
 
+  // 账号页服务商舞台色：酷狗天蓝、网易云红、Navidrome 蓝
+  static const Color accountStageKuGou = Color(0xFF147FC0);
+  static const Color accountStageNetEaseCloud = Color(0xFFC82C36);
+  static const Color accountStageNavidrome = Color(0xFF1769AA);
+  static const Color accountStageDefault = Color(0xFF26334A);
+
+  // 账号页服务商舞台边缘色
+  static const Color accountStageKuGouBorder = Color(0xFF9ADCFD);
+  static const Color accountStageNetEaseCloudBorder = Color(0xFFFFB4B9);
+  static const Color accountStageNavidromeBorder = Color(0xFF9DCCF2);
+  static const Color accountStageDefaultBorder = Color(0xFF71819B);
+
+  // 账号页静态目录表面色
+  static const Color accountSurface = Color(0xEFFFFFFF);
+
+  // 账号页冷雾背景与磨砂层
+  static const Color accountGlass = Color(0xDEFFFFFF);
+  static const Color accountGlassStrong = Color(0xF2FFFFFF);
+  static const Color accountGlassHover = Color(0xFFE7F3FF);
+  static const Color accountGlassBorder = Color(0xB8FFFFFF);
+  static const Color accountGlassOutline = Color(0xFFDAE5F2);
+  static const Color accountDivider = Color(0xFFDFE8F2);
+  static const Color accountInk = Color(0xFF18243A);
+  static const Color accountMutedInk = Color(0xFF63728A);
+  static const Color accountDisabledFill = Color(0x9CFFFFFF);
+  static const Color accountDisabledInk = Color(0xFF93A0B3);
+  static const Color accountSelection = Color(0xD9E8F5FF);
+  static const Color accountSelectionBorder = Color(0xFFB8D6F4);
+  static const Color accountStageBorder = Color(0xB3FFFFFF);
+  static const Color accountRecordGroove = Color(0x140E2340);
+  static const Color accountRecordCenter = Color(0xEFFFFFFF);
+  static const Color accountShadow = Color(0x1A24324F);
+
   // 音乐名称颜色
   static const Color musicNameColor = Color(0xff333333);
 

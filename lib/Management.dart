@@ -108,7 +108,117 @@ class Management extends ChangeNotifier {
       await this.fileManage.writeRecommendListDate(this.recommendListDate);
     }
 
+    this.setting.play = false;
+
+    if (this.accountData.login[0] != -1){
+      var status = await this.login();
+      if (status) {
+        this.updateAccount();
+        this.recommendList = this.recommendListDate[this.accountData.login[0]];
+        this.recommendList.music = [];
+        await this.createrRecommend();
+
+        if (this.setting.id != '') {
+          // this.playMusicControl.play('pause');
+          // this.getInitialPlaylist();
+        }
+      } else {
+        this.initDisplay();
+      }
+    } else {
+      print('未登录，无法加载账户信息');
+      this.initDisplay();
+    }
+
     updateAccount();
+  }
+
+  initDisplay(){
+    this.accountData.login = [-1, -1];
+    this.account = Account(cover: '', nickname: '', type: ''); ;
+    var setting = Setting(
+      name: '',
+      singer: '',
+      singerId: '',
+      album: '',
+      albumId: '',
+      time: '00:00',
+      cover: '',
+      like: false,
+      id: '',
+      playType: 0,
+      volume: 100,
+      volumeType: true,
+      play: false,
+      playlistId: '',
+      playlistType: 0,
+      qualityTier: 0,
+      downloadQualityTier: 0,
+    );
+    this.fileManage.writeSetting(setting);
+  }
+
+  switchLogin(int type, int index) async {
+    print('$type  $index');
+    if (type < 0 ||
+        type >= this.accountData.data.length ||
+        index < 0 ||
+        index >= this.accountData.data[type].length) {
+      print('登录账号索引异常，无法切换');
+      return;
+    }
+
+    if (this.accountData.login[0] == type &&
+        this.accountData.login[1] == index) {
+      print('已登录该账户，无需切换');
+      return;
+    }
+
+    if (type == this.accountData.login[0]) {
+    } else if (type == 0) {
+      this.cloud = KuGouCloud;
+    } else if (type == 1) {
+      this.cloud = NeteasecloudCloud;
+    } else if (type == 2) {
+      this.cloud = NavidromeCloud;
+    } else {
+      print('登录类型异常，无法切换账户');
+      return;
+    }
+
+    this.accountData.login = [type, index];
+    this.playlists = [];
+    this.closePlayMusic();
+    var status = await this.cloud.login();
+
+    if (status) {
+      this.updateAccount();
+      this.updateAccountData();
+      this.createrRecommend(type: 1);
+      print('登录成功');
+    } else {
+      this.initDisplay();
+      print('登录失败');
+    }
+    updateAccount();
+  }
+
+  login() async {
+    if (this.accountData.login[0] == 0){
+      this.cloud = KuGouCloud;
+    }
+    else if (this.accountData.login[0] == 1){
+      this.cloud = NavidromeCloud;
+    }
+    else if (this.accountData.login[0] == 2){
+      this.cloud = NavidromeCloud;
+    }
+    else {
+      print('登录类型异常，无法切换账户');
+      return false;
+    }
+    return await this.cloud.login();
+    // this.isShowSettings = false
   }
 
   startLogin() {
@@ -145,6 +255,30 @@ class Management extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  deleteAccount(int type, int index){
+    if (this.accountData.login[0] == type && this.accountData.login[1] == index){
+      this.accountData.login = [-1, -1];
+      this.playlists = [];
+      this.accountData.data[type].removeAt(index);
+      this.closePlayMusic();
+      this.updateAccountData();
+      this.account = Account(cover: '', nickname: '', type: '');;
+      this.recommendList = new RecommendList();
+      this.updateRecommendListDate();
+      print('已删除当前登录账户，已退出登录');
+    } else {
+      this.accountData.data[type].removeAt(index);
+      if (this.accountData.login[0] == type && this.accountData.login[1] > index){
+        this.accountData.login[1] -= 1;
+        this.updateAccountData();
+        print('已删除账户，已更新登录状态');
+      } else {
+        this.updateAccountData();
+        print('已删除账户');
+      }
+    }
   }
 
   createrRecommend({type = 0}) async {
@@ -213,7 +347,11 @@ class Management extends ChangeNotifier {
       status = await KuGouCloud.loginByMobile(mobile, url, VerificationCode);
     } else if (type == 'NetEaseCloud') {
       // this.cloud = Neteasecloud(accountData: accountData, management: this);
-      status = await NeteasecloudCloud.loginByMobile(mobile, url, VerificationCode);
+      status = await NeteasecloudCloud.loginByMobile(
+        mobile,
+        url,
+        VerificationCode,
+      );
     } else {
       return false;
     }
@@ -231,7 +369,12 @@ class Management extends ChangeNotifier {
     }
   }
 
-  loginByNavidrome(String username, String url, String password, String name) async {
+  loginByNavidrome(
+    String username,
+    String url,
+    String password,
+    String name,
+  ) async {
     var status;
 
     status = await NavidromeCloud.addLogin(username, url, password, name);
@@ -247,6 +390,34 @@ class Management extends ChangeNotifier {
       this.loginType = 2;
       print('Navidrome登录失败');
     }
+  }
+
+  closePlayMusic(){
+    this.playMusicList = [];
+    // this.playMusicControl.playMusicList = [];
+    this.currentPlayMusicList = [];
+
+    this.displayLyric = '';
+    // this.displayLyricList = [];
+    // this.musicProgress = 0;
+
+    this.setting.name = '';
+    this.setting.singer = '';
+    this.setting.singerId = '';
+    this.setting.album = '';
+    this.setting.albumId = '';
+    this.setting.time = '00:00';
+    this.setting.cover = '';
+    this.setting.id = '';
+    this.setting.playlistId = '';
+    this.setting.playlistType = 0;
+    this.setting.play = false;
+
+    // this.playMusicControl.stop();
+
+    this.updateSetting();
+    this.searchKeyword = '';
+    this.searchList = new RecommendList();
   }
 
   judgeLoginStatus() {
