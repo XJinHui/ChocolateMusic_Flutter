@@ -2,6 +2,8 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
+import 'package:chocolate_music/components/RemoteImage.dart';
+import 'package:chocolate_music/Management.dart';
 // import 'package:chocolate_music/components/ComputerNavBar.dart';
 
 class PlaylistWidget extends StatefulWidget {
@@ -23,9 +25,13 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(widget.size / 5), // 根据需要设置圆角大小
-            child: Image.network(
+            child: RemoteImage(
               // widget.cover,
               widget.playlist.cover,
+              headers: const {
+                'User-Agent':
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+              },
               width: widget.size,
               height: widget.size,
               fit: BoxFit.cover,
@@ -44,9 +50,14 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
 
           SizedBox(height: 5), // 图片和文本之间的间距
 
-          Text(
-            widget.playlist.name,
-            style: TextStyle(fontSize: 18, color: AppColors.normalText),
+          SizedBox(
+            width: widget.size,
+            child: Text(
+              widget.playlist.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 18, color: AppColors.normalText),
+            ),
           ),
         ],
       ),
@@ -73,9 +84,13 @@ class _AlbumWidgetState extends State<AlbumWidget> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(widget.size / 5), // 根据需要设置圆角大小
-            child: Image.network(
+            child: RemoteImage(
               // widget.cover,
               widget.album.cover,
+              headers: const {
+                'User-Agent':
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+              },
               width: widget.size,
               height: widget.size,
               fit: BoxFit.cover,
@@ -94,9 +109,14 @@ class _AlbumWidgetState extends State<AlbumWidget> {
 
           SizedBox(height: 5), // 图片和文本之间的间距
 
-          Text(
-            widget.album.album,
-            style: TextStyle(fontSize: 18, color: AppColors.normalText),
+          SizedBox(
+            width: widget.size,
+            child: Text(
+              widget.album.album,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 18, color: AppColors.normalText),
+            ),
           ),
         ],
       ),
@@ -123,9 +143,13 @@ class _SingerWidgetState extends State<SingerWidget> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(widget.size / 5), // 根据需要设置圆角大小
-            child: Image.network(
+            child: RemoteImage(
               // widget.cover,
               widget.singer.cover,
+              headers: const {
+                'User-Agent':
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+              },
               width: widget.size,
               height: widget.size,
               fit: BoxFit.cover,
@@ -144,9 +168,14 @@ class _SingerWidgetState extends State<SingerWidget> {
 
           SizedBox(height: 5), // 图片和文本之间的间距
 
-          Text(
-            widget.singer.singer,
-            style: TextStyle(fontSize: 18, color: AppColors.normalText),
+          SizedBox(
+            width: widget.size,
+            child: Text(
+              widget.singer.singer,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 18, color: AppColors.normalText),
+            ),
           ),
         ],
       ),
@@ -166,6 +195,7 @@ class RecommendMusicWidget extends StatefulWidget {
 }
 
 class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
+  late Management management = Management();
   bool isHovering = false;
 
   @override
@@ -194,9 +224,13 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
-              child: Image.network(
+              child: RemoteImage(
                 // widget.cover,
                 widget.music.cover,
+                headers: const {
+                  'User-Agent':
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                },
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
@@ -223,6 +257,8 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
                   Text(
                     widget.music.name,
                     textAlign: TextAlign.left,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 18,
                       color: AppColors.musicNameColor,
@@ -233,6 +269,8 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
                   Text(
                     widget.music.singer,
                     textAlign: TextAlign.left,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 17,
                       color: AppColors.musicSingerColor,
@@ -250,11 +288,17 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
                 onTap: () {
                   // 处理喜欢按钮点击事件
                 },
-                child: Icon(
-                  BootstrapIcons.heart,
-                  color: AppColors.buttonIcon,
-                  size: 20,
-                ),
+                child: management.cloud.collectionList.contains(widget.music.id)
+                    ? Icon(
+                        BootstrapIcons.heart_fill,
+                        color: AppColors.likeIconColor,
+                        size: 20,
+                      )
+                    : Icon(
+                        BootstrapIcons.heart,
+                        color: AppColors.buttonIcon,
+                        size: 20,
+                      ),
               ),
           ],
         ),
@@ -290,6 +334,8 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
     final String s = secs.toString().padLeft(2, '0');
     return '$m:$s';
   }
+
+  late Management management = Management();
 
   bool isHovering = false;
 
@@ -328,9 +374,13 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
 
             ClipRRect(
               borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
-              child: Image.network(
+              child: RemoteImage(
                 // widget.cover,
                 widget.music.cover,
+                headers: const {
+                  'User-Agent':
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                },
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
@@ -385,11 +435,19 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
               onTap: () {
                 // 处理喜欢按钮点击事件
               },
-              child: Icon(
-                BootstrapIcons.heart_fill,
-                color: AppColors.likeIconColor,
-                size: 20,
-              ),
+              child:
+                  management.cloud?.collectionList.contains(widget.music.id) ??
+                  false
+                  ? Icon(
+                      BootstrapIcons.heart_fill,
+                      color: AppColors.likeIconColor,
+                      size: 20,
+                    )
+                  : Icon(
+                      BootstrapIcons.heart,
+                      color: AppColors.buttonIcon,
+                      size: 20,
+                    ),
             ),
 
             SizedBox(width: 50),

@@ -4,6 +4,7 @@ import 'package:chocolate_music/components/TopToolBar.dart';
 import 'package:chocolate_music/components/PlaybackControlBar.dart';
 import 'package:chocolate_music/pages/computer/MainView.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
+import 'package:chocolate_music/Management.dart';
 
 class ComputerHomePage extends StatefulWidget {
   const ComputerHomePage({super.key});
@@ -24,29 +25,32 @@ class _ComputerHomePageState extends State<ComputerHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Container(
-        color: AppColors.background,
-        padding: EdgeInsets.all(10), // 和边框的间距
-        child: Stack(
-          children: [
-            Row(
+    return ListenableBuilder(
+      listenable: Management(),
+      builder: (BuildContext context, Widget? child) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: Container(
+            color: AppColors.background,
+            padding: EdgeInsets.all(10), // 和边框的间距
+            child: Stack(
               children: [
-                ChocolateNavBar(
-                  // selectedPage: selectedPage,
-                  onDestinationSelected:
-                      _onNavDestinationSelected, // 传递回调函数给导航栏
-                ),
-                SizedBox(width: 10), //
-                Expanded(
-                  child: Column(
-                    children: [
-                      TopToolBar(),
-                      SizedBox(height: 10),
-                      Expanded(child: MainView(selectedPage: selectedPage)),
-                      SizedBox(height: 10),
-                      PlaybackControlBar(),
+                Row(
+                  children: [
+                    ChocolateNavBar(
+                      // selectedPage: selectedPage,
+                      onDestinationSelected:
+                          _onNavDestinationSelected, // 传递回调函数给导航栏
+                    ),
+                    SizedBox(width: 10), //
+                    Expanded(
+                      child: Column(
+                        children: [
+                          TopToolBar(),
+                          SizedBox(height: 10),
+                          Expanded(child: MainView(selectedPage: selectedPage)),
+                          SizedBox(height: 10),
+                          PlaybackControlBar(),
 
                       // Expanded(
                       //   child: Stack(
@@ -64,14 +68,16 @@ class _ComputerHomePageState extends State<ComputerHomePage> {
                       //     ],
                       //   ),
                       // ),
-                    ],
-                  ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

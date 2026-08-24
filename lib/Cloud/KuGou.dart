@@ -6,7 +6,7 @@ import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/Cloud/CloudService.dart';
 import 'dart:math';
 
-class KuGou implements CloudService{
+class KuGou implements CloudService {
   late AccountData accountData;
   late Management management;
 
@@ -84,13 +84,13 @@ class KuGou implements CloudService{
       // Kugou.dio.options.baseUrl = this.mainUrl;
       final response = await KuGou.dio.get('');
       if (response.statusCode != 200) {
-        print('登录状态检查失败: ${response.data}');
+        print('登录状态检查失败: ${jsonEncode(response.data)}');
         // this.playlistManagement.logining = 2
 
         return false;
       }
 
-      print('登录状态检查响应: ${response.data}');
+      print('登录状态检查响应: ${jsonEncode(response.data)}');
       await this.getData();
     } catch (error) {
       print('login 异常: ${error}');
@@ -114,9 +114,7 @@ class KuGou implements CloudService{
     // Kugou.dio.options.baseUrl = this.mainUrl;
   }
 
-  updateAccountLogin(String mainUrl, int index) async {
-
-  }
+  updateAccountLogin(String mainUrl, int index) async {}
 
   getVerificationCode(String mobile, String mainUrl) async {
     print('获取验证码: mobile=$mobile, mainUrl=$mainUrl');
@@ -137,7 +135,7 @@ class KuGou implements CloudService{
       );
 
       if (response.statusCode != 200 || response.data["status"] != 1) {
-        print('获取二维码失败: ${response.data}');
+        print('获取二维码失败: ${jsonEncode(response.data)}');
         return '';
       }
 
@@ -169,11 +167,11 @@ class KuGou implements CloudService{
         return false;
       }
 
-      print('登录响应: ${response.data}');
-      
+      print('登录响应: ${jsonEncode(response.data)}');
+
       if (response.data['data'].containsKey('info_list') &&
           response.data['data']['info_list'] != null) {
-        print(jsonEncode(response.data));
+        print('登录响应包含 info_list: ${jsonEncode(response.data)}');
         print('暂无支持多账号登录');
         return false;
       }
@@ -185,8 +183,10 @@ class KuGou implements CloudService{
       this.userData = KugouData(
         token: data['token'] ?? '',
         userid: data['userid'].toString() ?? '',
-        t_expire_time: data['t_expire_time'].toInt(),   // 注意：如果 data 里也是 int
-        cover: response.data['data']['pic'],       // 根据你原先的写法
+        t_expire_time: data['t_expire_time'].toInt(),
+        // 注意：如果 data 里也是 int
+        cover: response.data['data']['pic'],
+        // 根据你原先的写法
         nickname: data['nickname'] ?? '',
         dfid: dfid,
         url: this.mainUrl,
@@ -195,7 +195,7 @@ class KuGou implements CloudService{
 
       var list = this.accountData.data[0];
       list.add(this.userData);
-      var num = list.length - 1;            // 添加后的索引（即原来的长度）
+      var num = list.length - 1; // 添加后的索引（即原来的长度）
       this.accountData.data[0][num] = this.userData;
 
       print('${this.accountData}');
@@ -206,7 +206,7 @@ class KuGou implements CloudService{
       this.params = {
         'token': this.userData.token,
         'userid': this.userData.userid,
-        'dfid': dfid
+        'dfid': dfid,
       };
 
       // await this.login(1)
@@ -214,7 +214,7 @@ class KuGou implements CloudService{
 
       return true;
     } catch (error) {
-    // console.error('loginByMobile 异常:', error)
+      // console.error('loginByMobile 异常:', error)
       print('loginByMobile 异常: ${error}');
       return false;
     }
@@ -239,14 +239,14 @@ class KuGou implements CloudService{
 
       n = response.data['data']['status'];
 
-      if (n==0){
+      if (n == 0) {
         this.qrCodeType = 2;
         return false;
       }
 
       await Future.delayed(const Duration(seconds: 2));
     }
-  
+
     // this.mainUrl = mainUrl
     var data = response.data['data'];
     print('登录成功: ${data}');
@@ -258,13 +258,13 @@ class KuGou implements CloudService{
       cover: response.data['data']['pic'],
       nickname: data['nickname'] ?? '',
       dfid: dfid,
-      url: this.mainUrl
+      url: this.mainUrl,
     );
 
     this.params = {
       'token': this.userData.token,
       'userid': this.userData.userid,
-      'dfid': dfid
+      'dfid': dfid,
     };
 
     await this.refreshToken();
@@ -273,7 +273,7 @@ class KuGou implements CloudService{
 
     var list = this.accountData.data[0];
     list.add(this.userData);
-    var num = list.length - 1;            // 添加后的索引（即原来的长度）
+    var num = list.length - 1; // 添加后的索引（即原来的长度）
     this.accountData.data[0][num] = this.userData;
 
     print('${this.accountData}');
@@ -294,9 +294,9 @@ class KuGou implements CloudService{
     var timestamp = DateTime.now().millisecondsSinceEpoch;
 
     try {
-      var response =await KuGou.dio.get(
+      var response = await KuGou.dio.get(
         '/login/token?timestamp=${timestamp}',
-          queryParameters: this.params
+        queryParameters: this.params,
       );
 
       if (response.statusCode != 200 || response.data["status"] != 1) {
@@ -316,9 +316,9 @@ class KuGou implements CloudService{
         url: this.mainUrl,
       );
 
-    this.params['token'] = this.userData.token;
-    this.accountData.data[0][this.accountData.login[1]] = this.userData;
-    this.management.updateAccountData();
+      this.params['token'] = this.userData.token;
+      this.accountData.data[0][this.accountData.login[1]] = this.userData;
+      this.management.updateAccountData();
     } catch (error) {
       print('refreshToken 异常: $error');
     }
@@ -326,32 +326,43 @@ class KuGou implements CloudService{
 
   Future<void> getVip() async {
     var response;
-      try {
-        this.getVip8();
-        // 获取 UTC 时间 + 8 小时，然后格式化为日期
-        DateTime beijingDate = DateTime.now().toUtc().add(Duration(hours: 8));
-        String date_str = '${beijingDate.year}-${beijingDate.month.toString().padLeft(2, '0')}-${beijingDate.day.toString().padLeft(2, '0')}';
-        print('北京时间: $date_str');
-        response =await KuGou.dio.get(
-          '/youth/day/vip?receive_day=${date_str}',
-          queryParameters: this.params,
-          options: Options(headers: {'Cookie': 'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}' }),
-        );
-        print('getVip 响应: ${response.data}');
-      } catch (error) {
-        print('getVip 异常: $error');
-      }
-      
-      try {
-        response =await KuGou.dio.get(
-          '/youth/day/vip/upgrade',
-          queryParameters: this.params,
-          options: Options(headers: {'Cookie': 'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}' }),
-        );
-        print('getVip upgrade 响应: ${response.data}');
-      } catch (error) {
-        print('getVip upgrade 异常: $error');
-      }
+    try {
+      this.getVip8();
+      // 获取 UTC 时间 + 8 小时，然后格式化为日期
+      DateTime beijingDate = DateTime.now().toUtc().add(Duration(hours: 8));
+      String date_str =
+          '${beijingDate.year}-${beijingDate.month.toString().padLeft(2, '0')}-${beijingDate.day.toString().padLeft(2, '0')}';
+      print('北京时间: $date_str');
+      response = await KuGou.dio.get(
+        '/youth/day/vip?receive_day=${date_str}',
+        queryParameters: this.params,
+        options: Options(
+          headers: {
+            'Cookie':
+                'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}',
+          },
+        ),
+      );
+      print('getVip 响应: ${jsonEncode(response.data)}');
+    } catch (error) {
+      print('getVip 异常: $error');
+    }
+
+    try {
+      response = await KuGou.dio.get(
+        '/youth/day/vip/upgrade',
+        queryParameters: this.params,
+        options: Options(
+          headers: {
+            'Cookie':
+                'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}',
+          },
+        ),
+      );
+      print('getVip upgrade 响应: ${jsonEncode(response.data)}');
+    } catch (error) {
+      print('getVip upgrade 异常: $error');
+    }
   }
 
   getVip8() async {
@@ -359,22 +370,23 @@ class KuGou implements CloudService{
 
     try {
       for (var i = 0; i < 8; i++) {
-        timestamp = DateTime
-            .now()
-            .millisecondsSinceEpoch;
+        timestamp = DateTime.now().millisecondsSinceEpoch;
         try {
           var response = await KuGou.dio.get(
             '/youth/vip?timestamp=${timestamp}',
             queryParameters: this.params,
-            options: Options(headers: {
-              'Cookie': 'token=${this.params['token']}; userid=${this
-                  .params['userid']}; dfid=${this.params['dfid']}'
-            }),
+            options: Options(
+              headers: {
+                'Cookie':
+                    'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}',
+              },
+            ),
           );
-          // console.info(`getVip8 day ${i} 响应:`, JSON.stringify(response.data))
-          print('getVip8 day ${i} 响应: ${response.data}');
 
-          if (response.data.containsKey('error_msg') && response.data['error_msg'] == '今天次数已用光') {
+          print('getVip8 day ${i} 响应: ${jsonEncode(response.data)}');
+
+          if (response.data.containsKey('error_msg') &&
+              response.data['error_msg'] == '今天次数已用光') {
             return;
           }
         } catch (error) {
@@ -390,48 +402,888 @@ class KuGou implements CloudService{
   }
 
   getData() async {
-    await Future.wait([
-      getPlaylist(),
-      getVip(),
-    ]);
+    await Future.wait([getPlaylist(), getVip()]);
     this.getCollectionList();
   }
 
-  getCollectionList() async {}
+  getCollectionList() async {
+    for (var i in this.playlist) {
+      if (i.name == '我喜欢') {
+        this.collectionListId = i.listId;
+        break;
+      }
+    }
 
-  Future<void> getPlaylist() async {}
+    List<String> music_id = [];
+    List<Music> musics = [];
+    var n = 0;
+    // var url;
+    var timestamp;
+    var response;
+    var isEnd = false;
 
-  getPlaylistMusic(String listId) async {}
+    while (true) {
+      try {
+        timestamp = DateTime.now().millisecondsSinceEpoch;
 
-  getSingerMusic(String singerId) async {}
+        response = await KuGou.dio.get(
+          '/playlist/track/all?id=${this.collectionListId}&pagesize=300&page=${n + 1}&timestamp=${timestamp}',
+          queryParameters: this.params,
+        );
 
-  getAlbumMusic(String albumId) async {}
+        if (response.statusCode != 200 || response.data["status"] != 1) {
+          print('获取歌单歌曲失败: $response.data');
+          return [];
+        }
+        if (response.data['data']['songs'].length == 0) {
+          break;
+        }
 
-  getSingerAlbum(String singerId) async {}
+        var data = response.data['data']['songs'];
 
-  getRecommendMusics(int num) async {}
+        for (var item in data) {
+          var hash = item['hash'];
+          if (hash != null && !music_id.contains(hash)) {
+            collectionList.add(hash);
+          }
+        }
 
-  getRecommendSingers(int num) async {}
+        n++;
+      } catch (error) {
+        print('getCollectionList 异常: $error');
+        break;
+      }
+    }
 
-  getRecommendPlaylists(int num) async {}
+    print('收藏歌曲数量: ${this.collectionList.length}');
+  }
+
+  Future<List<Playlist>> getPlaylist() async {
+    var timestamp = DateTime.now().millisecondsSinceEpoch;
+    // let url: string = `${this.mainUrl}/user/playlist?timestamp=${timestamp}`
+    try {
+      var response = await KuGou.dio.get(
+        '/user/playlist?timestamp=${timestamp}',
+        queryParameters: this.params,
+      );
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌单列表失败: $response.data');
+        return [];
+      }
+
+      List<Playlist> playlists = [];
+
+      var data = response.data['data']['info'];
+
+      // print('歌单列表: ${data}');
+
+      for (var item in data) {
+        playlists.add(
+          Playlist(
+            name: item['name'],
+            listId: item['global_collection_id'],
+            audioCount: item['m_count'],
+            cover: getCover(item['pic']), // getCover 是当前类的方法
+          ),
+        );
+
+        playlist_to_id[item['global_collection_id']] = item['listid']
+            .toString();
+      }
+
+      if (playlists[1].name == '我喜欢') {
+        var a = playlists[0];
+        playlists[0] = playlists[1];
+        playlists[1] = a;
+      }
+
+      this.playlist = playlists;
+
+      this.management.playlists = this.playlist;
+      this.management.refresh();
+
+      return playlists;
+    } catch (error) {
+      print('getPlaylist 异常: $error');
+      return [];
+    }
+  }
+
+  getPlaylistMusic(String listId) async {
+    List<String> music_id = [];
+    List<Music> musics = [];
+    int n = 0;
+    String url;
+    int timestamp;
+    var response;
+    bool isEnd = false;
+
+    while (true) {
+      try {
+        timestamp = DateTime.now().millisecondsSinceEpoch;
+        var response = await KuGou.dio.get(
+          '/playlist/track/all?id=${listId}&pagesize=300&page=${n + 1}&timestamp=${timestamp}',
+          queryParameters: this.params,
+        );
+
+        if (response.statusCode != 200 || response.data["status"] != 1) {
+          print('获取歌单歌曲失败: $response.data');
+        }
+
+        if (response.data['data']['songs'].length == 0) {
+          break;
+        }
+
+        var data = response.data['data']['songs'];
+
+        for (var i in data) {
+          if (!music_id.contains(i['hash']) && i['hash'] != null) {
+            music_id.add(i['hash']);
+          }
+        }
+
+        n++;
+
+        for (var i in this.playlist) {
+          if (i.listId == listId) {
+            isEnd = true;
+            break;
+          }
+        }
+        if (!isEnd) {
+          break;
+        }
+      } catch (error) {
+        print('getPlaylistMusic 异常: $error');
+        break;
+      }
+    }
+    print('歌曲id列表: ${jsonEncode(music_id)}');
+    print('歌曲数量: ${music_id.length}');
+
+    musics = await this.getMusicsDetails(music_id);
+    print('歌曲详情列表: ${jsonEncode(musics)}');
+    print('歌曲数量: ${musics.length}');
+
+    return musics;
+  }
+
+  getSingerMusic(String singerId) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/artist/audios?id=${singerId}&pagesize=200&sort=hot',
+        queryParameters: this.params,
+      );
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌手歌曲列表失败: $response.data');
+        return [];
+      }
+
+      List<Music> musics = [];
+      var data = response.data['data'] as List<dynamic>;
+
+      List<String> ids = data
+          .map<String>((item) => item['hash'].toString())
+          .toList();
+
+      if (ids.length == 0) {
+        print('歌单内没有歌曲');
+        return [];
+      }
+
+      musics = await this.getMusicsDetails(ids);
+
+      print('最终歌曲数量: ${musics.length}');
+      // print('最终歌曲: ${jsonEncode(musics)}');
+
+      return musics;
+    } catch (error) {
+      print('getSingerMusic 异常: ${error}');
+      return [];
+    }
+  }
+
+  getAlbumMusic(String albumId) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/album/songs?id=${albumId}',
+        queryParameters: this.params,
+      );
+
+      // print('获取专辑歌曲列表响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取专辑歌曲列表失败: $response.data');
+        return [];
+      }
+
+      List<Music> musics = [];
+      var data = response.data['data']['songs'];
+
+      List<String> ids = data
+          .map<String>((item) => item['audio_info']['hash'].toString())
+          .toList();
+
+      if (ids.length == 0) {
+        print('歌单内没有歌曲');
+        return [];
+      }
+
+      musics = await this.getMusicsDetails(ids);
+
+      print('最终歌曲数量: ${musics.length}');
+      print('最终歌曲: ${jsonEncode(musics)}');
+
+      return musics;
+    } catch (error) {
+      print('getAlbumMusic 异常: $error');
+      return [];
+    }
+  }
+
+  getSingerAlbum(String singerId) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/artist/albums?id=${singerId}&pagesize=300&sort=hot',
+        queryParameters: this.params,
+      );
+
+      print('获取歌手专辑列表响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌手专辑列表失败: $response.data');
+        return [];
+      }
+
+      List<Album> album = [];
+      var data = response.data['data'];
+
+      for (var i in data) {
+        album.add(
+          Album(
+            album: i['album_name'],
+            albumId: i['album_id'],
+            singer: i['author_name'],
+            cover: this.getCover(i['sizable_cover']),
+            audioCount: 0,
+          ),
+        );
+      }
+
+      print('最终专辑数量: ${album.length}');
+      // print('最终专辑: ${jsonEncode(album)}');
+
+      return album;
+    } catch (error) {
+      print('getSingerAlbum 异常: $error');
+      return [];
+    }
+  }
+
+  getRecommendMusics(int num) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/everyday/recommend',
+        queryParameters: this.params,
+      );
+
+      // print('获取推荐音乐响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取推荐歌曲失败: $response.data');
+        return [];
+      }
+
+      List<Music> musics = [];
+      var data = response.data['data']['song_list'];
+      // console.log('推荐歌曲数量:', JSON.stringify(data.length))
+      print('推荐歌曲数量: ${data.length}');
+      // var shuffled = this.shuffleArray(data.map<String>((item) => item['hash'].toString()).toList());
+      //
+      // num = num > shuffled.length ? shuffled.length : num;
+      //
+      // var targetIds = shuffled.sublist(0, num);
+
+      final result =
+          data.map<String>((item) => item['hash'].toString()).toList()
+            ..shuffle();
+
+      // final targetIds = result.take(num).toList();
+
+      num = num > result.length ? result.length : num;
+      var targetIds = result.sublist(0, num);
+
+      // print('目标歌曲ID: ${targetIds}');
+      musics = await this.getMusicsDetails(targetIds);
+      print('最终推荐歌曲数量: ${musics.length}');
+      // print('最终推荐歌曲: ${musics}');
+
+      return musics;
+    } catch (error) {
+      print('getRecommendMusics 异常: ${error}');
+      return [];
+    }
+  }
+
+  getRecommendSingers(int num) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/artist/lists?hotsize=100',
+        queryParameters: this.params,
+      );
+
+      // print('获取推荐歌手响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取推荐歌手失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Singer> singers = [];
+
+      var data = response.data['data']['info'];
+      print('推荐歌手数量: ${data.length}');
+
+      List<String> ids = [];
+      for (var i in data) {
+        if (i['title'] == '热门') {
+          for (var j in i['singer']) {
+            if (!ids.contains(j['singerid']) && j['singerid'] != null) {
+              ids.add(j['singerid'].toString());
+            }
+          }
+        }
+      }
+      // var shuffled = this.shuffleArray(ids);
+      var shuffled = [...ids]..shuffle();
+      num = num > shuffled.length ? shuffled.length : num;
+      var targetIds = shuffled.sublist(0, num);
+
+      // final targetIds = shuffled.take(num).toList();
+
+      for (var i in data) {
+        if (i['title'] == '热门') {
+          for (var j in i['singer']) {
+            if (targetIds.contains(j['singerid'].toString())) {
+              singers.add(
+                Singer(
+                  singer: j['singername'],
+                  singerId: j['singerid'].toString(),
+                  cover: this.getCover(j['imgurl']),
+                  audioCount: j['songcount'],
+                  albumCount: j['albumcount'],
+                ),
+              );
+            }
+          }
+          break;
+        }
+      }
+
+      print('最终推荐歌手数量: ${singers.length}');
+      // print('最终推荐歌手: ${singers}');
+      return singers;
+    } catch (error) {
+      print('getRecommendSingers 异常: ${error}');
+      return [];
+    }
+  }
+
+  getRecommendPlaylists(int num) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/top/ip',
+        queryParameters: this.params,
+      );
+
+      // print('获取推荐歌单响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取推荐歌单失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Playlist> playlists = [];
+
+      var data = response.data['data']['list'];
+      print('推荐歌单数量: ${data.length}');
+
+      // var shuffled = this.shuffleArray(
+      //   data
+      //       .where((item) => item['extra']?['global_collection_id'] != null)
+      //       .map<String>((item) => item['extra']['global_collection_id'].toString())
+      //       .toList(),
+      // );
+      final shuffled =
+          data
+              .where((item) => item['extra']?['global_collection_id'] != null)
+              .map((item) => item['extra']['global_collection_id'].toString())
+              .toList()
+            ..shuffle();
+
+      num = num > shuffled.length ? shuffled.length : num;
+      var targetIds = shuffled.sublist(0, num);
+
+      // final targetIds = shuffled.take(num).toList();
+
+      for (var i in data) {
+        // print('当前处理的歌单: ${i}');
+        if (targetIds.contains(i['extra']['global_collection_id'])) {
+          playlists.add(
+            Playlist(
+              name: i['title'],
+              listId: i['extra']['global_collection_id'],
+              audioCount: i['extra']['play_count'],
+              cover: this.getCover(i['image_url']),
+            ),
+          );
+        }
+      }
+
+      print('最终推荐歌单数量: ${playlists.length}');
+      // print('最终推荐歌单: ${playlists}');
+
+      return playlists;
+    } catch (error) {
+      print('getRecommendPlaylists 异常: ${error}');
+      return [];
+    }
+  }
 
   getRecommendAlbum(int num) async {}
 
-  search(String keyword) async {}
+  search(String keyword) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/search/complex',
+        queryParameters: {'keywords': keyword, ...this.params},
+      );
 
-  getMusicUrl(String musicId, {String bitrate = '128'}) async {}
+      // print('搜索响应: ${jsonEncode(response.data)}');
 
-  getAlbumAudioId(List<String> albumAudioIds) async {}
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取搜索结果失败: ${jsonEncode(response.data)}');
+        return [];
+      }
 
-  getMusicsDetails(List<String> musicIds) async {}
+      List<Music> musics = [];
+      List<String> musicIds = [];
+      List<Singer> singers = [];
+      List<Album> albums = [];
 
-  getSingerDetails(String singerId) async {}
+      var data = response.data['data']['lists'];
 
-  getAlbumDetails(String albumId) async {}
+      for (var i in data) {
+        if (i['type'] == 'song') {
+          for (var j in i['lists']) {
+            if (j['FileHash'] != null) {
+              musicIds.add(j['FileHash']);
+            }
+          }
+        } else if (i['type'] == 'author') {
+          for (var j in i['lists']) {
+            singers.add(
+              Singer(
+                singer: j['AuthorName'],
+                singerId: j['AuthorId'],
+                cover: this.getCover(j['Avatar']),
+                audioCount: j['AudioCount'],
+                albumCount: j['AlbumCount'],
+              ),
+            );
+          }
+        } else if (i['type'] == 'album') {
+          for (var j in i['lists']) {
+            albums.add(
+              Album(
+                album: j['albumname'],
+                albumId: j['albumid'],
+                singer: j['singer'],
+                cover: this.getCover(j['img']),
+                audioCount: 0,
+              ),
+            );
+          }
+        }
+      }
 
-  getPlaylistDetails(String listId) async {}
+      // if (!this.management){
+      // print('playlistManagement 未初始化');
+      // return [];
+      // }
 
-  getLyric(String musicId) async {}
+      this.management.searchList.singer = singers;
+      this.management.searchList.album = albums;
+
+      musics = await this.getMusicsDetails(musicIds);
+      this.management.searchList.music = musics;
+    } catch (error) {
+      print('search 异常: ${error}');
+      return [];
+    }
+  }
+
+  getMusicUrl(String musicId, {String bitrate = '128'}) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/song/url?hash=${musicId}&quality=${bitrate}',
+        queryParameters: this.params,
+      );
+
+      // print('获取歌曲播放链接响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌曲播放链接失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      var musicUrl = response.data['url'][0];
+
+      return musicUrl;
+    } catch (error) {
+      print('getMusicUrl 异常: ${error}');
+      print(
+        '获取歌曲播放链接失败url: ${this.mainUrl}/song/url?hash=${musicId}&quality=${bitrate}',
+      );
+      print('获取歌曲播放链接失败id: ${musicId}');
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAlbumAudioId(
+    List<String> albumAudioIds,
+  ) async {
+    if (albumAudioIds.length == 0) {
+      return [];
+    }
+
+    var id = '';
+    for (var i in albumAudioIds) {
+      if (i == null || i == '') {
+        continue;
+      }
+
+      if (id != '') {
+        id += ',';
+      }
+      id += i;
+    }
+
+    try {
+      var response = await KuGou.dio.get(
+        '/krm/audio?album_audio_id=${id}&fields=album_info,base,authors.base',
+        queryParameters: this.params,
+      );
+      print('获取推荐歌单响应: ${jsonEncode(response.data)}');
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌手专辑id失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      var data = response.data['data'];
+      // print('获取歌手专辑id列表: ${data}');
+
+      var albumAudioIds = <Map<String, dynamic>>[];
+
+      for (var i in data) {
+        albumAudioIds.add({
+          'albumId': i['base']['album_id'],
+          'singerId': i['authors'][0]['base']['author_id'],
+          'albumAudioId': i['base']['album_audio_id'],
+        });
+      }
+
+      return albumAudioIds;
+    } catch (error) {
+      print('getAlbumAudioId 异常: ${error}');
+      return [];
+    }
+  }
+
+  getMusicsDetails(List<String> musicIds) async {
+    if (musicIds.length == 0) {
+      return [];
+    }
+
+    var id = '';
+    for (var i in musicIds) {
+      if (i == null || i == '') {
+        continue;
+      }
+      if (id != '') {
+        id += ',';
+      }
+      id += i;
+    }
+
+    try {
+      var response = await KuGou.dio.get(
+        '/privilege/lite?hash=${id}',
+        queryParameters: this.params,
+      );
+
+      // print('获取歌曲详情响应: ${jsonEncode(response.data)}');
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌曲详情失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Music> musics = [];
+
+      var data = response.data['data'];
+
+      var name = '', singer = '', album = '', cover = '';
+
+      var musicData = [];
+
+      for (var i in data) {
+        if (i['albumname'] != null) {
+          album = i['albumname'];
+        } else {
+          album = '';
+        }
+
+        if (i['name'].contains(' - ')) {
+          var arr = i['name'].split(' - ');
+          name = arr[1];
+          singer = arr[0];
+        } else {
+          name = i['name'];
+          singer = i['singername'];
+        }
+
+        if (i['info'] != null && i['info']['image'] != null) {
+          cover = i['info']['image'];
+        } else {
+          if (i['trans_param'] != null &&
+              i['trans_param']['union_cover'] != null) {
+            cover = i['trans_param']['union_cover'];
+          } else {
+            cover = '';
+          }
+        }
+
+        musicData.add({
+          'name': name,
+          'id': i['hash'],
+          'singer': singer,
+          'album': album,
+          'time': i['info']['duration'],
+          'cover': this.getCover(cover),
+          'albumAudioId': i['album_audio_id'],
+        });
+      }
+
+      var albumAudioIds = musicData
+          .map((item) => item['albumAudioId'])
+          .whereType<String>()
+          .toList();
+
+      var AlbumAudioIdsList = <List<String>>[];
+
+      var num = (albumAudioIds.length / 50).ceil();
+      for (var i = 0; i < num; i++) {
+        var start = i * 50;
+        var end = (i + 1) * 50;
+        var slice = albumAudioIds.sublist(
+          start,
+          end > albumAudioIds.length ? albumAudioIds.length : end,
+        );
+        AlbumAudioIdsList.add(slice);
+      }
+
+      var results = await Future.wait<List<Map<String, dynamic>>>(
+        AlbumAudioIdsList.map((ids) => this.getAlbumAudioId(ids)),
+      );
+
+      // var albumAudioIdDat = results.reduce((acc, val) => acc.concat(val), []);
+      List<Map<String, dynamic>> albumAudioIdData = results
+          .expand<Map<String, dynamic>>((list) => list)
+          .toList();
+
+      musics = musicData.map((item) {
+        Map<String, dynamic>? albumAudioIdInfo;
+
+        for (final info in albumAudioIdData) {
+          if (info['albumAudioId'] == item['albumAudioId']) {
+            albumAudioIdInfo = info;
+            break;
+          }
+        }
+
+        return Music(
+          name: item['name'],
+          id: item['id'],
+          singer: item['singer'],
+          singerId: albumAudioIdInfo?['singerId'] ?? '',
+          album: item['album'],
+          albumId: albumAudioIdInfo?['albumId'] ?? '',
+          time: item['time'],
+          cover: item['cover'],
+        );
+      }).toList();
+
+      print('获取歌曲详情列表: ${musics}');
+      return musics;
+    } catch (error) {
+      print('getMusicsDetails 异常: $error');
+      print('获取歌曲详情失败id: $musicIds');
+      return [];
+    }
+  }
+
+  getSingerDetails(String singerId) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/artist/detail?id=${singerId}',
+        queryParameters: this.params,
+      );
+
+      // print('获取歌手详情响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌手详情失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      var data = response.data['data'];
+
+      Singer singer = Singer(
+        singer: data['author_name'],
+        singerId: data['author_id'],
+        cover: this.getCover(data['sizable_avatar']),
+        audioCount: data['song_count'],
+        albumCount: data['album_count'],
+      );
+
+      return singer;
+    } catch (error) {
+      print('getSingerDetails 异常: $error');
+      return false;
+    }
+  }
+
+  getAlbumDetails(String albumId) async {
+    try {
+      var response = await KuGou.dio.get(
+        '/album?album_id=${albumId}',
+        queryParameters: this.params,
+      );
+
+      // print('获取专辑详情响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取专辑详情失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      var data = response.data['data'][0];
+
+      Album album = Album(
+        album: data['album_name'],
+        albumId: data['album_id'],
+        singer: data['author_name'],
+        cover: this.getCover(data['sizable_cover']),
+        audioCount: 0,
+      );
+
+      return album;
+    } catch (error) {
+      print('getAlbumDetails 异常: $error');
+      return false;
+    }
+  }
+
+  getPlaylistDetails(String listId) async {
+    var timestamp = DateTime.now().millisecondsSinceEpoch;
+    try {
+      var response = await KuGou.dio.get(
+        '/playlist/detail?ids=${listId}&timestamp=${timestamp}',
+        queryParameters: this.params,
+      );
+
+      // print('获取歌单详情响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌单详情失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      var data = response.data['data'][0];
+
+      Playlist playlist = Playlist(
+        name: data['name'],
+        listId: data['global_collection_id'],
+        audioCount: data['count'],
+        cover: this.getCover(data['pic']),
+      );
+
+      return playlist;
+    } catch (error) {
+      print('getPlaylistDetails 异常: $error');
+      return false;
+    }
+  }
+
+  getLyric(String musicId) async {
+    var data;
+    try {
+      var response = await KuGou.dio.get(
+        '/search/lyric?hash=${musicId}',
+        queryParameters: this.params,
+      );
+
+      // print('获取歌曲歌词信息响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌曲歌词信息失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      data = response.data['candidates'][0];
+    } catch (error) {
+      print('getLyricData 异常: $error');
+      return false;
+    }
+
+    try {
+      // let url: string = `${this.mainUrl}/lyric?id=${data.id}&accesskey=${data.accesskey}&fmt=krc&decode=true`
+
+      // let response: AxiosResponse = await axios.get(url, {
+      // params: this.params
+      // })
+
+      // if (response.status !== 200 || response.data.status !== 200) {
+      // console.log('获取歌曲歌词失败:', response.data)
+      // return false
+      // }
+      var response = await KuGou.dio.get(
+        '/lyric?id=${data.id}&accesskey=${data.accesskey}&fmt=krc&decode=true',
+        queryParameters: this.params,
+      );
+
+      // print('获取歌曲歌词响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌曲歌词失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      String lyric = response.data['decodeContent'] as String;
+      // String krc = response.data['decodeContent'] as String;
+      // print('获取歌词:', lyric)
+
+      lyric = processLyric(lyric);
+      // String lyric = krcToLrc(krc);
+
+      return lyric;
+    } catch (error) {
+      print('getLyric 异常: $error');
+      return false;
+    }
+  }
 
   getLikeStatus(String musicId) async {}
 
@@ -451,7 +1303,30 @@ class KuGou implements CloudService{
 
   getMusiInPlaylistFileid(String listId, String musicId) async {}
 
-  processLyric(String lrcContent) {}
+  processLyric(String lrcContent) {
+    if (lrcContent.isEmpty) return '';
+
+    return lrcContent
+        .split('\n')
+        .where((line) {
+          final trimmed = line.trim();
+
+          // 只保留包含时间标签 [00:00.000] 的行
+          // 自动排除 [id:], [ar:], [ti:], [by:] 等元数据
+          return RegExp(r'\[\d{2}:\d{2}\.\d{2,3}\]').hasMatch(trimmed);
+        })
+        .map((line) {
+          // 标准化格式：
+          // [00:01.23] -> 这里保持原样
+          // [00:01.234] -> 这里也保持原样
+          return line.replaceAllMapped(
+            RegExp(r'\[(\d{2}):(\d{2})\.(\d{3})\]'),
+            (match) =>
+                '[${match.group(1)}:${match.group(2)}.${match.group(3)}]',
+          );
+        })
+        .join('\n');
+  }
 
   getCover(String coverUrl, {String size = '500'}) {
     String url = coverUrl;

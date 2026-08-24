@@ -1,4 +1,10 @@
+import 'package:chocolate_music/Type.dart';
+
 abstract class CloudService {
+  late List<Playlist> playlist = [];
+  late List<String> collectionList = [];
+  late String collectionListId = '';
+
   login() async {}
 
   updateAccountData() async {}

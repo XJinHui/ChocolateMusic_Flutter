@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/Management.dart';
+import 'package:chocolate_music/components/RemoteImage.dart';
 
 class PlaybackControlBar extends StatefulWidget {
   final Management management = Management();
+
   @override
   State<PlaybackControlBar> createState() => _PlaybackControlBarState();
 }
@@ -48,14 +50,21 @@ class _PlaybackControlBarState extends State<PlaybackControlBar> {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      // 处理喜欢按钮点击事件
-                    },
-                    child: Icon(
-                      BootstrapIcons.heart_fill,
-                      color: AppColors.likeIconColor,
-                      size: 20,
-                    ),
+                      onTap: () {
+                        // 处理喜欢按钮点击事件
+                      },
+                      child: widget.management.account.type != '' && widget.management.cloud.collectionList.contains(
+                          widget.management.setting.id)
+                          ? Icon(
+                        BootstrapIcons.heart_fill,
+                        color: AppColors.likeIconColor,
+                        size: 20,
+                      )
+                          : Icon(
+                        BootstrapIcons.heart,
+                        color: AppColors.buttonIcon,
+                        size: 20,
+                      ),
                   ),
 
                   SizedBox(width: 15),
@@ -82,9 +91,13 @@ class MusicData extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
-          child: Image.network(
+          child: RemoteImage(
             // widget.cover,
             management.setting.cover,
+            headers: const {
+              'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+            },
             width: 70,
             height: 70,
             fit: BoxFit.cover,
@@ -158,16 +171,7 @@ class _PlaybackControlButtonState extends State<PlaybackControlButton> {
       children: [
         GestureDetector(
           onTap: () {
-            // TODO: 切换播放模式
-            if (management.setting.playType == 0) {
-              management.setting.playType = 1;
-            } else if (management.setting.playType == 1) {
-              management.setting.playType = 2;
-            } else {
-              management.setting.playType = 0;
-            }
-
-            setState(() {});
+            management.updatePlayType();
           },
           child: Icon(
             sequence[management.setting.playType],
@@ -326,6 +330,7 @@ class _VolumeControlState extends State<VolumeControl> {
           onTap: () {
             // TODO: 实现静音/取消静音功能
             management.setting.volumeType = !management.setting.volumeType;
+            management.updateSetting();
             setState(() {});
           },
           child: Icon(
@@ -365,6 +370,8 @@ class _VolumeControlState extends State<VolumeControl> {
                     management.setting.volumeType = true;
                   }
                 });
+                // 音量拖动过程中只刷新界面，避免每个滑块事件都触发磁盘写入。
+                management.refresh();
 
                 print('音量调整到: $value'); // TODO: 实现音量调整功能
               },

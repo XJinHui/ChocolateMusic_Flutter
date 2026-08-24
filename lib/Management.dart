@@ -84,9 +84,18 @@ class Management extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 通知所有依赖 Management 的页面重新读取共享状态。
+  ///
+  /// Management 中的模型目前仍是可变对象（例如 setting.play、
+  /// recommendList.music），这些嵌套字段不会经过 Dart 的 setter，
+  /// 因此所有完成状态写入的入口都应调用这个方法。
+  void refresh() {
+    notifyListeners();
+  }
+
   factory Management() => _instance;
 
-  init() async {
+  Future<void> init() async {
     await fileManage.init();
 
     if (await fileManage.checkFile('data/setting.json')) {
@@ -110,7 +119,7 @@ class Management extends ChangeNotifier {
 
     this.setting.play = false;
 
-    if (this.accountData.login[0] != -1){
+    if (this.accountData.login[0] != -1) {
       var status = await this.login();
       if (status) {
         this.updateAccount();
@@ -131,11 +140,13 @@ class Management extends ChangeNotifier {
     }
 
     updateAccount();
+    refresh();
   }
 
-  initDisplay(){
+  void initDisplay() {
     this.accountData.login = [-1, -1];
-    this.account = Account(cover: '', nickname: '', type: ''); ;
+    this.account = Account(cover: '', nickname: '', type: '');
+    ;
     var setting = Setting(
       name: '',
       singer: '',
@@ -155,11 +166,12 @@ class Management extends ChangeNotifier {
       qualityTier: 0,
       downloadQualityTier: 0,
     );
-    this.fileManage.writeSetting(setting);
+    this.setting = setting;
+    this.fileManage.writeSetting(this.setting);
+    refresh();
   }
 
   switchLogin(int type, int index) async {
-    print('$type  $index');
     if (type < 0 ||
         type >= this.accountData.data.length ||
         index < 0 ||
@@ -204,16 +216,13 @@ class Management extends ChangeNotifier {
   }
 
   login() async {
-    if (this.accountData.login[0] == 0){
+    if (this.accountData.login[0] == 0) {
       this.cloud = KuGouCloud;
-    }
-    else if (this.accountData.login[0] == 1){
+    } else if (this.accountData.login[0] == 1) {
+      this.cloud = NeteasecloudCloud;
+    } else if (this.accountData.login[0] == 2) {
       this.cloud = NavidromeCloud;
-    }
-    else if (this.accountData.login[0] == 2){
-      this.cloud = NavidromeCloud;
-    }
-    else {
+    } else {
       print('登录类型异常，无法切换账户');
       return false;
     }
@@ -257,20 +266,23 @@ class Management extends ChangeNotifier {
     notifyListeners();
   }
 
-  deleteAccount(int type, int index){
-    if (this.accountData.login[0] == type && this.accountData.login[1] == index){
+  deleteAccount(int type, int index) {
+    if (this.accountData.login[0] == type &&
+        this.accountData.login[1] == index) {
       this.accountData.login = [-1, -1];
       this.playlists = [];
       this.accountData.data[type].removeAt(index);
       this.closePlayMusic();
       this.updateAccountData();
-      this.account = Account(cover: '', nickname: '', type: '');;
+      this.account = Account(cover: '', nickname: '', type: '');
+      ;
       this.recommendList = new RecommendList();
       this.updateRecommendListDate();
       print('已删除当前登录账户，已退出登录');
     } else {
       this.accountData.data[type].removeAt(index);
-      if (this.accountData.login[0] == type && this.accountData.login[1] > index){
+      if (this.accountData.login[0] == type &&
+          this.accountData.login[1] > index) {
         this.accountData.login[1] -= 1;
         this.updateAccountData();
         print('已删除账户，已更新登录状态');
@@ -279,6 +291,7 @@ class Management extends ChangeNotifier {
         print('已删除账户');
       }
     }
+    refresh();
   }
 
   createrRecommend({type = 0}) async {
@@ -287,11 +300,102 @@ class Management extends ChangeNotifier {
       this.recommendList = RecommendList();
     }
 
-    // await Promise.all([
-    // this.createrRecommendMusics(type),
-    // this.createrRecommendSingers(type),
-    // (this.accountData.login[0] === 2 ? this.createrRecommendAlbums(type) : this.createrRecommendPlaylists(type))
-    // ])
+    await Future.wait([
+      createrRecommendMusics(type: type),
+      createrRecommendSingers(type: type),
+      accountData.login[0] == 2
+          ? createrRecommendAlbums(type: type)
+          : createrRecommendPlaylists(type: type),
+    ]);
+
+    refresh();
+  }
+
+  Future<void> createrRecommendMusics({type = 0}) async {
+    //生成推荐音乐列表
+    this.recommendList.music = await this.cloud.getRecommendMusics(12);
+    // print('生成推荐歌曲列表: ${this.recommendList.music}');
+
+    if (this.setting.playlistId == '' && this.recommendList.music.length > 0) {
+      if (this.playMusicList.length == 0) {
+        this.playMusicList = List.from(this.recommendList.music);
+        this.currentPlayMusicList = List.from(this.recommendList.music);
+      } else {
+        for (var i in this.recommendList.music) {
+          if (!this.playMusicList.any((item) => item.id == i.id)) {
+            this.playMusicList.add(i);
+          }
+          if (!this.currentPlayMusicList.any((item) => item.id == i.id)) {
+            this.currentPlayMusicList.add(i);
+          }
+        }
+      }
+
+      this.getPlayList();
+    }
+  }
+
+  Future<void> createrRecommendSingers({type = 0}) async {
+    if (this.accountData.login[0] == -1) {
+      return;
+    }
+    //生成推荐歌手列表
+    if (type == 1 ||
+        this.recommendListDate[this.accountData.login[0]].singer.length == 0) {
+      this.recommendList.singer = await this.cloud.getRecommendSingers(12);
+      // print('生成推荐歌手列表: ${this.recommendList.singer}');
+
+      this.updateRecommendListDate();
+    } else {
+      this.recommendList.singer =
+          this.recommendListDate[this.accountData.login[0]].singer;
+      // print('读取推荐歌手列表: ${this.recommendList.singer}');
+    }
+  }
+
+  Future<void> createrRecommendAlbums({type = 0}) async {
+    if (this.accountData.login[0] == -1) {
+      return;
+    }
+    //生成推荐专辑列表
+    if (type == 1 ||
+        this.recommendListDate[this.accountData.login[0]].album.length == 0) {
+      this.recommendList.album = await this.cloud.getRecommendAlbum(12);
+      // print('生成推荐专辑列表: ${this.recommendList.album}');
+
+      this.updateRecommendListDate();
+    } else {
+      this.recommendList.album =
+          this.recommendListDate[this.accountData.login[0]].album;
+      // print('读取推荐专辑列表: ${this.recommendList.album}');
+    }
+  }
+
+  Future<void> createrRecommendPlaylists({type = 0}) async {
+    if (this.accountData.login[0] == -1) {
+      return;
+    }
+    //生成推荐歌单列表
+    if (type == 1 ||
+        this.recommendListDate[this.accountData.login[0]].playlist.length ==
+            0) {
+      this.recommendList.playlist = await this.cloud.getRecommendPlaylists(12);
+      // print('生成推荐歌单列表: ${this.recommendList.playlist}');
+      this.updateRecommendListDate();
+    } else {
+      this.recommendList.playlist =
+          this.recommendListDate[this.accountData.login[0]].playlist;
+      // print('读取推荐歌单列表: ${this.recommendList.playlist}');
+    }
+  }
+
+  getPlayList() {
+    if (this.setting.playType != 1) {
+      // this.playMusicControl.playMusicList = this.playMusicList.slice();
+    } else {
+      // this.playMusicControl.playMusicList = shuffleArray(this.playMusicList.slice());
+    }
+    // this.currentPlayMusicList = this.playMusicList.slice();
   }
 
   getVerificationCode(String mobile, String url, String type) async {
@@ -392,7 +496,7 @@ class Management extends ChangeNotifier {
     }
   }
 
-  closePlayMusic(){
+  closePlayMusic() {
     this.playMusicList = [];
     // this.playMusicControl.playMusicList = [];
     this.currentPlayMusicList = [];
@@ -418,6 +522,7 @@ class Management extends ChangeNotifier {
     this.updateSetting();
     this.searchKeyword = '';
     this.searchList = new RecommendList();
+    refresh();
   }
 
   judgeLoginStatus() {
@@ -437,18 +542,21 @@ class Management extends ChangeNotifier {
       this.setting.playType = 0;
     }
     this.updateSetting();
+    refresh();
     // this.getPlayList()
     // this.playMusicControl.updateLoopMode()
   }
 
   updateAccountData() async {
     // 更新账户数据
+    refresh();
     await this.fileManage.writeAccountData(this.accountData);
     print('账户数据更新成功');
   }
 
   updateRecommendListDate() async {
     // 更新推荐列表数据
+    refresh();
     if (this.accountData.login[0] == -1) {
       print('未登录，无法更新推荐列表数据');
       return;
@@ -461,6 +569,7 @@ class Management extends ChangeNotifier {
 
   updateSetting() async {
     // 更新设置
+    refresh();
     await this.fileManage.writeSetting(this.setting);
     print('设置更新成功');
   }

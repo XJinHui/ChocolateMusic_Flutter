@@ -3,6 +3,7 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/components/MusicComponents.dart';
+import 'package:chocolate_music/components/RemoteImage.dart';
 
 import 'package:chocolate_music/Type.dart';
 
@@ -110,9 +111,13 @@ class _PlaylistDateState extends State<PlaylistDate> {
         ClipRRect(
           borderRadius: BorderRadius.circular(widget.currentHeight / 5),
           // 根据需要设置圆角大小
-          child: Image.network(
+          child: RemoteImage(
             // widget.cover,
             (widget.management.displayList as Playlist).cover,
+            headers: const {
+              'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+            },
             width: widget.currentHeight,
             height: widget.currentHeight,
             fit: BoxFit.cover,

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/Cloud/CloudService.dart';
@@ -44,21 +46,17 @@ class Neteasecloud implements CloudService {
         options: Options(headers: {'Cookie': this.cookies}),
       );
 
-      if (response.statusCode != 200 || response.data["code"] != 200) {
-        print('登录状态检查失败: ${response.data}');
+      if (response.statusCode != 200 || response.data['data']["code"] != 200) {
+        print('登录状态检查失败: ${jsonEncode(response.data)}');
         // this.playlistManagement.logining = 2
 
         return false;
       }
 
-      print('登录状态检查响应: ${response.data}');
+      print('登录状态检查响应: ${jsonEncode(response.data)}');
       await this.getData();
-      // this.playlistManagement.logining = 1
-      // this.playlistManagement.isShowSettings = false
     } catch (error) {
       print('login 异常: ${error}');
-      // this.playlistManagement.logining = 2
-
       return false;
     }
 
@@ -96,7 +94,7 @@ class Neteasecloud implements CloudService {
       );
 
       if (response.statusCode != 200 || response.data["code"] != 200) {
-        print('获取二维码key失败: ${response.data}');
+        print('获取二维码key失败: ${jsonEncode(response.data)}');
         return '';
       }
 
@@ -107,7 +105,7 @@ class Neteasecloud implements CloudService {
       );
 
       if (response.statusCode != 200 || response.data["code"] != 200) {
-        print('获取二维码失败: ${response.data}');
+        print('获取二维码失败: ${jsonEncode(response.data)}');
         return '';
       }
 
@@ -145,7 +143,7 @@ class Neteasecloud implements CloudService {
 
       var cookies = this.extractCookieString(rawCookies);
       // print('登录成功，获取到cookie: $cookies');
-      print('登录成功: ${response.data}');
+      print('登录成功: ${jsonEncode(response.data)}');
       this.userData = NetEaseCloudData(
         cookies: cookies,
         loginType: 1,
@@ -217,7 +215,7 @@ class Neteasecloud implements CloudService {
       '/user/account',
       options: Options(headers: {'Cookie': cookies}),
     );
-    print('获取到用户信息: ${response.data}');
+    print('获取到用户信息: ${jsonEncode(response.data)}');
 
     this.userData = NetEaseCloudData(
       cookies: cookies,
@@ -256,12 +254,12 @@ class Neteasecloud implements CloudService {
       );
 
       if (response.statusCode != 200 || response.data["code"] != 200) {
-        print('cookie刷新失败 ${response.data}');
+        print('cookie刷新失败 ${jsonEncode(response.data)}');
         return false;
       }
 
       // console.log('cookie刷新响应:', JSON.stringify(response.data))
-      print('cookie刷新响应: ${response.data}');
+      print('cookie刷新响应: ${jsonEncode(response.data)}');
 
       var rawCookies = response.data['cookie'];
       if (rawCookies == '') {
@@ -276,16 +274,14 @@ class Neteasecloud implements CloudService {
       this.management.updateAccountData();
 
       return true;
-    } catch (error){
+    } catch (error) {
       print('refreshToken 异常: ${error}');
       return false;
     }
   }
 
   Future<void> getVipCookie() async {
-    final List<NetEaseCloudData> accounts = this
-        .accountData
-        .data[1]
+    final List<NetEaseCloudData> accounts = this.accountData.data[1]
         .whereType<NetEaseCloudData>()
         .toList();
     final List<bool> results = await Future.wait<bool>(
@@ -301,7 +297,7 @@ class Neteasecloud implements CloudService {
     }
   }
 
-  getVipInfo(String userId) async {
+  Future<bool> getVipInfo(String userId) async {
     try {
       var response = await Neteasecloud.dio.get(
         '/vip/info?uid=${userId}',
@@ -309,14 +305,14 @@ class Neteasecloud implements CloudService {
       );
 
       if (response.statusCode != 200 || response.data["code"] != 200) {
-        print('获取VIP信息失败: ${response.data}');
+        print('获取VIP信息失败: ${jsonEncode(response.data)}');
         return false;
       }
 
-    if (response.data['data']['redVipAnnualCount'] == -1){
-      print('用户不是VIP');
-      return false;
-    }
+      if (response.data['data']['redVipAnnualCount'] == -1) {
+        print('用户不是VIP');
+        return false;
+      }
 
       return true;
     } catch (error) {
@@ -326,61 +322,841 @@ class Neteasecloud implements CloudService {
   }
 
   getData() async {
-    if (this.vipCookies == ''){
-      await Future.wait([
-        this.getVipCookie(),
-        this.getPlaylist()
-      ]);
+    if (this.vipCookies == '' && this.accountData.data[1].length > 1) {
+      await Future.wait([this.getVipCookie(), this.getPlaylist()]);
     } else {
       await this.getPlaylist();
+      this.getVipCookie();
     }
 
     this.getCollectionList();
   }
 
-  getCollectionList() async {}
+  getCollectionList() async {
+    for (var i in this.playlist) {
+      if (i.name == '我喜欢') {
+        this.collectionListId = i.listId;
+        break;
+      }
+    }
 
-  Future<void> getPlaylist() async {}
+    var timestamp = DateTime.now().millisecondsSinceEpoch;
 
-  getPlaylistMusic(String listId) async {}
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/playlist/track/all?id=${this.collectionListId}&timestamp=${timestamp}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
 
-  getSingerMusic(String singerId) async {}
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取收藏歌单列表失败: ${jsonEncode(response.data)}');
+        return;
+      }
 
-  getSingerAllMusic(String singerId) async {}
+      var data = response.data['songs'];
 
-  getAlbumMusic(String albumId) async {}
+      for (var item in data) {
+        var id = item['id'].toString(); // 从 Map 中获取 id
+        if (id != null && !this.collectionList.contains(id)) {
+          this.collectionList.add(id);
+        }
+      }
 
-  getSingerAlbum(String singerId) async {}
+      print('收藏歌曲数量: ${this.collectionList.length}');
+    } catch (error) {
+      print('getCollectionList 异常: ${error}');
+    }
+  }
 
-  getRecommendMusics(int num) async {}
+  Future<List<Playlist>> getPlaylist() async {
+    var timestamp = DateTime.now().millisecondsSinceEpoch;
+    // let url: string = `${this.mainUrl}/user/playlist?uid=${this.userData?.userid}&limit=300&timestamp=${timestamp}`
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/user/playlist?uid=${this.userData.userid}&limit=300&timestamp=${timestamp}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
 
-  getRecommendSingers(int num) async {}
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取歌单列表失败: ${jsonEncode(response.data)}');
+        return [];
+      }
 
-  getRecommendPlaylists(int num) async {}
+      List<Playlist> playlists = [];
+
+      var data = response.data['playlist'];
+      // print('歌单数量: ${data.length}');
+      // print('歌单列表: ${data}');
+
+      var name;
+      for (var i in data) {
+        if (i['name'] == this.userData.nickname + '喜欢的音乐') {
+          name = '我喜欢';
+        } else {
+          name = i['name'];
+        }
+
+        playlists.add(
+          Playlist(
+            name: name,
+            listId: i['id'].toString(),
+            audioCount: i['trackCount'],
+            cover: this.getCover(i['coverImgUrl']),
+          ),
+        );
+      }
+
+      this.playlist = playlists;
+      this.management.playlists = this.playlist;
+
+      return playlists;
+    } catch (error) {
+      print('getPlaylist 异常: ${error}');
+      return [];
+    }
+  }
+
+  getPlaylistMusic(String listId) async {
+    var timestamp = 0;
+
+    for (var i in this.playlist) {
+      if (i.listId == listId) {
+        timestamp = DateTime.now().millisecondsSinceEpoch;
+        break;
+      }
+    }
+
+    var url =
+        '${this.mainUrl}/playlist/track/all?id=${listId}&timestamp=${timestamp}';
+
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/playlist/track/all?id=${listId}&timestamp=${timestamp}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取歌单列表失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Music> musics = [];
+      var data = response.data['songs'];
+
+      List<String> ids = data
+          .map<String>((item) => item['id'].toString())
+          .toList();
+
+      if (ids.length == 0) {
+        print('歌单内没有歌曲');
+        return [];
+      }
+
+      musics = await this.getMusicsDetails(ids) as List<Music>;
+
+      print('最终歌曲数量: ${musics.length}');
+      // print('最终歌曲: ${musics}');
+
+      return musics;
+    } catch (error) {
+      print('getPlaylistMusic 异常: ${error}');
+      return [];
+    }
+  }
+
+  getSingerMusic(String singerId) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/artist/songs?id=${singerId}&limit=200',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取歌手列表失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Music> musics = [];
+      var data = response.data['songs'];
+
+      List<String> ids = data
+          .map<String>((item) => item['id'].toString())
+          .toList();
+
+      if (ids.length == 0) {
+        print('歌单内没有歌曲');
+        return [];
+      }
+
+      musics = await this.getMusicsDetails(ids);
+
+      print('最终歌曲数量: ${musics.length}');
+      // print('最终歌曲: ${musics}');
+
+      return musics;
+    } catch (error) {
+      print('getSingerMusic 异常: ${error}');
+      return [];
+    }
+  }
+
+  getSingerAllMusic(String singerId) async {
+    var num = 200;
+    var offset = 0;
+    List<String> musicIds = [];
+    // var url = '${this.mainUrl}/artist/songs?id=${singerId}&limit=${num}&offset=${offset}';
+
+    while (true) {
+      try {
+        var response = await Neteasecloud.dio.get(
+          '/artist/songs?id=${singerId}&limit=${num}&offset=${offset}',
+          options: Options(headers: {'Cookie': this.cookies}),
+        );
+
+        offset += 200;
+
+        if (response.statusCode != 200 || response.data['code'] != 200) {
+          print('获取歌手歌单列表失败: ${jsonEncode(response.data)}');
+        }
+
+        if (response.data['songs'].length == 0) {
+          break;
+        }
+
+        var data = response.data['songs'];
+
+        var ids = data.map<String>((item) => item['id'].toString()).toList();
+
+        musicIds = musicIds + ids;
+        print('当前已获取歌曲ID: ${musicIds}');
+      } catch (error) {
+        print('getSingerAllMusic 异常: ${error}');
+      }
+    }
+
+    List<Music> musics = await this.getMusicsDetails(musicIds);
+
+    print('最终歌曲数量: ${musics.length}');
+    print('最终歌曲: ${musics}');
+
+    return musics;
+  }
+
+  getAlbumMusic(String albumId) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/album?id=${albumId}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取专辑列表失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Music> musics = [];
+      var data = response.data['songs'];
+
+      List<String> ids = data
+          .map<String>((item) => item['id'].toString())
+          .toList();
+
+      if (ids.length == 0) {
+        print('歌单内没有歌曲');
+        return [];
+      }
+
+      musics = await this.getMusicsDetails(ids);
+
+      print('最终歌曲数量: ${musics.length}');
+      print('最终歌曲: ${musics}');
+
+      return musics;
+    } catch (error) {
+      print('getAlbumMusic 异常: ${error}');
+      return [];
+    }
+  }
+
+  getSingerAlbum(String singerId) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/artist/album?id=${singerId}&limit=300',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取歌手专辑失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Album> albums = [];
+
+      var data = response.data['hotAlbums'];
+      print('歌手专辑数量: ${data.length}');
+      // print('歌手专辑列表: ${data}');
+
+      var singer = response.data['artist']['name'];
+
+      for (var i in data) {
+        albums.add(
+          Album(
+            album: i['name'],
+            albumId: i['id'].toString(),
+            singer: singer,
+            cover: this.getCover(i['picUrl']),
+            audioCount: i['size'],
+          ),
+        );
+      }
+
+      print('最终歌手专辑数量: ${albums.length}');
+      // print('最终歌手专辑: ${albums}');
+      return albums;
+    } catch (error) {
+      print('getSingerAlbum 异常: ${error}');
+      return [];
+    }
+  }
+
+  getRecommendMusics(int num) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/recommend/songs',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取推荐音乐响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取推荐歌曲失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Music> musics = [];
+      var data = response.data['data']['dailySongs'];
+      print('推荐歌曲数量: ${data.length}');
+
+      // var shuffled = this.shuffleArray(data.map((item) => item['id']).toList());
+      var shuffled = data.map<String>((item) => item['id'].toString()).toList()
+        ..shuffle();
+
+      num = num > shuffled.length ? shuffled.length : num;
+      var targetIds = shuffled.sublist(0, num);
+      print('目标歌曲ID: ${targetIds}');
+      musics = await this.getMusicsDetails(targetIds);
+
+      print('最终推荐歌曲数量: ${musics.length}');
+      // print('最终推荐歌曲: ${musics}');
+
+      return musics;
+    } catch (error) {
+      print('getRecommendMusics 异常: ${error}');
+      return [];
+    }
+  }
+
+  getRecommendSingers(int num) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/top/artists?limit=100',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取推荐歌手响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取推荐歌手失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Singer> singers = [];
+
+      var data = response.data['artists'];
+      print('推荐歌手数量: ${data.length}');
+
+      // var shuffled = this.shuffleArray(data.map((item) => item['id']).toList());
+      var shuffled = data.map((item) => item['id'].toString()).toList()
+        ..shuffle();
+
+      num = num > shuffled.length ? shuffled.length : num;
+      var targetIds = shuffled.sublist(0, num);
+
+      for (var i in data) {
+        if (targetIds.contains(i['id'].toString())) {
+          singers.add(
+            Singer(
+              singer: i['name'],
+              singerId: i['id'].toString(),
+              cover: this.getCover(i['picUrl']),
+              audioCount: i['musicSize'],
+              albumCount: i['albumSize'],
+            ),
+          );
+        }
+      }
+
+      print('最终推荐歌手数量: ${singers.length}');
+      // print('最终推荐歌手: ${singers}');
+
+      return singers;
+    } catch (error) {
+      print('getRecommendSingers 异常: ${error}');
+      return [];
+    }
+  }
+
+  getRecommendPlaylists(int num) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/recommend/resource',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取推荐歌单响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取推荐歌单失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Playlist> playlists = [];
+
+      var data = response.data['recommend'];
+      print('推荐歌单数量: ${data.length}');
+
+      // var shuffled = this.shuffleArray(data.map((item) => item['id']).toList());
+      var shuffled = data.map((item) => item['id']).toList()..shuffle();
+
+      num = num > shuffled.length ? shuffled.length : num;
+      var targetIds = shuffled.sublist(0, num);
+
+      for (var i in data) {
+        if (targetIds.contains(i['id'])) {
+          playlists.add(
+            Playlist(
+              name: i['name'],
+              listId: i['id'].toString(),
+              audioCount: i['trackCount'],
+              cover: this.getCover(i['picUrl']),
+            ),
+          );
+        }
+      }
+
+      print('最终推荐歌单数量: ${playlists.length}');
+      // print('最终推荐歌单: ${playlists}');
+
+      return playlists;
+    } catch (error) {
+      print('getRecommendPlaylists 异常: ${error}');
+      return [];
+    }
+  }
 
   getRecommendAlbum(int num) async {}
 
-  search(String keyword) async {}
+  search(String keyword) async {
+    final results = await Future.wait([
+      searchMusic(keyword),
+      searchSinger(keyword),
+      searchAlbum(keyword),
+    ]);
 
-  searchMusic(String keyword) async {}
+    this.management.searchList.music = results[0] as List<Music>;
+    this.management.searchList.singer = results[1] as List<Singer>;
+    this.management.searchList.album = results[2] as List<Album>;
+  }
 
-  searchSinger(String keyword) async {}
+  Future<List<Music>> searchMusic(String keyword) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/search?type=1&limit=50',
+        options: Options(headers: {'Cookie': this.cookies}),
+        queryParameters: {'keywords': keyword},
+      );
 
-  searchAlbum(String keyword) async {}
+      // print('搜索歌曲响应: ${jsonEncode(response.data)}');
 
-  getMusicUrl(String musicId, {String bitrate = 'exhigh'}) async {}
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('搜索歌曲失败: ${jsonEncode(response.data)}');
+        return [];
+      }
 
-  getMatchtMusicUrl(String musicId, {String level = 'exhigh'}) async {}
+      List<Music> musics = [];
+      var data = response.data['result']['songs'];
 
-  getMusicsDetails(List<String> musicIds) async {}
+      var ids = data.map<String>((item) => item['id'].toString()).toList();
 
-  getSingerDetails(String singerId) async {}
+      if (ids.isEmpty) {
+        print('没有搜索到歌曲');
+        return [];
+      }
 
-  getAlbumDetails(String albumId) async {}
+      musics = await this.getMusicsDetails(ids);
 
-  getPlaylistDetails(String listId) async {}
+      print('最终搜索歌曲数量: ${musics.length}');
+      // print('最终搜索歌曲: ${musics}');
 
-  getLyric(String musicId) async {}
+      return musics;
+    } catch (error) {
+      print('searchMusic 异常: ${error}');
+      return [];
+    }
+  }
+
+  Future<List<Singer>> searchSinger(String keyword) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/search?type=100&limit=5',
+        options: Options(headers: {'Cookie': this.cookies}),
+        queryParameters: {'keywords': keyword},
+      );
+
+      // print('搜索歌手响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('搜索歌手失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Singer> singers = [];
+
+      var data = response.data['result']['artists'];
+      print('搜索歌手数量: ${data.length}');
+      // print('搜索歌手列表: ${jsonEncode(data)}');
+
+      for (var i in data) {
+        singers.add(
+          Singer(
+            singer: i['name'],
+            singerId: i['id'].toString(),
+            cover: this.getCover(i['picUrl']),
+            audioCount: i['musicSize'],
+            albumCount: i['albumSize'],
+          ),
+        );
+      }
+
+      print('最终搜索歌手数量: ${singers.length}');
+      // print('最终搜索歌手: ${jsonEncode(singers)}');
+      return singers;
+    } catch (error) {
+      print('searchSinger 异常: ${error}');
+      return [];
+    }
+  }
+
+  Future<List<Album>> searchAlbum(String keyword) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/search?type=10&limit=10',
+        options: Options(headers: {'Cookie': this.cookies}),
+        queryParameters: {'keywords': keyword},
+      );
+
+      // print('搜索专辑响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('搜索专辑失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      List<Album> albums = [];
+
+      var data = response.data['result']['albums'];
+      print('搜索专辑数量: ${data.length}');
+      // print('搜索专辑列表: ${jsonEncode(data)}');
+
+      for (var i in data) {
+        var singer = '';
+        for (var j in i['artists']) {
+          if (singer.isNotEmpty) {
+            singer += '、';
+          }
+          singer += j['name'];
+        }
+
+        albums.add(
+          Album(
+            album: i['name'],
+            albumId: i['id'].toString(),
+            singer: singer,
+            cover: this.getCover(i['picUrl']),
+            audioCount: i['size'],
+          ),
+        );
+      }
+
+      print('最终搜索专辑数量: ${albums.length}');
+      print('最终搜索专辑: ${jsonEncode(albums)}');
+      return albums;
+    } catch (error) {
+      print('searchAlbum 异常: ${error}');
+      return [];
+    }
+  }
+
+  getMusicUrl(String musicId, {String bitrate = 'exhigh'}) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/song/url/v1?id=${musicId}&level=${bitrate}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取歌曲播放链接响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取歌曲播放链接失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      var musicUrl = response.data['data'][0]['url'];
+
+      // console.log('歌曲播放链接响应:', JSON.stringify(musicUrl))
+      print('歌曲播放链接响应: ${musicUrl}');
+
+      if (musicUrl == null || musicUrl.isEmpty) {
+        print('未获取到歌曲播放链接,正在尝试解灰匹配的歌曲播放链接');
+        musicUrl = await this.getMatchtMusicUrl(musicId, level: bitrate);
+        if (musicUrl == null || musicUrl.isEmpty) {
+          return false;
+        }
+      }
+
+      return musicUrl;
+    } catch (error) {
+      print('getMusicUrl 异常: ${error}');
+      return false;
+    }
+  }
+
+  getMatchtMusicUrl(String musicId, {String level = 'exhigh'}) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/song/url/v1?id=${musicId}&level=${level}&unblock=true',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取歌曲播放链接响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取歌曲播放链接失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      var musicUrl = response.data['data'][0]['url'];
+
+      print('歌曲播放链接响应: ${musicUrl}');
+
+      if (musicUrl == null || musicUrl.isEmpty) {
+        print('未获取到歌曲播放链接,且未匹配成功的歌曲播放链接');
+        return false;
+      }
+
+      return musicUrl;
+    } catch (error) {
+      print('getMatchtMusicUrl 异常: ${error}');
+      return false;
+    }
+  }
+
+  getMusicsDetails(List<String> musicIds) async {
+    var id = '';
+    for (var i in musicIds) {
+      if (id.isNotEmpty) {
+        id += ',';
+      }
+      id += i;
+    }
+
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/song/detail?ids=${id}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取音乐详情响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取音乐详情失败: ${jsonEncode(response.data)}');
+        return [];
+      }
+
+      var data = response.data['songs'];
+      // print('音乐详情响应: ${data}');
+
+      List<Music> musics = [];
+      for (var i in data) {
+        var singer = '';
+        for (var j in i['ar']) {
+          if (singer.isNotEmpty) {
+            singer += '、';
+          }
+          singer += j['name'];
+        }
+        var music = Music(
+          id: i['id'].toString(),
+          name: i['name'],
+          singer: singer,
+          singerId: i['ar'][0]['id'].toString(),
+          album: i['al']['name'],
+          albumId: i['al']['id'].toString(),
+          time: i['dt'],
+          cover: this.getCover(i['al']['picUrl']),
+          // like: this.getLikeStatus(i['id'])
+        );
+        // print(music);
+        musics.add(music);
+      }
+
+      print('最终音乐详情: ${musics}');
+
+      return musics;
+    } catch (error) {
+      print('getMusicsDetails 异常: ${error}');
+      return false;
+    }
+  }
+
+  getSingerDetails(String singerId) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/artist/detail?id=${singerId}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取歌手详情响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取歌手详情失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      var data = response.data['data']['artist'];
+      print('歌手详情响应: ${jsonEncode(data)}');
+
+      Singer singer = Singer(
+        singer: data['name'],
+        singerId: data['id'].toString(),
+        cover: this.getCover(data['cover']),
+        audioCount: data['musicSize'],
+        albumCount: data['albumSize'],
+      );
+
+      print('最终歌手详情: ${jsonEncode(singer)}');
+
+      return singer;
+    } catch (error) {
+      print('getSingerDetails 异常: ${error}');
+      return false;
+    }
+  }
+
+  getAlbumDetails(String albumId) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/album?id=${albumId}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取专辑详情响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取专辑详情失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      var data = response.data['album'];
+      print('专辑详情响应: ${jsonEncode(data)}');
+
+      var singer = '';
+      for (var i in data['artists']) {
+        if (singer.isNotEmpty) {
+          singer += '、';
+        }
+        singer += i['name'];
+      }
+
+      Album album = Album(
+        album: data['name'],
+        albumId: data['id'].toString(),
+        singer: singer,
+        cover: this.getCover(data['picUrl']),
+        audioCount: data['size'],
+      );
+
+      print('最终专辑详情: ${jsonEncode(album)}');
+
+      return album;
+    } catch (error) {
+      print('getAlbumDetails 异常: ${error}');
+      return false;
+    }
+  }
+
+  getPlaylistDetails(String listId) async {
+    try {
+      var timestamp = DateTime.now().millisecondsSinceEpoch;
+      var response = await Neteasecloud.dio.get(
+        '/playlist/detail?id=${listId}&timestamp=${timestamp}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取歌单详情响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取歌单详情失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      var data = response.data['playlist'];
+
+      Playlist playlist = Playlist(
+        name: data['name'],
+        listId: data['id'].toString(),
+        audioCount: data['trackCount'],
+        cover: this.getCover(data['coverImgUrl']),
+      );
+
+      print('歌单详情响应: ${jsonEncode(data)}');
+
+      return playlist;
+    } catch (error) {
+      print('getPlaylistDetails 异常: ${error}');
+      return false;
+    }
+  }
+
+  getLyric(String musicId) async {
+    try {
+      var response = await Neteasecloud.dio.get(
+        '/lyric?id=${musicId}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('获取歌词详情响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('获取歌词详情失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      var lyric = response.data['lrc']['lyric'];
+      var tlyric = response.data['tlyric']['lyric'];
+
+      if (tlyric != null && tlyric.isNotEmpty) {
+        lyric += tlyric;
+      }
+
+      print('歌词响应: ${jsonEncode(lyric)}');
+
+      return lyric;
+    } catch (error) {
+      print('getLyric 异常: ${error}');
+      return false;
+    }
+  }
 
   getLikeStatus(String musicId) async {}
 
@@ -452,6 +1228,7 @@ class Neteasecloud implements CloudService {
 
   getCover(String coverUrl, {String size = '500'}) {
     coverUrl = '${coverUrl}?param=${size}y${size}';
+    // print(coverUrl);
     return coverUrl;
   }
 

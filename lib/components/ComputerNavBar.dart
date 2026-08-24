@@ -8,6 +8,7 @@ import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/components/AccountLoginDialog.dart';
 import 'package:chocolate_music/pages/computer/SettingsPage.dart';
+import 'package:chocolate_music/components/RemoteImage.dart';
 
 class ChocolateNavBar extends StatefulWidget {
   // final selectedPage;
@@ -56,6 +57,48 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
   ];
 
   bool isAccountHovering = false;
+
+  String get _collectionListId {
+    if (management.accountData.login[0] == -1) {
+      return '';
+    }
+
+    // CloudService does not expose provider-specific collection metadata.
+    // Read it from the active provider while keeping the navbar safe before
+    // the first login initializes Management.cloud.
+    try {
+      final dynamic cloud = management.cloud;
+      final dynamic collectionListId = cloud.collectionListId;
+      return collectionListId is String ? collectionListId : '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  List<Playlist> get _sidebarPlaylists {
+    final String collectionListId = _collectionListId;
+    return management.playlists
+        .where((playlist) =>
+            collectionListId.isEmpty || playlist.listId != collectionListId)
+        .toList(growable: false);
+  }
+
+  Playlist get _likedPlaylist {
+    final String collectionListId = _collectionListId;
+    for (final Playlist playlist in management.playlists) {
+      if (collectionListId.isNotEmpty &&
+          playlist.listId == collectionListId) {
+        return playlist;
+      }
+    }
+
+    return Playlist(
+      name: '我喜欢',
+      listId: collectionListId.isEmpty ? 'starred' : collectionListId,
+      cover: '',
+      audioCount: 0,
+    );
+  }
 
   Widget build(BuildContext context) {
     return Container(
@@ -124,13 +167,9 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                     selectedIndex = navItems[i]['pageId'];
                     widget.onDestinationSelected(navItems[i]['pageId']);
                     if (navItems[i]['pageId'] == 'LikedPage') {
-                      Management().displayList = Playlist(
-                        name: '我喜欢',
-                        listId: 'starred',
-                        cover: '',
-                        audioCount: 0,
-                      );
+                      Management().displayList = _likedPlaylist;
                       Management().displayListType = 'Playlist';
+                      management.refresh();
                     }
                   },
                 ),
@@ -164,7 +203,7 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
               shrinkWrap: true,
               // 让 ListView 在 Column 中按内容高度显示（配合 Expanded 使用）
               // itemCount: cardList.length,
-              itemCount: management.playlists.length,
+              itemCount: _sidebarPlaylists.length,
               separatorBuilder: (context, index) {
                 // 返回一个表示间隙的 Widget
                 // 例如，一个固定高度的 SizedBox 或者带有颜色的 Container
@@ -173,15 +212,16 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                 // return Container(height: 1, color: Colors.grey.shade300);
               },
               itemBuilder: (context, index) {
+                final Playlist playlist = _sidebarPlaylists[index];
                 return playlistItem(
-                  playlist: management.playlists[index],
-                  isSelected:
-                      selectedIndex == management.playlists[index].listId,
+                  playlist: playlist,
+                  isSelected: selectedIndex == playlist.listId,
                   onTap: () {
-                    selectedIndex = management.playlists[index].listId;
+                    selectedIndex = playlist.listId;
                     widget.onDestinationSelected('PlaylistPage');
-                    Management().displayList = management.playlists[index];
+                    Management().displayList = playlist;
                     Management().displayListType = 'Playlist';
+                    management.refresh();
                   },
                 );
               },
@@ -250,9 +290,13 @@ class _AccountDisplayState extends State<AccountDisplay> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(40), // 根据需要设置圆角大小
-                    child: Image.network(
+                    child: RemoteImage(
                       // widget.cover,
                       management.account.cover,
+                      headers: const {
+                        'User-Agent':
+                            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                      },
                       width: 40,
                       height: 40,
                       fit: BoxFit.cover,
@@ -474,8 +518,12 @@ class _playlistItemState extends State<playlistItem> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8), // 根据需要设置圆角大小
-                child: Image.network(
+                child: RemoteImage(
                   widget.playlist.cover,
+                  headers: const {
+                    'User-Agent':
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                  },
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,

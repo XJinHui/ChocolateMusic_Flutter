@@ -6,6 +6,7 @@ import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/components/AccountLoginDialog.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
+import 'package:chocolate_music/components/RemoteImage.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key, this.management});
@@ -1382,8 +1383,12 @@ class _ProfileAvatar extends StatelessWidget {
 
   Widget _avatarContent() {
     if (account.avatarUrl.isNotEmpty) {
-      return Image.network(
+      return RemoteImage(
         account.avatarUrl,
+        headers: const {
+          'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+        },
         width: size,
         height: size,
         fit: BoxFit.cover,
