@@ -559,11 +559,11 @@ class KuGou implements CloudService {
         break;
       }
     }
-    print('歌曲id列表: ${jsonEncode(music_id)}');
-    print('歌曲数量: ${music_id.length}');
+    // print('歌曲id列表: ${jsonEncode(music_id)}');
+    // print('歌曲数量: ${music_id.length}');
 
     musics = await this.getMusicsDetails(music_id);
-    print('歌曲详情列表: ${jsonEncode(musics)}');
+    // print('歌曲详情列表: ${jsonEncode(musics)}');
     print('歌曲数量: ${musics.length}');
 
     return musics;
@@ -634,7 +634,7 @@ class KuGou implements CloudService {
       musics = await this.getMusicsDetails(ids);
 
       print('最终歌曲数量: ${musics.length}');
-      print('最终歌曲: ${jsonEncode(musics)}');
+      // print('最终歌曲: ${jsonEncode(musics)}');
 
       return musics;
     } catch (error) {
@@ -930,13 +930,19 @@ class KuGou implements CloudService {
       var response = await KuGou.dio.get(
         '/song/url?hash=${musicId}&quality=${bitrate}',
         queryParameters: this.params,
+        options: Options(
+          headers: {
+            'Cookie':
+            'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}',
+          },
+        ),
       );
 
       // print('获取歌曲播放链接响应: ${jsonEncode(response.data)}');
 
       if (response.statusCode != 200 || response.data["status"] != 1) {
         print('获取歌曲播放链接失败: ${jsonEncode(response.data)}');
-        return [];
+        return '';
       }
 
       var musicUrl = response.data['url'][0];
@@ -948,7 +954,7 @@ class KuGou implements CloudService {
         '获取歌曲播放链接失败url: ${this.mainUrl}/song/url?hash=${musicId}&quality=${bitrate}',
       );
       print('获取歌曲播放链接失败id: ${musicId}');
-      return false;
+      return '';
     }
   }
 
@@ -1125,7 +1131,7 @@ class KuGou implements CloudService {
         );
       }).toList();
 
-      print('获取歌曲详情列表: ${musics}');
+      // print('获取歌曲详情列表: ${musics}');
       return musics;
     } catch (error) {
       print('getMusicsDetails 异常: $error');
@@ -1293,15 +1299,276 @@ class KuGou implements CloudService {
     return url;
   }
 
-  createPlaylist(String name) async {}
+  createPlaylist(String name) async {
+    try {
+      var timestamp = DateTime.now().millisecondsSinceEpoch;
 
-  deletePlaylist(String listId) async {}
+      var response = await KuGou.dio.get(
+        '/playlist/add?list_create_userid=${this.params['userid']}&timestamp=${timestamp}',
+        queryParameters: {'name': name, ...this.params},
+      );
 
-  addMusicToPlaylist(String listId, String musicId) async {}
+      // print('创建歌单响应: ${jsonEncode(response.data)}');
 
-  deleteMusicFromPlaylist(String listId, String musicId) async {}
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('创建歌单失败: ${jsonEncode(response.data)}');
+        return false;
+      }
 
-  getMusiInPlaylistFileid(String listId, String musicId) async {}
+      var listid = response.data['data']['info']['global_collection_id'];
+      Playlist playlist = Playlist(
+        name: name,
+        listId: listid,
+        audioCount: 0,
+        cover: '',
+      );
+
+      this.playlist.add(playlist);
+      this.playlist_to_id[listid] = response.data['data']['info']['listid'];
+
+      print('创建歌单成功，歌单id: ${listid}');
+
+      return true;
+    } catch (error) {
+      print('createPlaylist 异常: $error');
+      return false;
+    }
+  }
+
+  deletePlaylist(String listId) async {
+    if (listId == this.collectionListId) {
+      print('无法删除收藏歌单');
+      return false;
+    }
+
+    var timestamp;
+    var response;
+
+    try {
+      timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      response = await KuGou.dio.get(
+        '/playlist/detail?ids=${listId}&timestamp=${timestamp}',
+        queryParameters: this.params,
+      );
+
+      // print('获取歌单详情响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('获取歌单详情失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      var id = response.data['data'][0]['listid'];
+      print('获取歌单详情成功，歌单id: ${id}');
+
+      timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      response = await KuGou.dio.get(
+        '/playlist/del?listid=${id}&timestamp=${timestamp}',
+        queryParameters: this.params,
+      );
+
+      // print('删除歌单响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('删除歌单失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      // for (var i = 0; i < this.playlist.length; i++) {
+      //   if (this.playlist[i].listId == listId) {
+      //     this.playlist.removeAt(i);
+      //     break;
+      //   }
+      // }
+
+      // int index = playlist.indexWhere((item) => item.listId == listId);
+      // if (index != -1) {
+      //   playlist.removeAt(index);
+      // }
+      playlist.removeWhere((item) => item.listId == listId);
+
+      print('删除歌单成功，歌单id: ${listId}');
+
+      return true;
+    } catch (error) {
+      print('deleteMusicFromPlaylist 异常: $error');
+      return false;
+    }
+  }
+
+  addMusicToPlaylist(String listId, String musicId) async {
+    try {
+      List<Music> music = await this.getMusicsDetails([musicId]);
+      if (music.length == 0) {
+        print('获取歌曲详情失败，无法添加到歌单，歌曲id: ${musicId}');
+        return false;
+      }
+      var data = '${music[0].name}|${music[0].id}|${music[0].albumId}';
+
+      var id = this.playlist_to_id[listId] ?? listId;
+      var timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      var response = await KuGou.dio.get(
+        '/playlist/tracks/add?listid=${id}&timestamp=${timestamp}',
+        queryParameters: {'data': data, ...this.params},
+      );
+
+      // print('添加歌曲到歌单响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('添加歌曲到歌单失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      if (listId == this.collectionListId) {
+        if (this.collectionList.contains(musicId)) {
+          print('音乐已在我喜欢歌单中，无需重复添加，音乐id: ${musicId}');
+        } else {
+          this.collectionList.add(musicId);
+          print('音乐成功添加到我喜欢歌单，音乐id: ${musicId}');
+        }
+      }
+
+      var index = this.playlist.indexWhere((item) => item.listId == listId);
+      if (index != -1) {
+        this.playlist[index].audioCount += 1;
+        print(
+          '歌单音乐数量加1，歌单id: ${listId}, 当前数量: ${this.playlist[index].audioCount}',
+        );
+      } else {
+        print('未找到对应歌单，无法更新音乐数量，歌单id: ${listId}');
+      }
+
+      return true;
+    } catch (error) {
+      print('addMusicToPlaylist 异常: ${error}');
+      return false;
+    }
+  }
+
+  deleteMusicFromPlaylist(String listId, String musicId) async {
+    try {
+      var fileids = await this.getMusicInPlaylistFileid(listId, musicId);
+      if (fileids != '') {
+        print('获取歌单内歌曲文件id失败，无法从歌单删除，歌曲id: ${musicId}, 歌单id: ${listId}');
+        return false;
+      }
+
+      var id = this.playlist_to_id[listId] ?? listId;
+      var timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      var response = await KuGou.dio.get(
+        '/playlist/tracks/del?listid=${id}&fileids=${fileids}&timestamp=${timestamp}',
+        queryParameters: this.params,
+      );
+
+      // print('从歌单删除歌曲响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data["status"] != 1) {
+        print('从歌单删除歌曲失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      // if (listId == this.collectionListId) {
+      //   var index = this.collectionList.indexOf(musicId);
+      //   if (index != -1) {
+      //     this.collectionList.removeAt(index);
+      //     print('音乐成功从我喜欢歌单删除，音乐id: ${musicId}')
+      //   } else {
+      //     print('音乐不在我喜欢歌单中，无需删除，音乐id: ${musicId}')
+      //   }
+      // }
+
+      if (listId == this.collectionListId) {
+        if (this.collectionList.remove(musicId)) {
+          print('音乐成功从我喜欢歌单删除，音乐id: $musicId');
+        } else {
+          print('音乐不在我喜欢歌单中，无需删除，音乐id: $musicId');
+        }
+      }
+
+      var index = this.playlist.indexWhere((item) => item.listId == listId);
+      if (index != -1) {
+        this.playlist[index].audioCount = max(
+          0,
+          this.playlist[index].audioCount - 1,
+        );
+        print(
+          '歌单音乐数量减1，歌单id: ${listId}, 当前数量: ${this.playlist[index].audioCount}',
+        );
+      } else {
+        print('未找到对应歌单，无法更新音乐数量，歌单id: ${listId}');
+      }
+
+      return true;
+    } catch (error) {
+      print('deleteMusicFromPlaylist 异常: ${error}');
+      return false;
+    }
+  }
+
+  getMusicInPlaylistFileid(String listId, String musicId) async {
+    try {
+      var n = 0;
+      // let url: string
+      var timestamp;
+      var response;
+
+      while (true) {
+        try {
+          //       timestamp = new Date().getTime()
+          //       url = `${this.mainUrl}/playlist/track/all?id=${listId}&pagesize=300&page=${n+1}&timestamp=${timestamp}`
+          // console.log('请求歌单歌曲:', url)
+          // response = await axios.get(url, {
+          // params: this.params
+          // })
+          // // console.log('获取歌单歌曲响应:', JSON.stringify(response.data))
+          // if (response.status !== 200 || response.data.status !== 1) {
+          // console.log('获取歌单歌曲失败:', response.data)
+          // }
+
+          timestamp = DateTime.now().millisecondsSinceEpoch;
+
+          response = await KuGou.dio.get(
+            '/playlist/track/all?id=${listId}&pagesize=300&page=${n + 1}&timestamp=${timestamp}',
+            queryParameters: this.params,
+          );
+
+          // print('获取歌单歌曲响应: ${jsonEncode(response.data)}');
+
+          if (response.statusCode != 200 || response.data["status"] != 1) {
+            print('获取歌单歌曲失败: ${jsonEncode(response.data)}');
+            return '';
+          }
+
+          if (response.data['data']['songs'].length == 0) {
+            break;
+          }
+
+          var data = response.data['data']['songs'];
+
+          for (var i in data) {
+            if (i['hash'] == musicId) {
+              print('找到目标歌曲，文件id: ${i['hash']}, 所在歌单位置: ${i['fileid']}');
+              return i['fileid'];
+            }
+          }
+
+          n++;
+        } catch (error) {
+          print('etPlaylistMusic 异常: ${error}');
+          break;
+        }
+      }
+
+      return '';
+    } catch (error) {
+      print('getMusicInPlaylistFileid 异常: ${error}');
+      return '';
+    }
+  }
 
   processLyric(String lrcContent) {
     if (lrcContent.isEmpty) return '';

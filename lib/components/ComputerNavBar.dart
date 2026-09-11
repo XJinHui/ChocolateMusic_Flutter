@@ -12,12 +12,12 @@ import 'package:chocolate_music/components/RemoteImage.dart';
 
 class ChocolateNavBar extends StatefulWidget {
   // final selectedPage;
-  final Function(String) onDestinationSelected; // 添加回调函数参数
+  // final Function(String) onDestinationSelected; // 添加回调函数参数
 
   const ChocolateNavBar({
     Key? key,
     // required this.selectedPage,
-    required this.onDestinationSelected,
+    // required this.onDestinationSelected,
   }) : super(key: key);
 
   @override
@@ -138,7 +138,8 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
               // if (management.account.type != '') {
               if ( management.accountData.data.any((accounts) => accounts.isNotEmpty) ) {
                 selectedIndex = 'AccountPage';
-                widget.onDestinationSelected('AccountPage');
+                  // widget.onDestinationSelected('AccountPage');
+                management.selectedPage = 'AccountPage';
               } else {
                 unawaited(
                   showAccountLoginDialog(context).whenComplete(() {
@@ -165,11 +166,17 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                   isSelected: selectedIndex == navItems[i]['pageId'],
                   onTap: () {
                     selectedIndex = navItems[i]['pageId'];
-                    widget.onDestinationSelected(navItems[i]['pageId']);
+                    // widget.onDestinationSelected(navItems[i]['pageId']);
+                    management.selectedPage = navItems[i]['pageId'];
                     if (navItems[i]['pageId'] == 'LikedPage') {
                       Management().displayList = _likedPlaylist;
                       Management().displayListType = 'Playlist';
-                      management.refresh();
+
+                      Management().displayMusics = [];
+                      Management().displayAlbums = [];
+                      Management().getDisplayPlaylist(_likedPlaylist);
+
+                      Management().refresh();
                     }
                   },
                 ),
@@ -218,10 +225,16 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                   isSelected: selectedIndex == playlist.listId,
                   onTap: () {
                     selectedIndex = playlist.listId;
-                    widget.onDestinationSelected('PlaylistPage');
+                    // widget.onDestinationSelected('PlaylistPage');
+                    management.selectedPage = 'PlaylistPage';
                     Management().displayList = playlist;
                     Management().displayListType = 'Playlist';
-                    management.refresh();
+
+                    Management().displayMusics = [];
+                    Management().displayAlbums = [];
+                    Management().getDisplayPlaylist(playlist);
+
+                    Management().refresh();
                   },
                 );
               },

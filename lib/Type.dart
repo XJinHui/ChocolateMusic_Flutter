@@ -74,7 +74,7 @@ class Playlist {
   final String cover;
 
   // 歌曲数
-  final int audioCount;
+  int audioCount;
 
   Playlist({
     required this.name,
@@ -565,4 +565,14 @@ class RecommendList {
           .toList(),
     );
   }
+}
+
+class LyricsMap {
+  int time;   // 统一用毫秒
+  List<String> lyric;  // [原词, 翻译, ...]
+
+  LyricsMap({
+    required this.time,
+    required this.lyric,
+  });
 }

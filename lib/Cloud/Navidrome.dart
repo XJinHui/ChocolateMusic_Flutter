@@ -316,7 +316,7 @@ class Navidrome implements CloudService {
         musics.addAll(i);
       }
 
-      print('最终歌手音乐列表: ${jsonEncode(musics)}');
+      // print('最终歌手音乐列表: ${jsonEncode(musics)}');
 
       return musics;
     } catch (error) {
@@ -436,13 +436,12 @@ class Navidrome implements CloudService {
         if (i['coverArt'] != null) {
           cover = this.getCover(i['coverArt']);
         }
-
         musics.add(
           Music(
             id: i['id'],
             name: i['title'],
             singer: i['artist'],
-            singerId: i['artistId'],
+            singerId: i['artistId'] ?? '',
             album: i['album'],
             albumId: i['albumId'],
             cover: cover,
@@ -581,7 +580,7 @@ class Navidrome implements CloudService {
       List<Album> albums = [];
 
       var data = response.data['subsonic-response']['searchResult3'];
-      print('搜索结果数据: ${jsonEncode(data)}');
+      // print('搜索结果数据: ${jsonEncode(data)}');
 
       if (data['song'] != null) {
         for (var i in data['song']) {
@@ -683,7 +682,7 @@ class Navidrome implements CloudService {
         '获取歌曲播放链接失败url: ${this.mainUrl}/stream.view?id=${musicId}&maxBitRate=${bitrate}',
       );
       print('获取歌曲播放链接失败id: $musicId');
-      return false;
+      return '';
     }
   }
 
@@ -860,18 +859,19 @@ class Navidrome implements CloudService {
         return false;
       }
 
-    var data = response.data['subsonic-response']['lyricsList']['structuredLyrics'][0]['line'];
-    var lyric = '';
+      var data = response
+          .data['subsonic-response']['lyricsList']['structuredLyrics'][0]['line'];
+      var lyric = '';
 
-    for (var i in data) {
-      var minutes = i['start'] ~/ 60000;
-      var seconds = (i['start'] % 60000) ~/ 1000;
-      var centiseconds = (i['start'] % 1000) ~/ 10;
-      lyric +=
-          '[${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}.${centiseconds.toString().padLeft(2, '0')}]${i['value']}\n';
-    }
+      for (var i in data) {
+        var minutes = i['start'] ~/ 60000;
+        var seconds = (i['start'] % 60000) ~/ 1000;
+        var centiseconds = (i['start'] % 1000) ~/ 10;
+        lyric +=
+            '[${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}.${centiseconds.toString().padLeft(2, '0')}]${i['value']}\n';
+      }
 
-    return lyric;
+      return lyric;
     } catch (error) {
       print('getLyric 异常: ${error}');
       return '';
@@ -886,13 +886,212 @@ class Navidrome implements CloudService {
     return url;
   }
 
-  createPlaylist(String name) async {}
+  createPlaylist(String name) async {
+    try {
+      var response = await Navidrome.dio.get(
+        '/createPlaylist.view',
+        queryParameters: {'name': name, ...this.params.toJson()},
+      );
 
-  deletePlaylist(String listId) async {}
+      // print('创建歌单响应: ${jsonEncode(response.data)}');
 
-  addMusicToPlaylist(String listId, String musicId) async {}
+      if (response.statusCode != 200 ||
+          response.data['subsonic-response']['status'] != 'ok') {
+        print('创建歌单失败: ${jsonEncode(response.data)}');
+        return false;
+      }
 
-  deleteMusicFromPlaylist(String listId, String musicId) async {}
+      var listid = response.data['subsonic-response']['playlist']['id'];
+      Playlist playlist = Playlist(
+        name: name,
+        listId: listid,
+        audioCount: 0,
+        cover: '',
+      );
+
+      this.playlist.add(playlist);
+
+      print('创建歌单成功，歌单id: ${listid}');
+
+      return true;
+    } catch (error) {
+      print('createPlaylist 异常: ${error}');
+      return false;
+    }
+  }
+
+  deletePlaylist(String listId) async {
+    if (listId == 'starred') {
+      print('无法删除我喜欢歌单');
+      return false;
+    }
+    try {
+      var response = await Navidrome.dio.get(
+        '/deletePlaylist.view?id=${listId}',
+        queryParameters: this.params.toJson(),
+      );
+
+      // print('删除歌单响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 ||
+          response.data['subsonic-response']['status'] != 'ok') {
+        print('删除歌单失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      // for (var i = 0; i < this.playlist.length; i++) {
+      //   if (this.playlist[i].listId == listId) {
+      //     this.playlist.removeAt(i);
+      //     break;
+      //   }
+      // }
+
+      playlist.removeWhere((item) => item.listId == listId);
+
+      print('删除歌单成功，歌单id: ${listId}');
+
+      return true;
+    } catch (error) {
+      print('deletePlaylist 异常: ${error}');
+      return false;
+    }
+  }
+
+  addMusicToPlaylist(String listId, String musicId) async {
+    try {
+      List<Music> musics = await this.getPlaylistMusic(listId);
+      if (musics.any((item) => item.id == musicId)) {
+        print('音乐已在歌单中，无需重复添加，音乐id: $musicId, 歌单id: $listId');
+        return true;
+      }
+
+      var url;
+      if (listId == 'starred') {
+        url = '/star.view?id=${musicId}';
+      } else {
+        url =
+            '/updatePlaylist.view?playlistId=${listId}&songIdToAdd=${musicId}';
+      }
+
+      var response = await Navidrome.dio.get(
+        url,
+        queryParameters: {
+          'u': this.params.u,
+          't': this.params.t,
+          'p': this.params.p,
+          's': this.params.s,
+          'v': "1.16.1",
+          'c': "ChocolateMusic",
+          'f': "json",
+        },
+      );
+
+      // print('删除歌单响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 ||
+          response.data['subsonic-response']['status'] != 'ok') {
+        print('添加到歌单失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      print('添加到歌单成功，音乐id: ${musicId}');
+
+      if (listId == 'starred') {
+        if (this.collectionList.contains(musicId)) {
+          print('音乐已在我喜欢歌单中，无需重复添加，音乐id: ${musicId}');
+        } else {
+          this.collectionList.add(musicId);
+          print('音乐成功添加到我喜欢歌单，音乐id: ${musicId}');
+        }
+      }
+
+      var index = this.playlist.indexWhere((item) => item.listId == listId);
+      if (index != -1) {
+        this.playlist[index].audioCount += 1;
+        print(
+          '歌单音乐数量加1，歌单id: ${listId}, 当前数量: ${this.playlist[index].audioCount}',
+        );
+      } else {
+        print('未找到对应歌单，无法更新音乐数量，歌单id: ${listId}');
+      }
+
+      return true;
+    } catch (error) {
+      print('addMusicToPlaylist 异常: ${error}');
+      return false;
+    }
+  }
+
+  deleteMusicFromPlaylist(String listId, String musicId) async {
+    try {
+      var url;
+      if (listId == 'starred') {
+        url = '/unstar.view?id=${musicId}';
+      } else {
+        url =
+            '/updatePlaylist.view?playlistId=${listId}&songIndexToRemove=${musicId}';
+      }
+
+      var response = await Navidrome.dio.get(
+        url,
+        queryParameters: {
+          'u': this.params.u,
+          't': this.params.t,
+          'p': this.params.p,
+          's': this.params.s,
+          'v': "1.16.1",
+          'c': "ChocolateMusic",
+          'f': "json",
+        },
+      );
+
+      // print('从歌单删除音乐响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 ||
+          response.data['subsonic-response']['status'] != 'ok') {
+        print('从歌单删除音乐失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      print('从歌单删除音乐成功，音乐id: ${musicId}');
+
+      // if (listId == 'starred') {
+      //   var index = this.collectionList.indexOf(musicId);
+      //   if (index != -1) {
+      //     this.collectionList.removeAt(index);
+      //     print('音乐成功从我喜欢歌单中删除，音乐id: ${musicId}');
+      //   } else {
+      //     print('音乐不在我喜欢歌单中，无需删除，音乐id: ${musicId}');
+      //   }
+      // }
+
+      if (listId == 'starred') {
+        if (this.collectionList.remove(musicId)) {
+          print('音乐成功从我喜欢歌单删除，音乐id: ${musicId}');
+        } else {
+          print('音乐不在我喜欢歌单中，无需删除，音乐id: ${musicId}');
+        }
+      }
+
+      var index = this.playlist.indexWhere((item) => item.listId == listId);
+      if (index != -1) {
+        this.playlist[index].audioCount = max(
+          0,
+          this.playlist[index].audioCount - 1,
+        );
+        print(
+          '歌单音乐数量减1，歌单id: ${listId}, 当前数量: ${this.playlist[index].audioCount}',
+        );
+      } else {
+        print('未找到对应歌单，无法更新音乐数量，歌单id: ${listId}');
+      }
+
+      return true;
+    } catch (error) {
+      print('deleteMusicFromPlaylist 异常: ${error}');
+      return false;
+    }
+  }
 
   String getCover(String coverId, {String size = '500'}) {
     final baseUrl =

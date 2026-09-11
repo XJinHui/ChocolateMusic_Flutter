@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:chocolate_music/FileManage.dart';
+import 'package:chocolate_music/PlayMusicControl.dart';
 import 'package:chocolate_music/Cloud/KuGou.dart';
 import 'package:chocolate_music/Cloud/Navidrome.dart';
 import 'package:chocolate_music/Cloud/NetEaseCloud.dart';
@@ -10,6 +13,19 @@ class Management extends ChangeNotifier {
   static final Management _instance = Management._internal();
 
   late FileManage fileManage = FileManage(); //文件管理类，负责读取和写入设置、账户数据、推荐列表数据等
+  late PlayMusicControl playMusicControl = PlayMusicControl(this);  // 播放音乐控制类，负责播放音乐、获取歌词、获取歌曲信息等
+
+  String _selectedPage = 'RecommendPage';
+
+  String get selectedPage => _selectedPage;
+
+  set selectedPage(String value) {
+    if (_selectedPage == value) {
+      return;              // 值没变就不通知，避免整棵树无意义重建
+    }
+    _selectedPage = value;
+    notifyListeners();     // 通知所有监听者（含 Computer.dart 的 ListenableBuilder）
+  }
 
   late Setting setting; // 设置数据，包含当前播放歌曲信息、播放状态、音量等
   late int logining = 0; // 登录状态，0正在登录，1登录成功，-1未登录
@@ -27,8 +43,22 @@ class Management extends ChangeNotifier {
   late Object displayList; // 显示的列表，可以是Playlist、Album、Singer等类型
   late String displayListType; // 显示的列表类型，可以是Playlist、Album、Singer等类型
 
-  late List<Music> displayMusics = []; // 显示的音乐列表
-  late List<Album> displayAlbums = []; // 显示的专辑列表
+  List<Music> _displayMusics = []; // 显示的音乐列表
+  List<Album> _displayAlbums = []; // 显示的专辑列表
+
+  List<Music> get displayMusics => _displayMusics;
+
+  set displayMusics(List<Music> value) {
+    _displayMusics = value;
+    notifyListeners();
+  }
+
+  List<Album> get displayAlbums => _displayAlbums;
+
+  set displayAlbums(List<Album> value) {
+    _displayAlbums = value;
+    notifyListeners();
+  }
 
   late List<Music> displayListSearchMusic = []; // 显示的搜索音乐列表
 
@@ -36,9 +66,22 @@ class Management extends ChangeNotifier {
   late Map<String, List<Music>> albumMusic = {}; // 专辑id-歌曲列表
   late Map<String, List<Music>> singerMusic = {}; // 歌手id-歌曲列表
   late Map<String, List<Album>> singerAlbum = {}; // 歌手id-专辑列表
+  late int playlistMusicVersion = 0;  // 新增：歌单歌曲列表版本号，每次更新歌单歌曲列表时自增1，组件根据版本号判断是否需要更新显示的歌曲列表
 
   late String displayLyric = ''; //当前显示的歌词
-  // late List<LyricsMap> displayLyricList = [];    //当前显示的歌词列表
+  late List<LyricsMap> displayLyricList = [];    //当前显示的歌词列表
+
+  late int musicProgress = 0;    //歌曲播放进度（毫秒）
+  // late String musicDisplayProgress = '00:00';    //歌曲播放进度（分:秒）
+  late int musicDuration = 0;    //歌曲总时长（毫秒）
+
+  /// 播放进度专用通知器。
+  ///
+  /// 进度回调每几百毫秒就会触发一次。如果走 [refresh]（即 notifyListeners），
+  /// 所有监听 Management 的页面——包括歌单页那几百行的列表——都会被重建，
+  /// 播放时自然就卡。这里把进度拆成独立的 ValueNotifier，
+  /// 只有真正需要进度的组件（播放进度条）订阅它，列表不受影响。
+  final ValueNotifier<int> progressNotifier = ValueNotifier<int>(0);
 
   late List<Music> playMusicList = []; //音乐播放列表
   late List<Music> currentPlayMusicList =
@@ -128,8 +171,8 @@ class Management extends ChangeNotifier {
         await this.createrRecommend();
 
         if (this.setting.id != '') {
-          // this.playMusicControl.play('pause');
-          // this.getInitialPlaylist();
+          this.playMusicControl.play(type: 'pause');
+          this.getInitialPlaylist();
         }
       } else {
         this.initDisplay();
@@ -389,13 +432,279 @@ class Management extends ChangeNotifier {
     }
   }
 
+  playMusic(Music music) {
+    var playListType = this.setting.playlistType;
+    var playListId = this.setting.playlistId;
+
+    this.updataPlayMusicSettings(music);
+    print('当前播放列表类型: ${playListType} 当前播放列表id: ${playListId}');
+
+    if (playListType != this.setting.playlistType || playListId != this.setting.playlistId) {
+      this.playMusicList = this.displayMusics;
+      print('更新播放列表 ${jsonEncode(this.playMusicList)}');
+      this.getPlayList();
+    }
+    this.playMusicControl.play();
+  }
+
+  updataPlayMusicSettings(Music music, {playlistType = -1}) {
+    var time = formatTime(music.time);
+
+    this.setting.name = music.name;
+    this.setting.singer = music.singer;
+    this.setting.singerId = music.singerId;
+    this.setting.album = music.album;
+    this.setting.albumId = music.albumId;
+    this.setting.time = time;
+    this.setting.cover = music.cover;
+    this.setting.id = music.id;
+
+    if (playlistType != -1){
+      this.setting.playlistType = playlistType;
+    } else {
+      if (this.displayList is Playlist){
+        this.setting.playlistId = (this.displayList as Playlist).listId;
+        this.setting.playlistType = 0;
+      }
+      else if (this.displayList is Album){
+        this.setting.playlistId = (this.displayList as Album).albumId;
+        this.setting.playlistType = 1;
+      }
+      else if (this.displayList is Singer){
+        this.setting.playlistId = (this.displayList as Singer).singerId;
+        this.setting.playlistType = 2;
+      }
+    }
+
+    this.updateSetting();
+  }
+
+  getInitialPlaylist() async {
+    if (this.setting.playlistId == ''){
+      print('当前没有播放列表');
+      return;
+    }
+
+    if (this.setting.playlistType == 0){
+      this.playMusicList = await this.cloud.getPlaylistMusic(this.setting.playlistId);
+
+      if (this.playMusicList.length != 0){
+        this.playlistMusics[this.setting.playlistId] = this.playMusicList;
+      }
+    } else if (this.setting.playlistType == 1) {
+      this.playMusicList = await this.cloud.getAlbumMusic(this.setting.playlistId);
+
+      if (this.playMusicList.length != 0){
+        this.albumMusic[this.setting.playlistId] = this.playMusicList;
+      }
+    } else if (this.setting.playlistType == 2) {
+      this.playMusicList = await this.cloud.getSingerMusic(this.setting.playlistId);
+
+      if (this.playMusicList.length != 0){
+        this.singerMusic[this.setting.playlistId] = this.playMusicList;
+      }
+    } else {
+      this.playMusicList = List.of(this.recommendList.music);
+    }
+
+    this.getPlayList();
+  }
+
   getPlayList() {
     if (this.setting.playType != 1) {
-      // this.playMusicControl.playMusicList = this.playMusicList.slice();
+      this.playMusicControl.playMusicList = List.from(this.playMusicList);
     } else {
-      // this.playMusicControl.playMusicList = shuffleArray(this.playMusicList.slice());
+      var shuffledList = List<Music>.from(this.playMusicList);
+      shuffledList.shuffle();
+      this.playMusicControl.playMusicList = shuffledList;
     }
-    // this.currentPlayMusicList = this.playMusicList.slice();
+    this.currentPlayMusicList = List<Music>.from(this.playMusicList);
+  }
+
+  getPlaylistMusic(Playlist playlist) async {
+    // 更新歌单音乐
+    var displayMusics = await this.cloud.getPlaylistMusic(playlist.listId);
+
+    this.playlistMusics[playlist.listId] = displayMusics;
+
+    if (displayList == playlist) {
+      this.displayMusics = displayMusics;
+    }
+
+    return displayMusics;
+  }
+
+  getDisplayPlaylist(Playlist playlist, {bool type = false}) async {
+    // 获取歌单音乐
+    if (this.playlistMusics.containsKey(playlist.listId)){
+      var displayMusics = this.playlistMusics[playlist.listId];
+      
+      this.displayMusics = displayMusics as List<Music>;
+      
+      return displayMusics;
+    }
+
+    var displayMusics = await this.cloud.getPlaylistMusic(playlist.listId);
+    this.playlistMusics[playlist.listId] = displayMusics;
+
+    if (this.displayListType == 'Playlist' && (this.displayList as Playlist).listId == playlist.listId) {
+      this.displayMusics = displayMusics;
+    }
+
+    return displayMusics;
+  }
+
+  getDisplayAlbum(Album album) async {
+    // 获取专辑音乐
+    if (this.albumMusic.containsKey(album.albumId)){
+      var displayMusics = this.albumMusic[album.albumId];
+      
+      this.displayMusics = displayMusics as List<Music>;
+      
+      return displayMusics;
+    }
+
+    var displayMusics = await this.cloud.getAlbumMusic(album.albumId);
+
+    this.albumMusic[album.albumId] = displayMusics;
+
+    if (this.displayListType == 'Album' && (this.displayList as Album).albumId == album.albumId) {
+      this.displayMusics = displayMusics as List<Music>;
+    }
+    
+    return displayMusics;
+  }
+
+  getDisplaySinger(Singer singer) async {
+    // 获取歌手音乐
+    if (this.singerMusic.containsKey(singer.singerId)){
+      List<Music> displayMusics = this.singerMusic[singer.singerId] ?? [];
+      List<Album> displayAlbums = this.singerAlbum[singer.singerId] ?? [];
+
+      this.displayMusics = displayMusics;
+      this.displayAlbums = displayAlbums;
+
+      return {
+        'musics': displayMusics,
+        'albums': displayAlbums
+      };
+    }
+
+    // 注意：CloudService 里 getSingerMusic / getSingerAlbum 没有声明返回类型，
+    // 静态类型是 Future<dynamic>。如果写成
+    //   List<List<dynamic>> data = await Future.wait([...]);
+    // 编译器会在元素上插入 Future<dynamic> -> Future<List<dynamic>> 的隐式向下转型，
+    // 运行时直接抛 "type 'Future<dynamic>' is not a subtype of type 'Future<List<dynamic>>'"。
+    // 所以这里显式写成 Future.wait<dynamic>，取到结果后再逐个转型。
+    final List<dynamic> data = await Future.wait<dynamic>([
+      this.cloud.getSingerMusic(singer.singerId),
+      this.cloud.getSingerAlbum(singer.singerId)
+    ]);
+
+    if (data.length < 2) {
+      print('获取歌手信息失败');
+
+      if (this.displayListType == 'Singer' &&
+          this.displayList is Singer &&
+          (this.displayList as Singer).singerId == singer.singerId) {
+        this.displayMusics = [];
+        this.displayAlbums = [];
+      }
+
+      return {
+        'musics': [],
+        'albums': []
+      };
+    }
+
+    List<Music> displayMusics = data[0] is List
+        ? List<Music>.from(data[0] as List)
+        : <Music>[];
+    List<Album> displayAlbums = data[1] is List
+        ? List<Album>.from(data[1] as List)
+        : <Album>[];
+
+    this.singerMusic[singer.singerId] = displayMusics;
+    this.singerAlbum[singer.singerId] = displayAlbums;
+
+    if (this.displayListType == 'Singer' &&
+        this.displayList is Singer &&
+        (this.displayList as Singer).singerId == singer.singerId) {
+      this.displayMusics = displayMusics;
+      this.displayAlbums = displayAlbums;
+    }
+
+    return {
+      'musics': displayMusics,
+      'albums': displayAlbums
+    };
+  }
+
+  listSearch(String keyword){
+    this.displayListSearchMusic = [];
+    if (this.displayMusics.length == 0){
+      return;
+    }
+
+    for (var i = 0; i < this.displayMusics.length; i++){
+      final music = this.displayMusics[i];
+      if (music.name.contains(keyword) || music.singer.contains(keyword) || music.album.contains(keyword)){
+        this.displayListSearchMusic.add(music);
+      }
+    }
+  }
+
+  createPlaylist(String name) async {
+    return await this.cloud.createPlaylist(name) as bool;
+  }
+
+  deletePlaylist(String listId) async {
+    return await this.cloud.deletePlaylist(listId) as bool;
+  }
+
+  addMusicToPlaylist(String listId, String musicId) async {
+    if (await this.cloud.addMusicToPlaylist(listId, musicId) as bool){
+
+      if (this.setting.playlistId == listId && this.setting.playlistType == 0){
+        var index = this.currentPlayMusicList.indexWhere((item) => item.id == musicId);
+
+        if (index == -1){
+          this.cloud.getMusicsDetails([musicId]).then((List<Music> musics) {
+            if (musics.length > 0 && this.setting.playlistId == listId && this.setting.playlistType == 0){
+              this.currentPlayMusicList.insert(0, musics[0]);
+              this.playMusicControl.playMusicList.insert(0, musics[0]);
+            }
+          });
+        }
+      }
+
+      if (this.playlistMusics.containsKey(listId)) {
+        List<Music> musics = this.playlistMusics[listId]!;
+        if (!musics.any((music) => music.id == musicId)){
+          this.cloud.getMusicsDetails([musicId]).then((List<Music> details) {
+            if (musics.length > 0 && this.setting.playlistId == listId && this.setting.playlistType == 0){
+              this.playlistMusics[listId]!.insert(0, musics[0]);
+              this.playlistMusicVersion++;  // 触发监听
+            }
+          });
+        }
+      }
+
+      return true;
+    }
+    return false;
+  }
+
+  deleteMusicFromPlaylist(String listId, String musicId) async {
+    if (await this.cloud.deleteMusicFromPlaylist(listId, musicId) as bool){
+      if (this.playlistMusics.containsKey(listId)){
+        this.playlistMusics[listId]?.removeWhere((item) => item.id == musicId);
+        this.playlistMusicVersion++;  // 触发监听
+      }
+
+      return true;
+    }
+    return false;
   }
 
   getVerificationCode(String mobile, String url, String type) async {
@@ -498,12 +807,13 @@ class Management extends ChangeNotifier {
 
   closePlayMusic() {
     this.playMusicList = [];
-    // this.playMusicControl.playMusicList = [];
+    this.playMusicControl.playMusicList = [];
     this.currentPlayMusicList = [];
 
     this.displayLyric = '';
-    // this.displayLyricList = [];
-    // this.musicProgress = 0;
+    this.displayLyricList = [];
+    this.musicProgress = 0;
+    this.progressNotifier.value = 0;
 
     this.setting.name = '';
     this.setting.singer = '';
@@ -517,7 +827,7 @@ class Management extends ChangeNotifier {
     this.setting.playlistType = 0;
     this.setting.play = false;
 
-    // this.playMusicControl.stop();
+    this.playMusicControl.stop();
 
     this.updateSetting();
     this.searchKeyword = '';
@@ -543,8 +853,8 @@ class Management extends ChangeNotifier {
     }
     this.updateSetting();
     refresh();
-    // this.getPlayList()
-    // this.playMusicControl.updateLoopMode()
+    this.getPlayList();
+    // this.playMusicControl.updateLoopMode();
   }
 
   updateAccountData() async {
@@ -597,4 +907,19 @@ class Management extends ChangeNotifier {
 
     init();
   }
+}
+
+String formatTime(int ms) {
+// 毫秒转秒
+  final totalSeconds = ms ~/ 1000;
+
+  // 计算分和秒
+  final minutes = totalSeconds ~/ 60;
+  final seconds = totalSeconds % 60;
+
+  // 补零格式化
+  final minStr = minutes.toString().padLeft(2, '0');
+  final secStr = seconds.toString().padLeft(2, '0');
+
+  return '$minStr:$secStr';
 }

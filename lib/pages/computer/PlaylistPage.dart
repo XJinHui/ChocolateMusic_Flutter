@@ -1,31 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
+import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/components/MusicComponents.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
 
-import 'package:chocolate_music/Type.dart';
-
 class PlaylistPage extends StatefulWidget {
   final Management management = Management();
+  // late List<Music> displayMusics = [];
+  // late List<Album> displayAlbums = [];
+
+  void getDisplay() {
+    final management = this.management;
+
+    management.displayMusics = [];
+    management.displayAlbums = [];
+
+    if (management.displayListType == 'Playlist'){
+      management.getDisplayPlaylist(management.displayList as Playlist);
+    }
+    else if (management.displayListType == 'Album'){
+      management.getDisplayAlbum(management.displayList as Album);
+    }
+    else if (management.displayListType == 'Singer'){
+      management.getDisplaySinger(management.displayList as Singer);
+      // displayMusics = display['musics'];
+      // displayAlbums = display['albums'];
+    }
+
+    // 如果 Management 中的字段没有自动通知，这里保证页面刷新
+    management.refresh();
+  }
 
   @override
   State<PlaylistPage> createState() => _PlaylistPageState();
 }
 
 class _PlaylistPageState extends State<PlaylistPage> {
-  late String displayListType = widget.management.displayListType;
+  // 注意：不要再把 displayListType 缓存成页面字段。
+  // 同一个 PlaylistPage 会被歌单/专辑/歌手复用，缓存下来的类型会变成旧值，
+  // 需要时直接从 Management 里读当前值。
+  @override
+  // void initState() {
+  //   super.initState();
+  //   // 自动调用 widget 中的方法，填充数据
+  //   widget.getDisplay();
+  //   // 如果数据变化后需要刷新界面，可以调用 setState
+  //   // 但注意：getDisplay 修改的是 widget 的变量，不会自动触发重建，
+  //   // 所以我们需要手动 setState 让 build 使用新数据
+  //   setState(() {});
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.background,
-      // child: Container(
-      padding: EdgeInsets.only(top: 10, left: 20, right: 20),
-      child: Scaffold(
-        backgroundColor: AppColors.background, // 覆盖主题默认值
-        body: CustomScrollView(
+    return ListenableBuilder(
+      listenable: widget.management,
+      builder: (BuildContext context, Widget? child) {
+        return Container(
+          color: AppColors.background,
+          // child: Container(
+          padding: EdgeInsets.only(top: 10, left: 20, right: 20),
+          child: Scaffold(
+            backgroundColor: AppColors.background, // 覆盖主题默认值
+            body: CustomScrollView(
           // child: Column(
           // mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
           // crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
@@ -78,15 +116,13 @@ class _PlaylistPageState extends State<PlaylistPage> {
             SliverToBoxAdapter(child: SizedBox(height: 10)),
             // SizedBox(height: 10),
 
-            // SliverList(),
-            SliverToBoxAdapter(
-              child:
-                  MusicList(), // 或者用 SliverList 构建，但 MusicList 返回的是 Column，需要用 SliverToBoxAdapter
-            ),
-            // MusicList(),
+            // 歌曲列表：懒加载，只构建视口内的行，滚出视口即被回收
+            MusicListSliver(management: widget.management),
           ],
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -102,7 +138,33 @@ class PlaylistDate extends StatefulWidget {
 }
 
 class _PlaylistDateState extends State<PlaylistDate> {
-  late String displayListType = widget.management.displayListType;
+  // 当前展示的对象可能是 Playlist / Album / Singer。
+  // 统一在这里按实际类型取封面和标题，避免像原来那样无条件
+  // `as Playlist` 而抛出 "type 'Singer' is not a subtype of type 'Playlist' in type cast"。
+  Object? get _displayList {
+    // displayList 是 late 字段，首次进入程序时可能还没赋值，这里做一次兜底
+    try {
+      return widget.management.displayList;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String get _cover {
+    final Object? list = _displayList;
+    if (list is Playlist) return list.cover;
+    if (list is Album) return list.cover;
+    if (list is Singer) return list.cover;
+    return '';
+  }
+
+  String get _title {
+    final Object? list = _displayList;
+    if (list is Playlist) return list.name;
+    if (list is Album) return list.album;
+    if (list is Singer) return list.singer;
+    return '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,8 +174,7 @@ class _PlaylistDateState extends State<PlaylistDate> {
           borderRadius: BorderRadius.circular(widget.currentHeight / 5),
           // 根据需要设置圆角大小
           child: RemoteImage(
-            // widget.cover,
-            (widget.management.displayList as Playlist).cover,
+            _cover,
             headers: const {
               'User-Agent':
                   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
@@ -152,13 +213,7 @@ class _PlaylistDateState extends State<PlaylistDate> {
               children: [
                 // SizedBox(height: 20),
                 Text(
-                  displayListType == 'Playlist'
-                      ? (widget.management.displayList as Playlist).name
-                      : displayListType == 'Singer'
-                      ? (widget.management.displayList as Singer).singer
-                      : displayListType == 'Album'
-                      ? (widget.management.displayList as Album).album
-                      : '',
+                  _title,
                   style: TextStyle(
                     color: AppColors.playlistNameColor,
                     fontWeight: FontWeight.bold,
@@ -191,6 +246,10 @@ class _PlaylistDateState extends State<PlaylistDate> {
                 ElevatedButton.icon(
                   onPressed: () {
                     /* 点击逻辑 */
+                    if (widget.management.displayMusics.length != 0) {
+                      widget.management.playMusic(widget.management.displayMusics[0]);
+                      print('播放音乐: ${widget.management.displayMusics[0].name}');
+                    }
                   },
                   icon: const Icon(size: 20, BootstrapIcons.play_fill),
                   label: const Text(
@@ -236,13 +295,7 @@ class _PlaylistDateState extends State<PlaylistDate> {
                         ),
               ),
               Text(
-                displayListType == 'Playlist'
-                    ? (widget.management.displayList as Playlist).name
-                    : displayListType == 'Singer'
-                    ? (widget.management.displayList as Singer).singer
-                    : displayListType == 'Album'
-                    ? (widget.management.displayList as Album).album
-                    : '',
+                _title,
                 style: TextStyle(
                   color: AppColors.playlistNameColor,
                   fontWeight: FontWeight.bold,
@@ -351,34 +404,50 @@ class _MusicListTagDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-class MusicList extends StatefulWidget {
-  final Management management = Management();
+/// 歌曲列表（懒加载）。
+///
+/// 原实现是 `SliverToBoxAdapter` + `Column`：进入歌单时会一次性构建
+/// 全部歌曲（歌单可能上千首），每行又各自发起一次封面请求，
+/// 首帧耗时、内存占用都随歌单长度线性增长，滚动时还要重建整屏。
+///
+/// 换成 `SliverFixedExtentList` 之后：
+/// - 只构建视口 + cacheExtent 内的行，滚出视口立刻回收对应的 Element
+///   与已解码的封面，长歌单的内存占用与歌单长度解耦；
+/// - 行高固定（80 + 10 间距），滚动时无需逐行测量，
+///   滚动位置、`jumpTo` 的计算都是 O(1)，快速滚动不会掉帧。
+class MusicListSliver extends StatelessWidget {
+  /// 单行总高度：ComputerMusicWidget 自身 80 + 行间距 10。
+  static const double rowExtent = 90;
 
-  @override
-  State<MusicList> createState() => _MusicListState();
-}
+  final Management management;
 
-class _MusicListState extends State<MusicList> {
+  const MusicListSliver({Key? key, required this.management}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: [
-          // 添加你的音乐列表项
-          for (int i = 0; i < widget.management.displayMusics.length; i++)
-            Column(
-              children: [
-                ComputerMusicWidget(
-                  music: widget.management.displayMusics[i],
-                  displayList: widget.management.displayList,
-                  displayListType: widget.management.displayListType,
-                  num: i + 1,
-                ),
-                if (i < widget.management.displayMusics.length - 1)
-                  SizedBox(height: 10),
-              ],
+    final List<Music> musics = management.displayMusics;
+
+    return SliverFixedExtentList(
+      itemExtent: rowExtent,
+      delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          return Padding(
+            // 行间距放在 item 内部，保证每行高度都恰好等于 rowExtent
+            padding: const EdgeInsets.only(bottom: 10),
+            child: ComputerMusicWidget(
+              music: musics[index],
+              displayList: management.displayList,
+              displayListType: management.displayListType,
+              num: index + 1,
+              displayMusics: musics,
             ),
-        ],
+          );
+        },
+        childCount: musics.length,
+        // 不保活：滚出视口的行连 State 一起释放，避免内存常驻
+        addAutomaticKeepAlives: false,
+        // 长列表不需要语义索引，去掉可减少每行的语义节点
+        addSemanticIndexes: false,
       ),
     );
   }

@@ -23,28 +23,42 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
     return Container(
       child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(widget.size / 5), // 根据需要设置圆角大小
-            child: RemoteImage(
-              // widget.cover,
-              widget.playlist.cover,
-              headers: const {
-                'User-Agent':
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-              },
-              width: widget.size,
-              height: widget.size,
-              fit: BoxFit.cover,
-              // 加载失败时，errorBuilder 会被调用
-              errorBuilder: (context, error, stackTrace) {
-                // 返回你的本地图片
-                return Image.asset(
-                  'assets/images/app_photo.png',
-                  width: widget.size,
-                  height: widget.size,
-                  fit: BoxFit.cover,
-                );
-              },
+          GestureDetector(
+            onTap: () {
+              Management().selectedPage = 'PlaylistPage';
+              Management().displayList = widget.playlist;
+              Management().displayListType = 'Playlist';
+
+              Management().displayMusics = [];
+              Management().displayAlbums = [];
+              Management().getDisplayPlaylist(widget.playlist);
+
+              Management().refresh();
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(widget.size / 5),
+              // 根据需要设置圆角大小
+              child: RemoteImage(
+                // widget.cover,
+                widget.playlist.cover,
+                headers: const {
+                  'User-Agent':
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                },
+                width: widget.size,
+                height: widget.size,
+                fit: BoxFit.cover,
+                // 加载失败时，errorBuilder 会被调用
+                errorBuilder: (context, error, stackTrace) {
+                  // 返回你的本地图片
+                  return Image.asset(
+                    'assets/images/app_photo.png',
+                    width: widget.size,
+                    height: widget.size,
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
             ),
           ),
 
@@ -56,6 +70,7 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
               widget.playlist.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18, color: AppColors.normalText),
             ),
           ),
@@ -82,28 +97,42 @@ class _AlbumWidgetState extends State<AlbumWidget> {
     return Container(
       child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(widget.size / 5), // 根据需要设置圆角大小
-            child: RemoteImage(
-              // widget.cover,
-              widget.album.cover,
-              headers: const {
-                'User-Agent':
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-              },
-              width: widget.size,
-              height: widget.size,
-              fit: BoxFit.cover,
-              // 加载失败时，errorBuilder 会被调用
-              errorBuilder: (context, error, stackTrace) {
-                // 返回你的本地图片
-                return Image.asset(
-                  'assets/images/app_photo.png',
-                  width: widget.size,
-                  height: widget.size,
-                  fit: BoxFit.cover,
-                );
-              },
+          GestureDetector(
+            onTap: () {
+              Management().selectedPage = 'PlaylistPage';
+              Management().displayList = widget.album;
+              Management().displayListType = 'Album';
+
+              Management().displayMusics = [];
+              Management().displayAlbums = [];
+              Management().getDisplayAlbum(widget.album);
+
+              Management().refresh();
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(widget.size / 5),
+              // 根据需要设置圆角大小
+              child: RemoteImage(
+                // widget.cover,
+                widget.album.cover,
+                headers: const {
+                  'User-Agent':
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                },
+                width: widget.size,
+                height: widget.size,
+                fit: BoxFit.cover,
+                // 加载失败时，errorBuilder 会被调用
+                errorBuilder: (context, error, stackTrace) {
+                  // 返回你的本地图片
+                  return Image.asset(
+                    'assets/images/app_photo.png',
+                    width: widget.size,
+                    height: widget.size,
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
             ),
           ),
 
@@ -115,6 +144,7 @@ class _AlbumWidgetState extends State<AlbumWidget> {
               widget.album.album,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18, color: AppColors.normalText),
             ),
           ),
@@ -141,28 +171,42 @@ class _SingerWidgetState extends State<SingerWidget> {
     return Container(
       child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(widget.size / 5), // 根据需要设置圆角大小
-            child: RemoteImage(
-              // widget.cover,
-              widget.singer.cover,
-              headers: const {
-                'User-Agent':
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-              },
-              width: widget.size,
-              height: widget.size,
-              fit: BoxFit.cover,
-              // 加载失败时，errorBuilder 会被调用
-              errorBuilder: (context, error, stackTrace) {
-                // 返回你的本地图片
-                return Image.asset(
-                  'assets/images/app_photo.png',
-                  width: widget.size,
-                  height: widget.size,
-                  fit: BoxFit.cover,
-                );
-              },
+          GestureDetector(
+            onTap: () {
+              Management().selectedPage = 'PlaylistPage';
+              Management().displayList = widget.singer;
+              Management().displayListType = 'Singer';
+
+              Management().displayMusics = [];
+              Management().displayAlbums = [];
+              Management().getDisplaySinger(widget.singer);
+
+              Management().refresh();
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(widget.size / 5),
+              // 根据需要设置圆角大小
+              child: RemoteImage(
+                // widget.cover,
+                widget.singer.cover,
+                headers: const {
+                  'User-Agent':
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                },
+                width: widget.size,
+                height: widget.size,
+                fit: BoxFit.cover,
+                // 加载失败时，errorBuilder 会被调用
+                errorBuilder: (context, error, stackTrace) {
+                  // 返回你的本地图片
+                  return Image.asset(
+                    'assets/images/app_photo.png',
+                    width: widget.size,
+                    height: widget.size,
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
             ),
           ),
 
@@ -174,6 +218,7 @@ class _SingerWidgetState extends State<SingerWidget> {
               widget.singer.singer,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18, color: AppColors.normalText),
             ),
           ),
@@ -200,107 +245,127 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) {
-        setState(() {
-          isHovering = true; // 鼠标进入，更新状态
-        });
+    return GestureDetector(
+      onTap: () {
+        this.management.displayList = Playlist(
+          name: '',
+          listId: '',
+          cover: '',
+          audioCount: 0,
+        );
+        this.management.displayMusics = List.of(
+          this.management.recommendList.music,
+        );
+        this.management.playMusic(widget.music);
+        print('播放音乐: ${widget.music.name}');
       },
-      onExit: (_) {
-        setState(() {
-          isHovering = false; // 鼠标离开，恢复状态
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.only(bottom: 10, top: 10, left: 15, right: 20),
-        width: widget.width,
-        height: 80,
-        decoration: BoxDecoration(
-          color: isHovering ? AppColors.panel : AppColors.transparent,
-          // color: AppColors.panel,
-          borderRadius: BorderRadius.circular(16), // 圆角
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
-              child: RemoteImage(
-                // widget.cover,
-                widget.music.cover,
-                headers: const {
-                  'User-Agent':
-                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-                },
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                // 加载失败时，errorBuilder 会被调用
-                errorBuilder: (context, error, stackTrace) {
-                  // 返回你的本地图片
-                  return Image.asset(
-                    'assets/images/app_photo.png',
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  );
-                },
+      child: MouseRegion(
+        onEnter: (_) {
+          setState(() {
+            isHovering = true; // 鼠标进入，更新状态
+          });
+        },
+        onExit: (_) {
+          setState(() {
+            isHovering = false; // 鼠标离开，恢复状态
+          });
+        },
+        child: Container(
+          padding: EdgeInsets.only(bottom: 10, top: 10, left: 15, right: 20),
+          width: widget.width,
+          height: 80,
+          decoration: BoxDecoration(
+            color: isHovering ? AppColors.panel : AppColors.transparent,
+            // color: AppColors.panel,
+            borderRadius: BorderRadius.circular(16), // 圆角
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
+                child: RemoteImage(
+                  // widget.cover,
+                  widget.music.cover,
+                  headers: const {
+                    'User-Agent':
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                  },
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  // 列表里的封面只有 60×60，按 2 倍设备像素比解码即可，
+                  // 避免把 500×500 以上的原图整张解码进内存
+                  cacheWidth: 120,
+                  cacheHeight: 120,
+                  // 加载失败时，errorBuilder 会被调用
+                  errorBuilder: (context, error, stackTrace) {
+                    // 返回你的本地图片
+                    return Image.asset(
+                      'assets/images/app_photo.png',
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                ),
               ),
-            ),
 
-            SizedBox(width: 10),
+              SizedBox(width: 10),
 
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
-                crossAxisAlignment: CrossAxisAlignment.start, // 水平居中
-                children: [
-                  Text(
-                    widget.music.name,
-                    textAlign: TextAlign.left,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: AppColors.musicNameColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  Text(
-                    widget.music.singer,
-                    textAlign: TextAlign.left,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 17,
-                      color: AppColors.musicSingerColor,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(width: 10),
-
-            if (isHovering)
-              GestureDetector(
-                onTap: () {
-                  // 处理喜欢按钮点击事件
-                },
-                child: management.cloud.collectionList.contains(widget.music.id)
-                    ? Icon(
-                        BootstrapIcons.heart_fill,
-                        color: AppColors.likeIconColor,
-                        size: 20,
-                      )
-                    : Icon(
-                        BootstrapIcons.heart,
-                        color: AppColors.buttonIcon,
-                        size: 20,
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
+                  crossAxisAlignment: CrossAxisAlignment.start, // 水平居中
+                  children: [
+                    Text(
+                      widget.music.name,
+                      textAlign: TextAlign.left,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: AppColors.musicNameColor,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
+
+                    Text(
+                      widget.music.singer,
+                      textAlign: TextAlign.left,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 17,
+                        color: AppColors.musicSingerColor,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-          ],
+
+              SizedBox(width: 10),
+
+              if (isHovering)
+                GestureDetector(
+                  onTap: () {
+                    // 处理喜欢按钮点击事件
+                  },
+                  child:
+                      management.cloud.collectionList.contains(widget.music.id)
+                      ? Icon(
+                          BootstrapIcons.heart_fill,
+                          color: AppColors.likeIconColor,
+                          size: 20,
+                        )
+                      : Icon(
+                          BootstrapIcons.heart,
+                          color: AppColors.buttonIcon,
+                          size: 20,
+                        ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -312,6 +377,7 @@ class ComputerMusicWidget extends StatefulWidget {
   final String displayListType;
   final Music music;
   final int num;
+  final List<Music> displayMusics;
 
   ComputerMusicWidget({
     Key? key,
@@ -319,6 +385,7 @@ class ComputerMusicWidget extends StatefulWidget {
     required this.displayList,
     required this.displayListType,
     required this.num,
+    required this.displayMusics,
   }) : super(key: key);
 
   @override
@@ -341,145 +408,167 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) {
-        setState(() {
-          isHovering = true; // 鼠标进入，更新状态
-        });
+    return GestureDetector(
+      onTap: () {
+        // 处理整行点击，播放当前音乐
+        this.management.displayList = widget.displayList;
+        this.management.displayMusics = widget.displayMusics;
+        this.management.playMusic(widget.music);
+        print('播放音乐: ${widget.music.name}');
       },
-      onExit: (_) {
-        setState(() {
-          isHovering = false; // 鼠标离开，恢复状态
-        });
-      },
+      child: MouseRegion(
+        onEnter: (_) {
+          setState(() {
+            isHovering = true; // 鼠标进入，更新状态
+          });
+        },
+        onExit: (_) {
+          setState(() {
+            isHovering = false; // 鼠标离开，恢复状态
+          });
+        },
 
-      child: Container(
-        height: 80,
-        padding: EdgeInsets.only(bottom: 10, top: 10, left: 15, right: 15),
-        decoration: BoxDecoration(
-          color: isHovering ? AppColors.panel : AppColors.transparent,
-          // color: AppColors.panel,
-          borderRadius: BorderRadius.circular(16), // 圆角
-        ),
+        child: Container(
+          height: 80,
+          padding: EdgeInsets.only(bottom: 10, top: 10, left: 15, right: 15),
+          decoration: BoxDecoration(
+            color: isHovering ? AppColors.panel : AppColors.transparent,
+            // color: AppColors.panel,
+            borderRadius: BorderRadius.circular(16), // 圆角
+          ),
 
-        child: Row(
-          children: [
-            Text(
-              widget.num.toString(),
-              textAlign: TextAlign.left,
-              style: TextStyle(fontSize: 16, color: AppColors.musicIndexColor),
-            ),
-
-            SizedBox(width: 15),
-
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
-              child: RemoteImage(
-                // widget.cover,
-                widget.music.cover,
-                headers: const {
-                  'User-Agent':
-                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-                },
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                // 加载失败时，errorBuilder 会被调用
-                errorBuilder: (context, error, stackTrace) {
-                  // 返回你的本地图片
-                  return Image.asset(
-                    'assets/images/app_photo.png',
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  );
-                },
-              ),
-            ),
-
-            SizedBox(width: 10),
-
-            Expanded(
-              child: Container(
-                width: 80,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
-                  crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
-                  children: [
-                    Text(
-                      widget.music.name,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: AppColors.musicNameColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    Text(
-                      widget.music.singer,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.musicSingerColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            SizedBox(width: 10),
-
-            GestureDetector(
-              onTap: () {
-                // 处理喜欢按钮点击事件
-              },
-              child:
-                  management.cloud?.collectionList.contains(widget.music.id) ??
-                  false
-                  ? Icon(
-                      BootstrapIcons.heart_fill,
-                      color: AppColors.likeIconColor,
-                      size: 20,
-                    )
-                  : Icon(
-                      BootstrapIcons.heart,
-                      color: AppColors.buttonIcon,
-                      size: 20,
-                    ),
-            ),
-
-            SizedBox(width: 50),
-
-            Container(
-              width: 200,
-              child: Text(
-                widget.music.album,
+          child: Row(
+            children: [
+              Text(
+                widget.num.toString(),
                 textAlign: TextAlign.left,
                 style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.albumNameColor,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: AppColors.musicIndexColor,
                 ),
               ),
-            ),
 
-            SizedBox(width: 15),
+              SizedBox(width: 15),
 
-            Container(
-              width: 50,
-              child: Text(
-                formatTime(widget.music.time / 1000),
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.musicTimeColor,
-                  // fontWeight: FontWeight.bold,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
+                child: RemoteImage(
+                  // widget.cover,
+                  widget.music.cover,
+                  headers: const {
+                    'User-Agent':
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                  },
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  // 列表里的封面只有 60×60，按 2 倍设备像素比解码即可，
+                  // 避免把 500×500 以上的原图整张解码进内存
+                  cacheWidth: 120,
+                  cacheHeight: 120,
+                  // 加载失败时，errorBuilder 会被调用
+                  errorBuilder: (context, error, stackTrace) {
+                    // 返回你的本地图片
+                    return Image.asset(
+                      'assets/images/app_photo.png',
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
               ),
-            ),
-          ],
+
+              SizedBox(width: 10),
+
+              Expanded(
+                child: Container(
+                  width: 80,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
+                    crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
+                    children: [
+                      Text(
+                        widget.music.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppColors.musicNameColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      Text(
+                        widget.music.singer,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: AppColors.musicSingerColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(width: 10),
+
+              GestureDetector(
+                onTap: () {
+                  // 处理喜欢按钮点击事件
+                },
+                child:
+                    management.cloud?.collectionList.contains(
+                          widget.music.id,
+                        ) ??
+                        false
+                    ? Icon(
+                        BootstrapIcons.heart_fill,
+                        color: AppColors.likeIconColor,
+                        size: 20,
+                      )
+                    : Icon(
+                        BootstrapIcons.heart,
+                        color: AppColors.buttonIcon,
+                        size: 20,
+                      ),
+              ),
+
+              SizedBox(width: 50),
+
+              Container(
+                width: 200,
+                child: Text(
+                  widget.music.album,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.albumNameColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              SizedBox(width: 15),
+
+              Container(
+                width: 50,
+                child: Text(
+                  formatTime(widget.music.time / 1000),
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.musicTimeColor,
+                    // fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

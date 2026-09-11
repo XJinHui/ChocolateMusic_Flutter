@@ -159,7 +159,7 @@ class Neteasecloud implements CloudService {
       var num = list.length - 1; // 添加后的索引（即原来的长度）
       this.accountData.data[1][num] = this.userData;
 
-      print('${this.accountData}');
+      // print('${this.accountData}');
       this.accountData.login = [1, num];
 
       this.cookies = cookies;
@@ -190,7 +190,7 @@ class Neteasecloud implements CloudService {
         '/login/qr/check?key=${this.key}&timestamp=${timestamp}',
       );
 
-      print(response.data);
+      // print(response.data);
 
       n = response.data['code'];
 
@@ -232,7 +232,7 @@ class Neteasecloud implements CloudService {
     var num = list.length - 1; // 添加后的索引（即原来的长度）
     this.accountData.data[1][num] = this.userData;
 
-    print('${this.accountData}');
+    // print('${this.accountData}');
     this.accountData.login = [1, num];
 
     this.cookies = cookies;
@@ -528,7 +528,7 @@ class Neteasecloud implements CloudService {
         var ids = data.map<String>((item) => item['id'].toString()).toList();
 
         musicIds = musicIds + ids;
-        print('当前已获取歌曲ID: ${musicIds}');
+        // print('当前已获取歌曲ID: ${musicIds}');
       } catch (error) {
         print('getSingerAllMusic 异常: ${error}');
       }
@@ -536,8 +536,8 @@ class Neteasecloud implements CloudService {
 
     List<Music> musics = await this.getMusicsDetails(musicIds);
 
-    print('最终歌曲数量: ${musics.length}');
-    print('最终歌曲: ${musics}');
+    // print('最终歌曲数量: ${musics.length}');
+    // print('最终歌曲: ${musics}');
 
     return musics;
   }
@@ -568,8 +568,8 @@ class Neteasecloud implements CloudService {
 
       musics = await this.getMusicsDetails(ids);
 
-      print('最终歌曲数量: ${musics.length}');
-      print('最终歌曲: ${musics}');
+      // print('最终歌曲数量: ${musics.length}');
+      // print('最终歌曲: ${musics}');
 
       return musics;
     } catch (error) {
@@ -889,7 +889,7 @@ class Neteasecloud implements CloudService {
       }
 
       print('最终搜索专辑数量: ${albums.length}');
-      print('最终搜索专辑: ${jsonEncode(albums)}');
+      // print('最终搜索专辑: ${jsonEncode(albums)}');
       return albums;
     } catch (error) {
       print('searchAlbum 异常: ${error}');
@@ -908,7 +908,7 @@ class Neteasecloud implements CloudService {
 
       if (response.statusCode != 200 || response.data['code'] != 200) {
         print('获取歌曲播放链接失败: ${jsonEncode(response.data)}');
-        return false;
+        return '';
       }
 
       var musicUrl = response.data['data'][0]['url'];
@@ -920,14 +920,14 @@ class Neteasecloud implements CloudService {
         print('未获取到歌曲播放链接,正在尝试解灰匹配的歌曲播放链接');
         musicUrl = await this.getMatchtMusicUrl(musicId, level: bitrate);
         if (musicUrl == null || musicUrl.isEmpty) {
-          return false;
+          return '';
         }
       }
 
       return musicUrl;
     } catch (error) {
       print('getMusicUrl 异常: ${error}');
-      return false;
+      return '';
     }
   }
 
@@ -942,7 +942,7 @@ class Neteasecloud implements CloudService {
 
       if (response.statusCode != 200 || response.data['code'] != 200) {
         print('获取歌曲播放链接失败: ${jsonEncode(response.data)}');
-        return false;
+        return '';
       }
 
       var musicUrl = response.data['data'][0]['url'];
@@ -951,13 +951,13 @@ class Neteasecloud implements CloudService {
 
       if (musicUrl == null || musicUrl.isEmpty) {
         print('未获取到歌曲播放链接,且未匹配成功的歌曲播放链接');
-        return false;
+        return '';
       }
 
       return musicUrl;
     } catch (error) {
       print('getMatchtMusicUrl 异常: ${error}');
-      return false;
+      return '';
     }
   }
 
@@ -1010,7 +1010,7 @@ class Neteasecloud implements CloudService {
         musics.add(music);
       }
 
-      print('最终音乐详情: ${musics}');
+      // print('最终音乐详情: ${musics}');
 
       return musics;
     } catch (error) {
@@ -1034,7 +1034,7 @@ class Neteasecloud implements CloudService {
       }
 
       var data = response.data['data']['artist'];
-      print('歌手详情响应: ${jsonEncode(data)}');
+      // print('歌手详情响应: ${jsonEncode(data)}');
 
       Singer singer = Singer(
         singer: data['name'],
@@ -1044,7 +1044,7 @@ class Neteasecloud implements CloudService {
         albumCount: data['albumSize'],
       );
 
-      print('最终歌手详情: ${jsonEncode(singer)}');
+      // print('最终歌手详情: ${jsonEncode(singer)}');
 
       return singer;
     } catch (error) {
@@ -1068,7 +1068,7 @@ class Neteasecloud implements CloudService {
       }
 
       var data = response.data['album'];
-      print('专辑详情响应: ${jsonEncode(data)}');
+      // print('专辑详情响应: ${jsonEncode(data)}');
 
       var singer = '';
       for (var i in data['artists']) {
@@ -1086,7 +1086,7 @@ class Neteasecloud implements CloudService {
         audioCount: data['size'],
       );
 
-      print('最终专辑详情: ${jsonEncode(album)}');
+      // print('最终专辑详情: ${jsonEncode(album)}');
 
       return album;
     } catch (error) {
@@ -1119,7 +1119,7 @@ class Neteasecloud implements CloudService {
         cover: this.getCover(data['coverImgUrl']),
       );
 
-      print('歌单详情响应: ${jsonEncode(data)}');
+      // print('歌单详情响应: ${jsonEncode(data)}');
 
       return playlist;
     } catch (error) {
@@ -1149,7 +1149,7 @@ class Neteasecloud implements CloudService {
         lyric += tlyric;
       }
 
-      print('歌词响应: ${jsonEncode(lyric)}');
+      // print('歌词响应: ${jsonEncode(lyric)}');
 
       return lyric;
     } catch (error) {
@@ -1174,13 +1174,193 @@ class Neteasecloud implements CloudService {
     }
   }
 
-  createPlaylist(String name) async {}
+  createPlaylist(String name) async {
+    try {
+      var timestamp = DateTime.now().millisecondsSinceEpoch;
 
-  deletePlaylist(String listId) async {}
+      var response = await Neteasecloud.dio.get(
+        '/playlist/create?timestamp=${timestamp}',
+        options: Options(headers: {'Cookie': this.cookies}),
+        queryParameters: {'name': name},
+      );
 
-  addMusicToPlaylist(String listId, String musicId) async {}
+      // print('创建歌单响应: ${jsonEncode(response.data)}');
 
-  deleteMusicFromPlaylist(String listId, String musicId) async {}
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('创建歌单失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      var listid = response.data['id'];
+      Playlist playlist = Playlist(
+        name: name,
+        listId: listid,
+        audioCount: 0,
+        cover: '',
+      );
+
+      this.playlist.add(playlist);
+
+      print('创建歌单成功，歌单id: ${listid}');
+
+      return true;
+    } catch (error) {
+      print('createPlaylist 异常: ${error}');
+      return false;
+    }
+  }
+
+  deletePlaylist(String listId) async {
+    if (listId == this.collectionListId) {
+      print('无法删除收藏歌单');
+      return false;
+    }
+
+    try {
+      var timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      var response = await Neteasecloud.dio.get(
+        '/playlist/delete?id=${listId}&timestamp=${timestamp}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('删除歌单响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('删除歌单失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      // for (var i = 0; i < this.playlist.length; i++) {
+      //   if (this.playlist[i].listId == listId) {
+      //     this.playlist.removeAt(i);
+      //     break;
+      //   }
+      // }
+
+      playlist.removeWhere((item) => item.listId == listId);
+
+      print('删除歌单成功，歌单id: ${listId}');
+
+      return true;
+    } catch (error) {
+      print('deletePlaylist 异常: ${error}');
+      return false;
+    }
+  }
+
+  addMusicToPlaylist(String listId, String musicId) async {
+    try {
+      var timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      var response = await Neteasecloud.dio.get(
+        '/playlist/tracks?op=add&pid=${listId}&tracks=${musicId}&timestamp=${timestamp}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('添加歌曲到歌单响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200) {
+        print('添加歌曲到歌单失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      if (response.data.containsKey('code') && response.data['code'] != null) {
+        if (response.data['code'] != 200) {
+          print('添加歌曲到歌单失败: ${jsonEncode(response.data)}');
+          return false;
+        }
+      } else {
+        if (response.data['status'] != 200 ||
+            response.data['body']['code'] != 200) {
+          print('添加歌曲到歌单失败: ${jsonEncode(response.data)}');
+          return false;
+        }
+      }
+
+      print('添加歌曲到歌单成功，歌单id: ${listId}, 歌曲id: ${musicId}');
+
+      if (listId == this.collectionListId) {
+        if (this.collectionList.contains(musicId)) {
+          print('音乐已在我喜欢歌单中，无需重复添加，音乐id: ${musicId}');
+        } else {
+          this.collectionList.add(musicId);
+          print('音乐成功添加到我喜欢歌单，音乐id: ${musicId}');
+        }
+      }
+
+      var index = this.playlist.indexWhere((item) => item.listId == listId);
+      if (index != -1) {
+        this.playlist[index].audioCount += 1;
+        print(
+          '歌单音乐数量加1，歌单id: ${listId}, 当前数量: ${this.playlist[index].audioCount}',
+        );
+      } else {
+        print('未找到对应歌单，无法更新音乐数量，歌单id: ${listId}');
+      }
+
+      return true;
+    } catch (error) {
+      print('addMusicToPlaylist 异常: ${error}');
+      return false;
+    }
+  }
+
+  deleteMusicFromPlaylist(String listId, String musicId) async {
+    try {
+      var timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      var response = await Neteasecloud.dio.get(
+        '/playlist/tracks?op=del&pid=${listId}&tracks=${musicId}&timestamp=${timestamp}',
+        options: Options(headers: {'Cookie': this.cookies}),
+      );
+
+      // print('从歌单删除歌曲响应: ${jsonEncode(response.data)}');
+
+      if (response.statusCode != 200 || response.data['code'] != 200) {
+        print('从歌单删除歌曲失败: ${jsonEncode(response.data)}');
+        return false;
+      }
+
+      print('从歌单删除歌曲成功，歌单id: ${listId}, 歌曲id: ${musicId}');
+
+      // if (listId == this.collectionListId) {
+      //   var index = this.collectionList.indexOf(musicId);
+      //   if (index != -1) {
+      //     this.collectionList.removeAt(index);
+      //     print('音乐成功从我喜欢歌单删除，音乐id: ${musicId}');
+      //   } else {
+      //     print('音乐不在我喜欢歌单中，无需删除，音乐id: ${musicId}');
+      //   }
+      // }
+
+      if (listId == this.collectionListId) {
+        if (this.collectionList.remove(musicId)) {
+          print('音乐成功从我喜欢歌单删除，音乐id: ${musicId}');
+        } else {
+          print('音乐不在我喜欢歌单中，无需删除，音乐id: ${musicId}');
+        }
+      }
+
+      var index = this.playlist.indexWhere((item) => item.listId == listId);
+      if (index != -1) {
+        this.playlist[index].audioCount = max(
+          0,
+          this.playlist[index].audioCount - 1,
+        );
+        print(
+          '歌单音乐数量减1，歌单id: ${listId}, 当前数量: ${this.playlist[index].audioCount}',
+        );
+      } else {
+        print('未找到对应歌单，无法更新音乐数量，歌单id: ${listId}');
+      }
+
+      return true;
+    } catch (error) {
+      print('deleteMusicFromPlaylist 异常: ${error}');
+      return false;
+    }
+  }
 
   extractCookieString(String rawCookie) {
     // 按分号分割各个部分

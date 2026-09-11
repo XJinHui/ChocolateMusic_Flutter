@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/Management.dart';
@@ -12,6 +13,36 @@ class PlaybackControlBar extends StatefulWidget {
 }
 
 class _PlaybackControlBarState extends State<PlaybackControlBar> {
+  @override
+  void initState() {
+    super.initState();
+    FocusManager.instance.addEarlyKeyEventHandler(_handlePlaybackKey);
+  }
+
+  KeyEventResult _handlePlaybackKey(KeyEvent event) {
+    final keyboard = HardwareKeyboard.instance;
+    if (event.logicalKey != LogicalKeyboardKey.space ||
+        keyboard.isControlPressed ||
+        keyboard.isAltPressed ||
+        keyboard.isMetaPressed ||
+        keyboard.isShiftPressed) {
+      return KeyEventResult.ignored;
+    }
+
+    // 窗口收到空格时优先处理，不依赖播放栏或输入框的焦点。
+    // 忽略长按重复事件和窗口切换时补发的按键事件。
+    if (event is KeyDownEvent && !event.synthesized) {
+      widget.management.playMusicControl.pausePlayMusic();
+    }
+    return KeyEventResult.handled;
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeEarlyKeyEventHandler(_handlePlaybackKey);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -50,21 +81,24 @@ class _PlaybackControlBarState extends State<PlaybackControlBar> {
               Row(
                 children: [
                   GestureDetector(
-                      onTap: () {
-                        // 处理喜欢按钮点击事件
-                      },
-                      child: widget.management.account.type != '' && widget.management.cloud.collectionList.contains(
-                          widget.management.setting.id)
-                          ? Icon(
-                        BootstrapIcons.heart_fill,
-                        color: AppColors.likeIconColor,
-                        size: 20,
-                      )
-                          : Icon(
-                        BootstrapIcons.heart,
-                        color: AppColors.buttonIcon,
-                        size: 20,
-                      ),
+                    onTap: () {
+                      // 处理喜欢按钮点击事件
+                    },
+                    child:
+                        widget.management.account.type != '' &&
+                            widget.management.cloud.collectionList.contains(
+                              widget.management.setting.id,
+                            )
+                        ? Icon(
+                            BootstrapIcons.heart_fill,
+                            color: AppColors.likeIconColor,
+                            size: 20,
+                          )
+                        : Icon(
+                            BootstrapIcons.heart,
+                            color: AppColors.buttonIcon,
+                            size: 20,
+                          ),
                   ),
 
                   SizedBox(width: 15),
@@ -96,7 +130,7 @@ class MusicData extends StatelessWidget {
             management.setting.cover,
             headers: const {
               'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
             },
             width: 70,
             height: 70,
@@ -124,6 +158,8 @@ class MusicData extends StatelessWidget {
             children: [
               Text(
                 management.setting.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.left,
                 style: TextStyle(
                   fontSize: 18,
@@ -136,6 +172,8 @@ class MusicData extends StatelessWidget {
 
               Text(
                 management.setting.singer,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.left,
                 style: TextStyle(
                   fontSize: 16,
@@ -172,6 +210,7 @@ class _PlaybackControlButtonState extends State<PlaybackControlButton> {
         GestureDetector(
           onTap: () {
             management.updatePlayType();
+            management.updatePlayType();
           },
           child: Icon(
             sequence[management.setting.playType],
@@ -185,6 +224,8 @@ class _PlaybackControlButtonState extends State<PlaybackControlButton> {
         GestureDetector(
           onTap: () {
             // TODO: 实现上一首功能
+            management.playMusicControl.lastMusic();
+            print('上一首');
           },
           child: Icon(
             BootstrapIcons.skip_start_fill,
@@ -198,13 +239,17 @@ class _PlaybackControlButtonState extends State<PlaybackControlButton> {
         GestureDetector(
           onTap: () {
             // TODO: 实现播放/暂停功能
+            management.playMusicControl.pausePlayMusic();
+            // print('播放/暂停');
           },
           // child: Icon(BootstrapIcons.pause_circle_fill, color: Colors.black, size: 35,), // 播放图标
           child: Icon(
-            BootstrapIcons.play_circle_fill,
+            management.setting.play
+                ? BootstrapIcons.pause_circle_fill
+                : BootstrapIcons.play_circle_fill,
             color: Colors.black,
             size: 35,
-          ), // 播放图标
+          ), // 播放图标a
         ),
 
         SizedBox(width: 10), // 图标之间的间距
@@ -212,6 +257,8 @@ class _PlaybackControlButtonState extends State<PlaybackControlButton> {
         GestureDetector(
           onTap: () {
             // TODO: 实现下一首功能
+            management.playMusicControl.nextMusic();
+            print('下一首');
           },
           child: Icon(
             BootstrapIcons.skip_end_fill,
@@ -224,13 +271,13 @@ class _PlaybackControlButtonState extends State<PlaybackControlButton> {
 
         GestureDetector(
           onTap: () {
-            // TODO: 实现下一首功能
+            // TODO: 实现查看播放列表功能
           },
           child: Icon(
             BootstrapIcons.music_note_list,
             color: Colors.black,
             size: 25,
-          ), // 下一首图标
+          ), // 查看播放列表图标
         ),
       ],
     );
@@ -245,13 +292,11 @@ class PlaybackProgressBar extends StatefulWidget {
 }
 
 class _PlaybackProgressBarState extends State<PlaybackProgressBar> {
-  late double timerValue = 0;
-  late String displayTime = '00:00';
   final management = Management();
+  bool _dragging = false;
+  double _dragValue = 0;
 
-  // 将秒数（或毫秒）转换为 mm:ss 格式的字符串
-  // 默认情况下，传入的 value 被视为秒数。如果你的值是毫秒，请先除以 1000 再传入，
-  // 或者调用 _formatTimeFromMilliseconds(value).
+  // 将秒数转换为 mm:ss
   String _formatTime(double seconds) {
     final int totalSeconds = seconds.round();
     final int minutes = totalSeconds ~/ 60;
@@ -263,50 +308,82 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
-      crossAxisAlignment: CrossAxisAlignment.center, // 水平居中
-      children: [
-        Text(
-          displayTime,
-          style: TextStyle(color: AppColors.musicTimeColor),
-        ), // 当前时间
-        SizedBox(width: 10), // 时间和进度条之间的间距
+    // 进度条只订阅 progressNotifier。
+    // 播放时进度每几百毫秒更新一次，若直接依赖 Management 的全局通知，
+    // 歌单页几百行列表会跟着一起重建，播放时就会卡。
+    return ValueListenableBuilder<int>(
+      valueListenable: management.progressNotifier,
+      builder: (BuildContext context, int progressMs, Widget? child) {
+        // musicProgress / musicDuration 都是毫秒，Slider 用秒。
+        final double durationSeconds = management.musicDuration <= 0
+            ? 1000000.0
+            : management.musicDuration / 1000.0;
+        final double progressSeconds = (progressMs / 1000.0).clamp(
+          0.0,
+          durationSeconds,
+        );
+        final double sliderValue = _dragging
+            ? _dragValue.clamp(0.0, durationSeconds)
+            : progressSeconds;
 
-        Expanded(
-          child: SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              // 通过 trackHeight 控制滑轨高度
-              trackHeight: 4.0,
-              // 调整拇指（圆点）半径
-              thumbShape: RoundSliderThumbShape(enabledThumbRadius: 2.0),
-              // 调整按下时的覆盖层半径
-              overlayShape: RoundSliderOverlayShape(overlayRadius: 0.0),
-              // 轨道和拇指的颜色（可按需替换）
-              activeTrackColor: AppColors.musicProgressColor,
-              inactiveTrackColor: Colors.grey.shade300,
-              thumbColor: AppColors.musicProgressColor,
-            ),
-            child: Slider(
-              value: timerValue, // 当前播放进度，范围 0.0 到 1.0
-              min: 0.0,
-              max: 253000,
-              onChanged: (value) {
-                setState(() {
-                  timerValue = value;
-                  displayTime = _formatTime(value / 1000);
-                });
-              },
-            ),
-          ),
-        ),
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
+          crossAxisAlignment: CrossAxisAlignment.center, // 水平居中
+          children: [
+            Text(
+              _formatTime(sliderValue),
+              style: TextStyle(color: AppColors.musicTimeColor),
+            ), // 当前时间
+            SizedBox(width: 10), // 时间和进度条之间的间距
 
-        SizedBox(width: 10), // 时间和进度条之间的间距
-        Text(
-          management.setting.time,
-          style: TextStyle(color: AppColors.musicTimeColor),
-        ), // 总时间
-      ],
+            Expanded(
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  // 通过 trackHeight 控制滑轨高度
+                  trackHeight: 4.0,
+                  // 调整拇指（圆点）半径
+                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 2.0),
+                  // 调整按下时的覆盖层半径
+                  overlayShape: RoundSliderOverlayShape(overlayRadius: 0.0),
+                  // 轨道和拇指的颜色（可按需替换）
+                  activeTrackColor: AppColors.musicProgressColor,
+                  inactiveTrackColor: Colors.grey.shade300,
+                  thumbColor: AppColors.musicProgressColor,
+                ),
+                child: Slider(
+                  value: sliderValue,
+                  min: 0.0,
+                  max: durationSeconds,
+                  onChangeStart: (value) {
+                    setState(() {
+                      _dragging = true;
+                      _dragValue = value;
+                    });
+                  },
+                  onChanged: (value) {
+                    setState(() {
+                      _dragValue = value;
+                    });
+                  },
+                  onChangeEnd: (value) {
+                    setState(() {
+                      _dragging = false;
+                      _dragValue = value;
+                    });
+                    management.playMusicControl.changeProgress(value.toInt());
+                  },
+                ),
+              ),
+            ),
+
+            SizedBox(width: 10), // 时间和进度条之间的间距
+            Text(
+              management.setting.time,
+              style: TextStyle(color: AppColors.musicTimeColor),
+            ), // 总时间
+          ],
+        );
+      },
     );
   }
 }
@@ -329,12 +406,13 @@ class _VolumeControlState extends State<VolumeControl> {
         GestureDetector(
           onTap: () {
             // TODO: 实现静音/取消静音功能
-            management.setting.volumeType = !management.setting.volumeType;
-            management.updateSetting();
+            this.management.setting.volumeType = !this.management.setting.volumeType;
+            this.management.updateSetting();
+            this.management.playMusicControl.updateVolume(this.management.setting.volume.toInt());
             setState(() {});
           },
           child: Icon(
-            !management.setting.volumeType || management.setting.volume == 0
+            !this.management.setting.volumeType || this.management.setting.volume == 0
                 ? BootstrapIcons.volume_mute_fill
                 : BootstrapIcons.volume_up_fill,
             color: Colors.black,
@@ -356,22 +434,24 @@ class _VolumeControlState extends State<VolumeControl> {
           child: SizedBox(
             width: 100, // 设置滑动条的宽度
             child: Slider(
-              value: !management.setting.volumeType
+              value: !this.management.setting.volumeType
                   ? 0
-                  : management.setting.volume, // 当前音量，范围 0.0 到 1.0
+                  : this.management.setting.volume, // 当前音量，范围 0.0 到 1.0
               min: 0,
               max: 100,
               onChanged: (value) {
                 setState(() {
-                  management.setting.volume = value;
+                  this.management.setting.volume = value;
                   if (value == 0) {
-                    management.setting.volumeType = false;
+                    this.management.setting.volumeType = false;
                   } else {
-                    management.setting.volumeType = true;
+                    this.management.setting.volumeType = true;
                   }
+                  this.management.updateSetting();
+                  this.management.playMusicControl.updateVolume(value.toInt());
                 });
                 // 音量拖动过程中只刷新界面，避免每个滑块事件都触发磁盘写入。
-                management.refresh();
+                this.management.refresh();
 
                 print('音量调整到: $value'); // TODO: 实现音量调整功能
               },
