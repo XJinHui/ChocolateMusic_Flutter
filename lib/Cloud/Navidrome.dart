@@ -270,7 +270,13 @@ class Navidrome implements CloudService {
           return [];
         }
 
-        var data = response.data['subsonic-response']['playlist']['entry'];
+        var data = response.data['subsonic-response']['playlist']?['entry'];
+
+        if (data == null) {
+          print('歌单内歌曲数量为 0');
+          return [];
+        }
+
         List<Music> musics = [];
 
         for (var i in data) {
@@ -304,10 +310,10 @@ class Navidrome implements CloudService {
 
   getSingerMusic(String singerId) async {
     try {
-      var albums = await this.getSingerAlbum(singerId);
+      List<Album> albums = await this.getSingerAlbum(singerId);
 
       var results = await Future.wait(
-        albums.map((item) => this.getAlbumMusic(item.albumid)),
+        albums.map((item) => this.getAlbumMusic(item.albumId)),
       );
 
       List<Music> musics = [];
@@ -325,7 +331,7 @@ class Navidrome implements CloudService {
     }
   }
 
-  getAlbumMusic(String albumId) async {
+  Future<List<Music>> getAlbumMusic(String albumId) async {
     try {
       var response = await Navidrome.dio.get(
         '/getAlbum.view?id=${albumId}',
@@ -721,7 +727,7 @@ class Navidrome implements CloudService {
     }
   }
 
-  getMusicsDetails(List<String> musicIds) async {
+  Future<List<Music>> getMusicsDetails(List<String> musicIds) async {
     List<Music> musics = [];
     var results = await Future.wait(
       musicIds.map((id) => this.getMusicDetails(id)),

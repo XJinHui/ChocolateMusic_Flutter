@@ -107,12 +107,12 @@ class _LoginPageState extends State<LoginPage> {
                   _serviceButton(
                     value: 'KuGou',
                     asset: 'assets/images/KuGouConcept.svg',
-                    tooltip: '酷狗概念版',
+                    tooltip: '酷狗',
                   ),
                   _serviceButton(
                     value: 'NetEaseCloud',
                     asset: 'assets/images/NetEaseCloud.svg',
-                    tooltip: '网易云音乐',
+                    tooltip: '网易云',
                   ),
                   _serviceButton(
                     value: 'Navidrome',

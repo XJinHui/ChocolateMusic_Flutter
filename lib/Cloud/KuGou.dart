@@ -28,7 +28,7 @@ class KuGou implements CloudService {
     BaseOptions(
       baseUrl: "http://120.77.173.68:4000",
       connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 30),
     ),
   )..options.validateStatus = (status) => true;
 
@@ -650,7 +650,7 @@ class KuGou implements CloudService {
         queryParameters: this.params,
       );
 
-      print('获取歌手专辑列表响应: ${jsonEncode(response.data)}');
+      // print('获取歌手专辑列表响应: ${jsonEncode(response.data)}');
 
       if (response.statusCode != 200 || response.data["status"] != 1) {
         print('获取歌手专辑列表失败: $response.data');
@@ -664,7 +664,7 @@ class KuGou implements CloudService {
         album.add(
           Album(
             album: i['album_name'],
-            albumId: i['album_id'],
+            albumId: i['album_id'].toString(),
             singer: i['author_name'],
             cover: this.getCover(i['sizable_cover']),
             audioCount: 0,
@@ -982,22 +982,24 @@ class KuGou implements CloudService {
         '/krm/audio?album_audio_id=${id}&fields=album_info,base,authors.base',
         queryParameters: this.params,
       );
-      print('获取推荐歌单响应: ${jsonEncode(response.data)}');
+
+      // print('获取歌手专辑id响应: ${jsonEncode(response.data)}');
+
       if (response.statusCode != 200 || response.data["status"] != 1) {
         print('获取歌手专辑id失败: ${jsonEncode(response.data)}');
         return [];
       }
 
       var data = response.data['data'];
-      // print('获取歌手专辑id列表: ${data}');
+      // print('获取歌手专辑id列表: ${jsonEncode(data)}');
 
       var albumAudioIds = <Map<String, dynamic>>[];
 
       for (var i in data) {
         albumAudioIds.add({
-          'albumId': i['base']['album_id'],
-          'singerId': i['authors'][0]['base']['author_id'],
-          'albumAudioId': i['base']['album_audio_id'],
+          'albumId': i['base']['album_id'].toString(),
+          'singerId': i['authors'][0]['base']['author_id'].toString(),
+          'albumAudioId': i['base']['album_audio_id'].toString(),
         });
       }
 
@@ -1008,7 +1010,7 @@ class KuGou implements CloudService {
     }
   }
 
-  getMusicsDetails(List<String> musicIds) async {
+  Future<List<Music>> getMusicsDetails(List<String> musicIds) async {
     if (musicIds.length == 0) {
       return [];
     }
@@ -1078,7 +1080,7 @@ class KuGou implements CloudService {
           'album': album,
           'time': i['info']['duration'],
           'cover': this.getCover(cover),
-          'albumAudioId': i['album_audio_id'],
+          'albumAudioId': i['album_audio_id'].toString(),
         });
       }
 
@@ -1109,15 +1111,14 @@ class KuGou implements CloudService {
           .expand<Map<String, dynamic>>((list) => list)
           .toList();
 
-      musics = musicData.map((item) {
-        Map<String, dynamic>? albumAudioIdInfo;
+      Map<String, dynamic> albumAudioIdMap = {};
 
-        for (final info in albumAudioIdData) {
-          if (info['albumAudioId'] == item['albumAudioId']) {
-            albumAudioIdInfo = info;
-            break;
-          }
-        }
+      for (final item in albumAudioIdData) {
+        albumAudioIdMap[item['albumAudioId']] = item;
+      }
+
+      musics = musicData.map((item) {
+        final albumAudioIdInfo = albumAudioIdMap[item['albumAudioId']];
 
         return Music(
           name: item['name'],
@@ -1131,11 +1132,32 @@ class KuGou implements CloudService {
         );
       }).toList();
 
-      // print('获取歌曲详情列表: ${musics}');
+      // musics = musicData.map((item) {
+      //   Map<String, dynamic>? albumAudioIdInfo;
+      //
+      //   for (final info in albumAudioIdData) {
+      //     if (info['albumAudioId'] == item['albumAudioId']) {
+      //       albumAudioIdInfo = info;
+      //       break;
+      //     }
+      //   }
+      //
+      //   return Music(
+      //     name: item['name'],
+      //     id: item['id'],
+      //     singer: item['singer'],
+      //     singerId: albumAudioIdInfo?['singerId'] ?? '',
+      //     album: item['album'],
+      //     albumId: albumAudioIdInfo?['albumId'] ?? '',
+      //     time: item['time'],
+      //     cover: item['cover'],
+      //   );
+      // }).toList();
+
       return musics;
     } catch (error) {
       print('getMusicsDetails 异常: $error');
-      print('获取歌曲详情失败id: $musicIds');
+      // print('获取歌曲详情失败id: $musicIds');
       return [];
     }
   }
@@ -1451,7 +1473,7 @@ class KuGou implements CloudService {
   deleteMusicFromPlaylist(String listId, String musicId) async {
     try {
       var fileids = await this.getMusicInPlaylistFileid(listId, musicId);
-      if (fileids != '') {
+      if (fileids == '') {
         print('获取歌单内歌曲文件id失败，无法从歌单删除，歌曲id: ${musicId}, 歌单id: ${listId}');
         return false;
       }
@@ -1518,17 +1540,6 @@ class KuGou implements CloudService {
 
       while (true) {
         try {
-          //       timestamp = new Date().getTime()
-          //       url = `${this.mainUrl}/playlist/track/all?id=${listId}&pagesize=300&page=${n+1}&timestamp=${timestamp}`
-          // console.log('请求歌单歌曲:', url)
-          // response = await axios.get(url, {
-          // params: this.params
-          // })
-          // // console.log('获取歌单歌曲响应:', JSON.stringify(response.data))
-          // if (response.status !== 200 || response.data.status !== 1) {
-          // console.log('获取歌单歌曲失败:', response.data)
-          // }
-
           timestamp = DateTime.now().millisecondsSinceEpoch;
 
           response = await KuGou.dio.get(

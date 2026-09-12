@@ -10,11 +10,7 @@ import 'package:chocolate_music/pages/computer/SettingsPage.dart';
 // 计算机页面
 
 class MainView extends StatefulWidget {
-  // final String selectedPage;
   final Management management = Management();
-
-  // const MainView({Key? key, required this.selectedPage}) : super(key: key);
-  // const MainView({Key? key}) : super(key: key);
 
   @override
   State<MainView> createState() => _MainViewState();

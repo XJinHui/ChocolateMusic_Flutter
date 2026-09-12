@@ -26,7 +26,6 @@ class ChocolateNavBar extends StatefulWidget {
 
 class _ChocolateNavBarState extends State<ChocolateNavBar> {
   @override
-  late String selectedIndex = 'RecommendPage';
   late Management management = Management();
 
   List navItems = [
@@ -137,9 +136,9 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
             onTap: () {
               // if (management.account.type != '') {
               if ( management.accountData.data.any((accounts) => accounts.isNotEmpty) ) {
-                selectedIndex = 'AccountPage';
+                // selectedIndex = 'AccountPage';
                   // widget.onDestinationSelected('AccountPage');
-                management.selectedPage = 'AccountPage';
+                Management().selectedPage = 'AccountPage';
               } else {
                 unawaited(
                   showAccountLoginDialog(context).whenComplete(() {
@@ -163,11 +162,11 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                   icon: navItems[i]['icon'],
                   selectedIcon: navItems[i]['selectedIcon'],
                   title: navItems[i]['title'],
-                  isSelected: selectedIndex == navItems[i]['pageId'],
+                  isSelected: Management().selectedPage == navItems[i]['pageId'],
                   onTap: () {
-                    selectedIndex = navItems[i]['pageId'];
+                    // selectedIndex = navItems[i]['pageId'];
                     // widget.onDestinationSelected(navItems[i]['pageId']);
-                    management.selectedPage = navItems[i]['pageId'];
+                    Management().selectedPage = navItems[i]['pageId'];
                     if (navItems[i]['pageId'] == 'LikedPage') {
                       Management().displayList = _likedPlaylist;
                       Management().displayListType = 'Playlist';
@@ -222,11 +221,11 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                 final Playlist playlist = _sidebarPlaylists[index];
                 return playlistItem(
                   playlist: playlist,
-                  isSelected: selectedIndex == playlist.listId,
+                  isSelected: Management().selectedPage == playlist.listId,
                   onTap: () {
-                    selectedIndex = playlist.listId;
+                    // selectedIndex = playlist.listId;
                     // widget.onDestinationSelected('PlaylistPage');
-                    management.selectedPage = 'PlaylistPage';
+                    Management().selectedPage = 'PlaylistPage';
                     Management().displayList = playlist;
                     Management().displayListType = 'Playlist';
 

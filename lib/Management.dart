@@ -13,7 +13,9 @@ class Management extends ChangeNotifier {
   static final Management _instance = Management._internal();
 
   late FileManage fileManage = FileManage(); //文件管理类，负责读取和写入设置、账户数据、推荐列表数据等
-  late PlayMusicControl playMusicControl = PlayMusicControl(this);  // 播放音乐控制类，负责播放音乐、获取歌词、获取歌曲信息等
+  late PlayMusicControl playMusicControl = PlayMusicControl(
+    this,
+  ); // 播放音乐控制类，负责播放音乐、获取歌词、获取歌曲信息等
 
   String _selectedPage = 'RecommendPage';
 
@@ -21,10 +23,10 @@ class Management extends ChangeNotifier {
 
   set selectedPage(String value) {
     if (_selectedPage == value) {
-      return;              // 值没变就不通知，避免整棵树无意义重建
+      return; // 值没变就不通知，避免整棵树无意义重建
     }
     _selectedPage = value;
-    notifyListeners();     // 通知所有监听者（含 Computer.dart 的 ListenableBuilder）
+    notifyListeners(); // 通知所有监听者（含 Computer.dart 的 ListenableBuilder）
   }
 
   late Setting setting; // 设置数据，包含当前播放歌曲信息、播放状态、音量等
@@ -66,14 +68,15 @@ class Management extends ChangeNotifier {
   late Map<String, List<Music>> albumMusic = {}; // 专辑id-歌曲列表
   late Map<String, List<Music>> singerMusic = {}; // 歌手id-歌曲列表
   late Map<String, List<Album>> singerAlbum = {}; // 歌手id-专辑列表
-  late int playlistMusicVersion = 0;  // 新增：歌单歌曲列表版本号，每次更新歌单歌曲列表时自增1，组件根据版本号判断是否需要更新显示的歌曲列表
+  late int playlistMusicVersion =
+      0; // 新增：歌单歌曲列表版本号，每次更新歌单歌曲列表时自增1，组件根据版本号判断是否需要更新显示的歌曲列表
 
   late String displayLyric = ''; //当前显示的歌词
-  late List<LyricsMap> displayLyricList = [];    //当前显示的歌词列表
+  late List<LyricsMap> displayLyricList = []; //当前显示的歌词列表
 
-  late int musicProgress = 0;    //歌曲播放进度（毫秒）
+  late int musicProgress = 0; //歌曲播放进度（毫秒）
   // late String musicDisplayProgress = '00:00';    //歌曲播放进度（分:秒）
-  late int musicDuration = 0;    //歌曲总时长（毫秒）
+  late int musicDuration = 0; //歌曲总时长（毫秒）
 
   /// 播放进度专用通知器。
   ///
@@ -439,9 +442,10 @@ class Management extends ChangeNotifier {
     this.updataPlayMusicSettings(music);
     print('当前播放列表类型: ${playListType} 当前播放列表id: ${playListId}');
 
-    if (playListType != this.setting.playlistType || playListId != this.setting.playlistId) {
+    if (playListType != this.setting.playlistType ||
+        playListId != this.setting.playlistId) {
       this.playMusicList = this.displayMusics;
-      print('更新播放列表 ${jsonEncode(this.playMusicList)}');
+
       this.getPlayList();
     }
     this.playMusicControl.play();
@@ -459,18 +463,16 @@ class Management extends ChangeNotifier {
     this.setting.cover = music.cover;
     this.setting.id = music.id;
 
-    if (playlistType != -1){
+    if (playlistType != -1) {
       this.setting.playlistType = playlistType;
     } else {
-      if (this.displayList is Playlist){
+      if (this.displayList is Playlist) {
         this.setting.playlistId = (this.displayList as Playlist).listId;
         this.setting.playlistType = 0;
-      }
-      else if (this.displayList is Album){
+      } else if (this.displayList is Album) {
         this.setting.playlistId = (this.displayList as Album).albumId;
         this.setting.playlistType = 1;
-      }
-      else if (this.displayList is Singer){
+      } else if (this.displayList is Singer) {
         this.setting.playlistId = (this.displayList as Singer).singerId;
         this.setting.playlistType = 2;
       }
@@ -480,27 +482,33 @@ class Management extends ChangeNotifier {
   }
 
   getInitialPlaylist() async {
-    if (this.setting.playlistId == ''){
+    if (this.setting.playlistId == '') {
       print('当前没有播放列表');
       return;
     }
 
-    if (this.setting.playlistType == 0){
-      this.playMusicList = await this.cloud.getPlaylistMusic(this.setting.playlistId);
+    if (this.setting.playlistType == 0) {
+      this.playMusicList = await this.cloud.getPlaylistMusic(
+        this.setting.playlistId,
+      );
 
-      if (this.playMusicList.length != 0){
+      if (this.playMusicList.length != 0) {
         this.playlistMusics[this.setting.playlistId] = this.playMusicList;
       }
     } else if (this.setting.playlistType == 1) {
-      this.playMusicList = await this.cloud.getAlbumMusic(this.setting.playlistId);
+      this.playMusicList = await this.cloud.getAlbumMusic(
+        this.setting.playlistId,
+      );
 
-      if (this.playMusicList.length != 0){
+      if (this.playMusicList.length != 0) {
         this.albumMusic[this.setting.playlistId] = this.playMusicList;
       }
     } else if (this.setting.playlistType == 2) {
-      this.playMusicList = await this.cloud.getSingerMusic(this.setting.playlistId);
+      this.playMusicList = await this.cloud.getSingerMusic(
+        this.setting.playlistId,
+      );
 
-      if (this.playMusicList.length != 0){
+      if (this.playMusicList.length != 0) {
         this.singerMusic[this.setting.playlistId] = this.playMusicList;
       }
     } else {
@@ -523,7 +531,9 @@ class Management extends ChangeNotifier {
 
   getPlaylistMusic(Playlist playlist) async {
     // 更新歌单音乐
-    var displayMusics = await this.cloud.getPlaylistMusic(playlist.listId);
+    List<Music> displayMusics = await this.cloud.getPlaylistMusic(
+      playlist.listId,
+    );
 
     this.playlistMusics[playlist.listId] = displayMusics;
 
@@ -536,18 +546,24 @@ class Management extends ChangeNotifier {
 
   getDisplayPlaylist(Playlist playlist, {bool type = false}) async {
     // 获取歌单音乐
-    if (this.playlistMusics.containsKey(playlist.listId)){
+    if (this.playlistMusics.containsKey(playlist.listId)) {
       var displayMusics = this.playlistMusics[playlist.listId];
-      
+
       this.displayMusics = displayMusics as List<Music>;
-      
+
       return displayMusics;
     }
 
     var displayMusics = await this.cloud.getPlaylistMusic(playlist.listId);
-    this.playlistMusics[playlist.listId] = displayMusics;
 
-    if (this.displayListType == 'Playlist' && (this.displayList as Playlist).listId == playlist.listId) {
+    if (displayMusics.isNotEmpty) {
+      this.playlistMusics[playlist.listId] = displayMusics;
+    } else {
+      displayMusics = <Music>[];
+    }
+
+    if (this.displayListType == 'Playlist' &&
+        (this.displayList as Playlist).listId == playlist.listId) {
       this.displayMusics = displayMusics;
     }
 
@@ -556,38 +572,41 @@ class Management extends ChangeNotifier {
 
   getDisplayAlbum(Album album) async {
     // 获取专辑音乐
-    if (this.albumMusic.containsKey(album.albumId)){
+    if (this.albumMusic.containsKey(album.albumId)) {
       var displayMusics = this.albumMusic[album.albumId];
-      
+
       this.displayMusics = displayMusics as List<Music>;
-      
+
       return displayMusics;
     }
 
-    var displayMusics = await this.cloud.getAlbumMusic(album.albumId);
+    var displayMusics =
+        await this.cloud.getAlbumMusic(album.albumId);
 
-    this.albumMusic[album.albumId] = displayMusics;
-
-    if (this.displayListType == 'Album' && (this.displayList as Album).albumId == album.albumId) {
-      this.displayMusics = displayMusics as List<Music>;
+    if (displayMusics.isNotEmpty) {
+      this.albumMusic[album.albumId] = displayMusics;
+    } else {
+      displayMusics = <Music>[];
     }
-    
+
+    if (this.displayListType == 'Album' &&
+        (this.displayList as Album).albumId == album.albumId) {
+      this.displayMusics = displayMusics;
+    }
+
     return displayMusics;
   }
 
   getDisplaySinger(Singer singer) async {
     // 获取歌手音乐
-    if (this.singerMusic.containsKey(singer.singerId)){
+    if (this.singerMusic.containsKey(singer.singerId)) {
       List<Music> displayMusics = this.singerMusic[singer.singerId] ?? [];
       List<Album> displayAlbums = this.singerAlbum[singer.singerId] ?? [];
 
       this.displayMusics = displayMusics;
       this.displayAlbums = displayAlbums;
 
-      return {
-        'musics': displayMusics,
-        'albums': displayAlbums
-      };
+      return {'musics': displayMusics, 'albums': displayAlbums};
     }
 
     // 注意：CloudService 里 getSingerMusic / getSingerAlbum 没有声明返回类型，
@@ -598,7 +617,7 @@ class Management extends ChangeNotifier {
     // 所以这里显式写成 Future.wait<dynamic>，取到结果后再逐个转型。
     final List<dynamic> data = await Future.wait<dynamic>([
       this.cloud.getSingerMusic(singer.singerId),
-      this.cloud.getSingerAlbum(singer.singerId)
+      this.cloud.getSingerAlbum(singer.singerId),
     ]);
 
     if (data.length < 2) {
@@ -611,10 +630,7 @@ class Management extends ChangeNotifier {
         this.displayAlbums = [];
       }
 
-      return {
-        'musics': [],
-        'albums': []
-      };
+      return {'musics': [], 'albums': []};
     }
 
     List<Music> displayMusics = data[0] is List
@@ -634,43 +650,93 @@ class Management extends ChangeNotifier {
       this.displayAlbums = displayAlbums;
     }
 
-    return {
-      'musics': displayMusics,
-      'albums': displayAlbums
-    };
+    return {'musics': displayMusics, 'albums': displayAlbums};
   }
 
-  listSearch(String keyword){
+  addNextMusic(Music music) {
+    this.currentPlayMusicList = this.currentPlayMusicList.where((item)  => item.id != music.id).toList();
+    this.playMusicControl.playMusicList = this.playMusicControl.playMusicList.where((item) => item.id != music.id).toList();
+
+    int index = this.currentPlayMusicList.indexWhere((item) => item.id == this.setting.id);
+
+    if (index == -1){
+      this.currentPlayMusicList.insert(0, music);
+      this.playMusicControl.playMusicList.insert(0, music);
+    } else {
+      this.currentPlayMusicList.insert(index + 1, music);
+      int playIndex = this.playMusicControl.playMusicList.indexWhere((item) => item.id == this.setting.id);
+      if (playIndex != -1){
+        this.playMusicControl.playMusicList.insert(playIndex + 1, music);
+      } else {
+        this.playMusicControl.playMusicList.insert(0, music);
+      }
+    }
+  }
+
+  Future<bool> like(String musicId) async {
+    if (this.cloud.collectionList.contains(musicId)) {
+      return await this.deleteMusicFromPlaylist(
+        this.cloud.collectionListId,
+        musicId,
+      );
+    } else {
+      return await this.addMusicToPlaylist(
+        this.cloud.collectionListId,
+        musicId,
+      );
+    }
+  }
+
+  search(String keyword) {}
+
+  listSearch(String keyword) {
     this.displayListSearchMusic = [];
-    if (this.displayMusics.length == 0){
+    if (this.displayMusics.length == 0) {
       return;
     }
 
-    for (var i = 0; i < this.displayMusics.length; i++){
+    for (var i = 0; i < this.displayMusics.length; i++) {
       final music = this.displayMusics[i];
-      if (music.name.contains(keyword) || music.singer.contains(keyword) || music.album.contains(keyword)){
+      if (music.name.contains(keyword) ||
+          music.singer.contains(keyword) ||
+          music.album.contains(keyword)) {
         this.displayListSearchMusic.add(music);
       }
     }
   }
 
   createPlaylist(String name) async {
-    return await this.cloud.createPlaylist(name) as bool;
+    bool status = await this.cloud.createPlaylist(name);
+
+    if (status) {
+      refresh();
+    }
+
+    return status;
   }
 
   deletePlaylist(String listId) async {
-    return await this.cloud.deletePlaylist(listId) as bool;
+    bool status = await this.cloud.deletePlaylist(listId);
+
+    if (status) {
+      refresh();
+    }
+
+    return status;
   }
 
   addMusicToPlaylist(String listId, String musicId) async {
-    if (await this.cloud.addMusicToPlaylist(listId, musicId) as bool){
+    if (await this.cloud.addMusicToPlaylist(listId, musicId) as bool) {
+      if (this.setting.playlistId == listId && this.setting.playlistType == 0) {
+        var index = this.currentPlayMusicList.indexWhere(
+          (item) => item.id == musicId,
+        );
 
-      if (this.setting.playlistId == listId && this.setting.playlistType == 0){
-        var index = this.currentPlayMusicList.indexWhere((item) => item.id == musicId);
-
-        if (index == -1){
+        if (index == -1) {
           this.cloud.getMusicsDetails([musicId]).then((List<Music> musics) {
-            if (musics.length > 0 && this.setting.playlistId == listId && this.setting.playlistType == 0){
+            if (musics.length > 0 &&
+                this.setting.playlistId == listId &&
+                this.setting.playlistType == 0) {
               this.currentPlayMusicList.insert(0, musics[0]);
               this.playMusicControl.playMusicList.insert(0, musics[0]);
             }
@@ -680,15 +746,19 @@ class Management extends ChangeNotifier {
 
       if (this.playlistMusics.containsKey(listId)) {
         List<Music> musics = this.playlistMusics[listId]!;
-        if (!musics.any((music) => music.id == musicId)){
+        if (!musics.any((music) => music.id == musicId)) {
           this.cloud.getMusicsDetails([musicId]).then((List<Music> details) {
-            if (musics.length > 0 && this.setting.playlistId == listId && this.setting.playlistType == 0){
-              this.playlistMusics[listId]!.insert(0, musics[0]);
-              this.playlistMusicVersion++;  // 触发监听
+            if (details.length > 0 &&
+                this.setting.playlistId == listId &&
+                this.setting.playlistType == 0) {
+              this.playlistMusics[listId]!.insert(0, details[0]);
+              this.playlistMusicVersion++; // 触发监听
             }
           });
         }
       }
+
+      refresh();
 
       return true;
     }
@@ -696,11 +766,13 @@ class Management extends ChangeNotifier {
   }
 
   deleteMusicFromPlaylist(String listId, String musicId) async {
-    if (await this.cloud.deleteMusicFromPlaylist(listId, musicId) as bool){
-      if (this.playlistMusics.containsKey(listId)){
+    if (await this.cloud.deleteMusicFromPlaylist(listId, musicId) as bool) {
+      if (this.playlistMusics.containsKey(listId)) {
         this.playlistMusics[listId]?.removeWhere((item) => item.id == musicId);
-        this.playlistMusicVersion++;  // 触发监听
+        this.playlistMusicVersion++; // 触发监听
       }
+
+      refresh();
 
       return true;
     }
@@ -910,7 +982,7 @@ class Management extends ChangeNotifier {
 }
 
 String formatTime(int ms) {
-// 毫秒转秒
+  // 毫秒转秒
   final totalSeconds = ms ~/ 1000;
 
   // 计算分和秒

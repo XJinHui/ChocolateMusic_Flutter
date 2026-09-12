@@ -961,7 +961,7 @@ class Neteasecloud implements CloudService {
     }
   }
 
-  getMusicsDetails(List<String> musicIds) async {
+  Future<List<Music>> getMusicsDetails(List<String> musicIds) async {
     var id = '';
     for (var i in musicIds) {
       if (id.isNotEmpty) {
@@ -1015,7 +1015,7 @@ class Neteasecloud implements CloudService {
       return musics;
     } catch (error) {
       print('getMusicsDetails 异常: ${error}');
-      return false;
+      return [];
     }
   }
 
@@ -1317,7 +1317,7 @@ class Neteasecloud implements CloudService {
 
       // print('从歌单删除歌曲响应: ${jsonEncode(response.data)}');
 
-      if (response.statusCode != 200 || response.data['code'] != 200) {
+      if (response.statusCode != 200 || response.data['body']['code'] != 200) {
         print('从歌单删除歌曲失败: ${jsonEncode(response.data)}');
         return false;
       }

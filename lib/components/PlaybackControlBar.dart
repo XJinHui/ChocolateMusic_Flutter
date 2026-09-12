@@ -4,6 +4,7 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
+import 'package:chocolate_music/components/MusicComponents.dart';
 
 class PlaybackControlBar extends StatefulWidget {
   final Management management = Management();
@@ -83,6 +84,32 @@ class _PlaybackControlBarState extends State<PlaybackControlBar> {
                   GestureDetector(
                     onTap: () {
                       // 处理喜欢按钮点击事件
+                      Management().like(Management().setting.id).then((bool success) {
+                        // 更新收藏状态
+                        final isCollected =
+                            Management().cloud.collectionList.contains(
+                              Management().setting.id,
+                            ) ??
+                                false;
+                        if (success) {
+                          showMusicToast(
+                            context,
+                            message:
+                            '歌曲 《${Management().setting.name}》 ${isCollected
+                                ? '收藏'
+                                : '取消收藏'}成功',
+                          );
+                        } else {
+                          showMusicToast(
+                            context,
+                            message:
+                            '歌曲 《${Management().setting.name}》 ${isCollected
+                                ? '取消收藏'
+                                : '收藏'}失败',
+                            success: false,
+                          );
+                        }
+                      });
                     },
                     child:
                         widget.management.account.type != '' &&
