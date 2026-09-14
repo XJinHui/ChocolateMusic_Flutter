@@ -857,7 +857,7 @@ class Navidrome implements CloudService {
         queryParameters: this.params.toJson(),
       );
 
-      // print('获取歌词响应: ${jsonEncode(response.data)}');
+      print('获取歌词响应: ${jsonEncode(response.data)}');
 
       if (response.statusCode != 200 ||
           response.data['subsonic-response']['status'] != 'ok') {

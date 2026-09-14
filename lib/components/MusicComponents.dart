@@ -115,30 +115,27 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
 
               Management().refresh();
             },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(widget.size / 5),
-              // 根据需要设置圆角大小
-              child: RemoteImage(
-                // widget.cover,
-                widget.playlist.cover,
-                headers: const {
-                  'User-Agent':
-                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-                },
-                width: widget.size,
-                height: widget.size,
-                fit: BoxFit.cover,
-                // 加载失败时，errorBuilder 会被调用
-                errorBuilder: (context, error, stackTrace) {
-                  // 返回你的本地图片
-                  return Image.asset(
-                    'assets/images/app_photo.png',
-                    width: widget.size,
-                    height: widget.size,
-                    fit: BoxFit.cover,
-                  );
-                },
-              ),
+            child: RemoteImage(
+              widget.playlist.cover,
+              headers: const {
+                'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+              },
+              width: widget.size,
+              height: widget.size,
+              fit: BoxFit.cover,
+              borderRadius: widget.size / 5,
+              boxShadow: kImageBoxShadow,
+              // 加载失败时，errorBuilder 会被调用
+              errorBuilder: (context, error, stackTrace) {
+                // 返回你的本地图片
+                return Image.asset(
+                  'assets/images/app_photo.png',
+                  width: widget.size,
+                  height: widget.size,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
 
@@ -189,30 +186,27 @@ class _AlbumWidgetState extends State<AlbumWidget> {
 
               Management().refresh();
             },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(widget.size / 5),
-              // 根据需要设置圆角大小
-              child: RemoteImage(
-                // widget.cover,
-                widget.album.cover,
-                headers: const {
-                  'User-Agent':
-                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-                },
-                width: widget.size,
-                height: widget.size,
-                fit: BoxFit.cover,
-                // 加载失败时，errorBuilder 会被调用
-                errorBuilder: (context, error, stackTrace) {
-                  // 返回你的本地图片
-                  return Image.asset(
-                    'assets/images/app_photo.png',
-                    width: widget.size,
-                    height: widget.size,
-                    fit: BoxFit.cover,
-                  );
-                },
-              ),
+            child: RemoteImage(
+              widget.album.cover,
+              headers: const {
+                'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+              },
+              width: widget.size,
+              height: widget.size,
+              fit: BoxFit.cover,
+              borderRadius: widget.size / 5,
+              boxShadow: kImageBoxShadow,
+              // 加载失败时，errorBuilder 会被调用
+              errorBuilder: (context, error, stackTrace) {
+                // 返回你的本地图片
+                return Image.asset(
+                  'assets/images/app_photo.png',
+                  width: widget.size,
+                  height: widget.size,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
 
@@ -263,30 +257,27 @@ class _SingerWidgetState extends State<SingerWidget> {
 
               Management().refresh();
             },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(widget.size / 5),
-              // 根据需要设置圆角大小
-              child: RemoteImage(
-                // widget.cover,
-                widget.singer.cover,
-                headers: const {
-                  'User-Agent':
-                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-                },
-                width: widget.size,
-                height: widget.size,
-                fit: BoxFit.cover,
-                // 加载失败时，errorBuilder 会被调用
-                errorBuilder: (context, error, stackTrace) {
-                  // 返回你的本地图片
-                  return Image.asset(
-                    'assets/images/app_photo.png',
-                    width: widget.size,
-                    height: widget.size,
-                    fit: BoxFit.cover,
-                  );
-                },
-              ),
+            child: RemoteImage(
+              widget.singer.cover,
+              headers: const {
+                'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+              },
+              width: widget.size,
+              height: widget.size,
+              fit: BoxFit.cover,
+              borderRadius: widget.size / 5,
+              boxShadow: kImageBoxShadow,
+              // 加载失败时，errorBuilder 会被调用
+              errorBuilder: (context, error, stackTrace) {
+                // 返回你的本地图片
+                return Image.asset(
+                  'assets/images/app_photo.png',
+                  width: widget.size,
+                  height: widget.size,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
 
@@ -454,33 +445,31 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
           ),
           child: Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
-                child: RemoteImage(
-                  // widget.cover,
-                  widget.music.cover,
-                  headers: const {
-                    'User-Agent':
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-                  },
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  // 列表里的封面只有 60×60，按 2 倍设备像素比解码即可，
-                  // 避免把 500×500 以上的原图整张解码进内存
-                  cacheWidth: 120,
-                  cacheHeight: 120,
-                  // 加载失败时，errorBuilder 会被调用
-                  errorBuilder: (context, error, stackTrace) {
-                    // 返回你的本地图片
-                    return Image.asset(
-                      'assets/images/app_photo.png',
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                ),
+              RemoteImage(
+                widget.music.cover,
+                headers: const {
+                  'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                },
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                borderRadius: 12,
+                boxShadow: kImageBoxShadow,
+                // 列表里的封面只有 60×60，按 2 倍设备像素比解码即可，
+                // 避免把 500×500 以上的原图整张解码进内存
+                cacheWidth: 120,
+                cacheHeight: 120,
+                // 加载失败时，errorBuilder 会被调用
+                errorBuilder: (context, error, stackTrace) {
+                  // 返回你的本地图片
+                  return Image.asset(
+                    'assets/images/app_photo.png',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  );
+                },
               ),
 
               SizedBox(width: 10),
@@ -745,33 +734,31 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
 
               SizedBox(width: 15),
 
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
-                child: RemoteImage(
-                  // widget.cover,
-                  widget.music.cover,
-                  headers: const {
-                    'User-Agent':
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-                  },
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  // 列表里的封面只有 60×60，按 2 倍设备像素比解码即可，
-                  // 避免把 500×500 以上的原图整张解码进内存
-                  cacheWidth: 120,
-                  cacheHeight: 120,
-                  // 加载失败时，errorBuilder 会被调用
-                  errorBuilder: (context, error, stackTrace) {
-                    // 返回你的本地图片
-                    return Image.asset(
-                      'assets/images/app_photo.png',
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                ),
+              RemoteImage(
+                widget.music.cover,
+                headers: const {
+                  'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                },
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                borderRadius: 12,
+                boxShadow: kImageBoxShadow,
+                // 列表里的封面只有 60×60，按 2 倍设备像素比解码即可，
+                // 避免把 500×500 以上的原图整张解码进内存
+                cacheWidth: 120,
+                cacheHeight: 120,
+                // 加载失败时，errorBuilder 会被调用
+                errorBuilder: (context, error, stackTrace) {
+                  // 返回你的本地图片
+                  return Image.asset(
+                    'assets/images/app_photo.png',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  );
+                },
               ),
 
               SizedBox(width: 10),

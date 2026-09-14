@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/components/AccountLoginDialog.dart';
+import 'package:chocolate_music/components/EdgeFadeMask.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
 
@@ -322,61 +323,63 @@ class _AccountPageState extends State<AccountPage> {
         builder: (BuildContext context, BoxConstraints constraints) {
           final bool showStageDisc = constraints.maxWidth >= 700;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(28, 30, 28, 44),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1275),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _PageHeading(),
-                    const SizedBox(height: 28),
-                    if (selectedProvider != null && selectedAccount != null)
-                      _ListeningStage(
-                        account: selectedAccount,
-                        provider: selectedProvider,
-                        accountCount: _accountCount,
-                        showRecordDisc: showStageDisc,
-                      )
-                    else
-                      const _EmptyListeningStage(),
-                    const SizedBox(height: 36),
-                    _DirectoryHeading(accountCount: _accountCount),
-                    const SizedBox(height: 16),
-                    _ProviderRail(
-                      providers: _providers,
-                      activeProviderId: _activeProviderId,
-                      onProviderSelected: _activateProvider,
-                    ),
-                    const SizedBox(height: 20),
-                    AnimatedSwitcher(
-                      duration: switchDuration,
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder:
-                          (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: const Offset(0, 0.025),
-                                  end: Offset.zero,
-                                ).animate(animation),
-                                child: child,
-                              ),
-                            );
-                          },
-                      child: _AccountDirectory(
-                        key: ValueKey<String>(_activeProvider.id),
-                        provider: _activeProvider,
-                        selectedLoginType: _selectedLoginType,
-                        selectedAccountIndex: _selectedAccountIndex,
-                        onAccountSelected: _selectAccount,
-                        onAccountDeleted: _deleteAccount,
+          return EdgeFadeMask(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(28, 30, 28, 44),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1275),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _PageHeading(),
+                      const SizedBox(height: 28),
+                      if (selectedProvider != null && selectedAccount != null)
+                        _ListeningStage(
+                          account: selectedAccount,
+                          provider: selectedProvider,
+                          accountCount: _accountCount,
+                          showRecordDisc: showStageDisc,
+                        )
+                      else
+                        const _EmptyListeningStage(),
+                      const SizedBox(height: 36),
+                      _DirectoryHeading(accountCount: _accountCount),
+                      const SizedBox(height: 16),
+                      _ProviderRail(
+                        providers: _providers,
+                        activeProviderId: _activeProviderId,
+                        onProviderSelected: _activateProvider,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      AnimatedSwitcher(
+                        duration: switchDuration,
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0, 0.025),
+                                    end: Offset.zero,
+                                  ).animate(animation),
+                                  child: child,
+                                ),
+                              );
+                            },
+                        child: _AccountDirectory(
+                          key: ValueKey<String>(_activeProvider.id),
+                          provider: _activeProvider,
+                          selectedLoginType: _selectedLoginType,
+                          selectedAccountIndex: _selectedAccountIndex,
+                          onAccountSelected: _selectAccount,
+                          onAccountDeleted: _deleteAccount,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

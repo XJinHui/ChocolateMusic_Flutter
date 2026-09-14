@@ -5,6 +5,7 @@ import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
 import 'package:chocolate_music/components/MusicComponents.dart';
+import 'package:chocolate_music/components/LyricsTransition.dart';
 
 class PlaybackControlBar extends StatefulWidget {
   final Management management = Management();
@@ -84,28 +85,26 @@ class _PlaybackControlBarState extends State<PlaybackControlBar> {
                   GestureDetector(
                     onTap: () {
                       // 处理喜欢按钮点击事件
-                      Management().like(Management().setting.id).then((bool success) {
+                      Management().like(Management().setting.id).then((
+                        bool success,
+                      ) {
                         // 更新收藏状态
                         final isCollected =
                             Management().cloud.collectionList.contains(
                               Management().setting.id,
                             ) ??
-                                false;
+                            false;
                         if (success) {
                           showMusicToast(
                             context,
                             message:
-                            '歌曲 《${Management().setting.name}》 ${isCollected
-                                ? '收藏'
-                                : '取消收藏'}成功',
+                                '歌曲 《${Management().setting.name}》 ${isCollected ? '收藏' : '取消收藏'}成功',
                           );
                         } else {
                           showMusicToast(
                             context,
                             message:
-                            '歌曲 《${Management().setting.name}》 ${isCollected
-                                ? '取消收藏'
-                                : '收藏'}失败',
+                                '歌曲 《${Management().setting.name}》 ${isCollected ? '取消收藏' : '收藏'}失败',
                             success: false,
                           );
                         }
@@ -143,35 +142,67 @@ class _PlaybackControlBarState extends State<PlaybackControlBar> {
   }
 }
 
-class MusicData extends StatelessWidget {
+class MusicData extends StatefulWidget {
+  @override
+  State<MusicData> createState() => _MusicDataState();
+}
+
+class _MusicDataState extends State<MusicData> {
   final management = Management();
+
+  // 封面是否被按住：按住缩小，松开弹回（与歌词页封面同款点击动画）
+  bool _coverPressed = false;
+
+  static const Duration _pressDuration = Duration(milliseconds: 120);
+  static const Duration _releaseDuration = Duration(milliseconds: 200);
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12), // 根据需要设置圆角大小
-          child: RemoteImage(
-            // widget.cover,
-            management.setting.cover,
-            headers: const {
-              'User-Agent':
-                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-            },
-            width: 70,
-            height: 70,
-            fit: BoxFit.cover,
-            // 加载失败时，errorBuilder 会被调用
-            errorBuilder: (context, error, stackTrace) {
-              // 返回你的本地图片
-              return Image.asset(
-                'assets/images/app_photo.png',
+        GestureDetector(
+          onTapDown: (_) => setState(() => _coverPressed = true),
+          onTapCancel: () => setState(() => _coverPressed = false),
+          onTapUp: (_) {
+            // 从实际按压尺寸衔接退出，不再等待回弹或留下延迟任务。
+            setState(() => _coverPressed = false);
+            Management().lyricShow = true;
+            print('打开歌词页');
+          },
+          child: AnimatedScale(
+            scale: _coverPressed ? 0.95 : 1.0,
+            duration: _coverPressed ? _pressDuration : _releaseDuration,
+            curve: _coverPressed ? Curves.easeOut : Curves.easeOutBack,
+            child: LyricsCoverAnchor(
+              child: RemoteImage(
+                management.setting.cover,
+                headers: const {
+                  'User-Agent':
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                },
                 width: 70,
                 height: 70,
                 fit: BoxFit.cover,
-              );
-            },
+                borderRadius: 12,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x33000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+                // 加载失败时，errorBuilder 会被调用
+                errorBuilder: (context, error, stackTrace) {
+                  // 返回你的本地图片
+                  return Image.asset(
+                    'assets/images/app_photo.png',
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
+            ),
           ),
         ),
 
@@ -397,7 +428,10 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar> {
                       _dragging = false;
                       _dragValue = value;
                     });
-                    management.playMusicControl.changeProgress(value.toInt());
+                    // Slider 的 value 单位是秒，changeProgress 收的是毫秒
+                    management.playMusicControl.changeProgress(
+                      (value * 1000).round(),
+                    );
                   },
                 ),
               ),
@@ -433,13 +467,17 @@ class _VolumeControlState extends State<VolumeControl> {
         GestureDetector(
           onTap: () {
             // TODO: 实现静音/取消静音功能
-            this.management.setting.volumeType = !this.management.setting.volumeType;
+            this.management.setting.volumeType =
+                !this.management.setting.volumeType;
             this.management.updateSetting();
-            this.management.playMusicControl.updateVolume(this.management.setting.volume.toInt());
+            this.management.playMusicControl.updateVolume(
+              this.management.setting.volume.toInt(),
+            );
             setState(() {});
           },
           child: Icon(
-            !this.management.setting.volumeType || this.management.setting.volume == 0
+            !this.management.setting.volumeType ||
+                    this.management.setting.volume == 0
                 ? BootstrapIcons.volume_mute_fill
                 : BootstrapIcons.volume_up_fill,
             color: Colors.black,

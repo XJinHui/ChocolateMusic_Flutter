@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:chocolate_music/components/EdgeFadeMask.dart';
 import 'package:chocolate_music/components/MusicComponents.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
@@ -16,14 +17,16 @@ class _RecommendPageState extends State<RecommendPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: ListView(
-        children: [
-          management.account.type != 'Navidrome'
-              ? Center(child: RecommendPlaylist())
-              : Center(child: RecommendAlbums()),
-          Center(child: RecommendSingers()),
-          Center(child: RecommendMusics()),
-        ],
+      child: EdgeFadeMask(
+        child: ListView(
+          children: [
+            management.account.type != 'Navidrome'
+                ? Center(child: RecommendPlaylist())
+                : Center(child: RecommendAlbums()),
+            Center(child: RecommendSingers()),
+            Center(child: RecommendMusics()),
+          ],
+        ),
       ),
     );
   }

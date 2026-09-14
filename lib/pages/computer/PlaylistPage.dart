@@ -3,6 +3,7 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/Management.dart';
+import 'package:chocolate_music/components/EdgeFadeMask.dart';
 import 'package:chocolate_music/components/MusicComponents.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
 
@@ -38,20 +39,6 @@ class PlaylistPage extends StatefulWidget {
 }
 
 class _PlaylistPageState extends State<PlaylistPage> {
-  // 注意：不要再把 displayListType 缓存成页面字段。
-  // 同一个 PlaylistPage 会被歌单/专辑/歌手复用，缓存下来的类型会变成旧值，
-  // 需要时直接从 Management 里读当前值。
-  @override
-  // void initState() {
-  //   super.initState();
-  //   // 自动调用 widget 中的方法，填充数据
-  //   widget.getDisplay();
-  //   // 如果数据变化后需要刷新界面，可以调用 setState
-  //   // 但注意：getDisplay 修改的是 widget 的变量，不会自动触发重建，
-  //   // 所以我们需要手动 setState 让 build 使用新数据
-  //   setState(() {});
-  // }
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -63,7 +50,11 @@ class _PlaylistPageState extends State<PlaylistPage> {
           padding: EdgeInsets.only(top: 10, left: 20, right: 20),
           child: Scaffold(
             backgroundColor: AppColors.background, // 覆盖主题默认值
-            body: CustomScrollView(
+            body: EdgeFadeMask(
+              // 顶部是固定不动的 SliverAppBar 和列表标签栏，
+              // 开顶部渐隐会把它们一起盖住，这里只保留底部渐隐
+              topFade: false,
+              child: CustomScrollView(
           // child: Column(
           // mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
           // crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
@@ -119,6 +110,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
             // 歌曲列表：懒加载，只构建视口内的行，滚出视口即被回收
             MusicListSliver(management: widget.management),
           ],
+              ),
             ),
           ),
         );
@@ -170,29 +162,27 @@ class _PlaylistDateState extends State<PlaylistDate> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(widget.currentHeight / 5),
-          // 根据需要设置圆角大小
-          child: RemoteImage(
-            _cover,
-            headers: const {
-              'User-Agent':
-                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-            },
-            width: widget.currentHeight,
-            height: widget.currentHeight,
-            fit: BoxFit.cover,
-            // 加载失败时，errorBuilder 会被调用
-            errorBuilder: (context, error, stackTrace) {
-              // 返回你的本地图片
-              return Image.asset(
-                'assets/images/app_photo.png',
-                width: widget.currentHeight,
-                height: widget.currentHeight,
-                fit: BoxFit.cover,
-              );
-            },
-          ),
+        RemoteImage(
+          _cover,
+          headers: const {
+            'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+          },
+          width: widget.currentHeight,
+          height: widget.currentHeight,
+          fit: BoxFit.cover,
+          borderRadius: widget.currentHeight / 5,
+          // boxShadow: kImageBoxShadow,
+          // 加载失败时，errorBuilder 会被调用
+          errorBuilder: (context, error, stackTrace) {
+            // 返回你的本地图片
+            return Image.asset(
+              'assets/images/app_photo.png',
+              width: widget.currentHeight,
+              height: widget.currentHeight,
+              fit: BoxFit.cover,
+            );
+          },
         ),
 
         SizedBox(

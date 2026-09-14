@@ -570,9 +570,23 @@ class RecommendList {
 class LyricsMap {
   int time;   // 统一用毫秒
   List<String> lyric;  // [原词, 翻译, ...]
+  List<List<WordTimestamp>>? wordTimestamps;  // [[原词逐字], [翻译逐字], ...]
 
   LyricsMap({
     required this.time,
     required this.lyric,
+    this.wordTimestamps,
+  });
+}
+
+class WordTimestamp {
+  int time; // 统一用毫秒
+  String lyric; // 逐字
+  int long; // 逐字持续时间，单位毫秒
+
+  WordTimestamp({
+    required this.time,
+    required this.lyric,
+    required this.long,
   });
 }

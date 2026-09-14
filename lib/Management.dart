@@ -29,6 +29,18 @@ class Management extends ChangeNotifier {
     notifyListeners(); // 通知所有监听者（含 Computer.dart 的 ListenableBuilder）
   }
 
+  bool _lyricShow = false; // 歌词显示状态，默认为false，点击歌词按钮切换状态
+
+  bool get lyricShow => _lyricShow;
+
+  set lyricShow(bool value) {
+    if (_lyricShow == value) {
+      return; // 值没变就不通知，避免整棵树无意义重建
+    }
+    _lyricShow = value;
+    notifyListeners(); // 通知所有监听者（含 Computer.dart 的 ListenableBuilder）
+  }
+
   late Setting setting; // 设置数据，包含当前播放歌曲信息、播放状态、音量等
   late int logining = 0; // 登录状态，0正在登录，1登录成功，-1未登录
 
@@ -77,6 +89,9 @@ class Management extends ChangeNotifier {
   late int musicProgress = 0; //歌曲播放进度（毫秒）
   // late String musicDisplayProgress = '00:00';    //歌曲播放进度（分:秒）
   late int musicDuration = 0; //歌曲总时长（毫秒）
+  late int lyricTime = 0;    //歌词时间戳（毫秒）
+  late int lyricWordTime = 0;    //歌词(逐字)时间戳（毫秒）
+  late bool lyricType = false;    //歌词类型，false为普通歌词，true为逐字歌词
 
   /// 播放进度专用通知器。
   ///
@@ -85,6 +100,12 @@ class Management extends ChangeNotifier {
   /// 播放时自然就卡。这里把进度拆成独立的 ValueNotifier，
   /// 只有真正需要进度的组件（播放进度条）订阅它，列表不受影响。
   final ValueNotifier<int> progressNotifier = ValueNotifier<int>(0);
+
+  /// 歌词当前行索引通知器，-1 表示当前没有歌词行。
+  ///
+  /// 与 [progressNotifier] 同理：歌词行切换也属于高频状态，
+  /// 不能走 [refresh]，否则整棵页面子树（含歌单列表）会跟着重建。
+  final ValueNotifier<int> lyricLineNotifier = ValueNotifier<int>(-1);
 
   late List<Music> playMusicList = []; //音乐播放列表
   late List<Music> currentPlayMusicList =

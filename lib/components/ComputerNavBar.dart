@@ -7,6 +7,7 @@ import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/components/AccountLoginDialog.dart';
+import 'package:chocolate_music/components/EdgeFadeMask.dart';
 import 'package:chocolate_music/pages/computer/SettingsPage.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
 
@@ -205,38 +206,40 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
           SizedBox(height: 10),
 
           Expanded(
-            child: ListView.separated(
-              shrinkWrap: true,
-              // 让 ListView 在 Column 中按内容高度显示（配合 Expanded 使用）
-              // itemCount: cardList.length,
-              itemCount: _sidebarPlaylists.length,
-              separatorBuilder: (context, index) {
-                // 返回一个表示间隙的 Widget
-                // 例如，一个固定高度的 SizedBox 或者带有颜色的 Container
-                return SizedBox(height: 5); // 这里设置你想要的间隙高度
-                // 或者使用 Container 添加带颜色的分割线
-                // return Container(height: 1, color: Colors.grey.shade300);
-              },
-              itemBuilder: (context, index) {
-                final Playlist playlist = _sidebarPlaylists[index];
-                return playlistItem(
-                  playlist: playlist,
-                  isSelected: Management().selectedPage == playlist.listId,
-                  onTap: () {
-                    // selectedIndex = playlist.listId;
-                    // widget.onDestinationSelected('PlaylistPage');
-                    Management().selectedPage = 'PlaylistPage';
-                    Management().displayList = playlist;
-                    Management().displayListType = 'Playlist';
+            child: EdgeFadeMask(
+              child: ListView.separated(
+                shrinkWrap: true,
+                // 让 ListView 在 Column 中按内容高度显示（配合 Expanded 使用）
+                // itemCount: cardList.length,
+                itemCount: _sidebarPlaylists.length,
+                separatorBuilder: (context, index) {
+                  // 返回一个表示间隙的 Widget
+                  // 例如，一个固定高度的 SizedBox 或者带有颜色的 Container
+                  return SizedBox(height: 5); // 这里设置你想要的间隙高度
+                  // 或者使用 Container 添加带颜色的分割线
+                  // return Container(height: 1, color: Colors.grey.shade300);
+                },
+                itemBuilder: (context, index) {
+                  final Playlist playlist = _sidebarPlaylists[index];
+                  return playlistItem(
+                    playlist: playlist,
+                    isSelected: Management().selectedPage == playlist.listId,
+                    onTap: () {
+                      // selectedIndex = playlist.listId;
+                      // widget.onDestinationSelected('PlaylistPage');
+                      Management().selectedPage = 'PlaylistPage';
+                      Management().displayList = playlist;
+                      Management().displayListType = 'Playlist';
 
-                    Management().displayMusics = [];
-                    Management().displayAlbums = [];
-                    Management().getDisplayPlaylist(playlist);
+                      Management().displayMusics = [];
+                      Management().displayAlbums = [];
+                      Management().getDisplayPlaylist(playlist);
 
-                    Management().refresh();
-                  },
-                );
-              },
+                      Management().refresh();
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -300,36 +303,33 @@ class _AccountDisplayState extends State<AccountDisplay> {
               ),
               child: Row(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(40), // 根据需要设置圆角大小
-                    child: RemoteImage(
-                      // widget.cover,
-                      management.account.cover,
-                      headers: const {
-                        'User-Agent':
-                            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-                      },
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      // 加载失败时，errorBuilder 会被调用
-                      errorBuilder: (context, error, stackTrace) {
-                        // 返回你的本地图片
-                        // return Image.asset(
-                        //   'assets/images/app_photo.png',
-                        //   width: 40,
-                        //   height: 40,
-                        //   fit: BoxFit.cover,
-                        // );
-                        return SvgPicture.asset(
-                          management.account.type == '酷狗音乐' ? 'assets/images/KuGouConcept.svg' :
-                          management.account.type == '网易云' ? 'assets/images/NetEaseCloud.svg' :
-                          'assets/images/Navidrome.svg',
-                          width: 40,
-                          height: 40,
-                        );
-                      },
-                    ),
+                  RemoteImage(
+                    management.account.cover,
+                    headers: const {
+                      'User-Agent':
+                          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                    },
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                    borderRadius: 40,
+                    // 加载失败时，errorBuilder 会被调用
+                    errorBuilder: (context, error, stackTrace) {
+                      // 返回你的本地图片
+                      // return Image.asset(
+                      //   'assets/images/app_photo.png',
+                      //   width: 40,
+                      //   height: 40,
+                      //   fit: BoxFit.cover,
+                      // );
+                      return SvgPicture.asset(
+                        management.account.type == '酷狗音乐' ? 'assets/images/KuGouConcept.svg' :
+                        management.account.type == '网易云' ? 'assets/images/NetEaseCloud.svg' :
+                        'assets/images/Navidrome.svg',
+                        width: 40,
+                        height: 40,
+                      );
+                    },
                   ),
 
                   SizedBox(width: 10),
@@ -528,28 +528,27 @@ class _playlistItemState extends State<playlistItem> {
           ),
           child: Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8), // 根据需要设置圆角大小
-                child: RemoteImage(
-                  widget.playlist.cover,
-                  headers: const {
-                    'User-Agent':
-                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-                  },
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.cover,
-                  // 加载失败时，errorBuilder 会被调用
-                  errorBuilder: (context, error, stackTrace) {
-                    // 返回你的本地图片
-                    return Image.asset(
-                      'assets/images/app_photo.png',
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                ),
+              RemoteImage(
+                widget.playlist.cover,
+                headers: const {
+                  'User-Agent':
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                },
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+                borderRadius: 8,
+                boxShadow: kImageBoxShadow,
+                // 加载失败时，errorBuilder 会被调用
+                errorBuilder: (context, error, stackTrace) {
+                  // 返回你的本地图片
+                  return Image.asset(
+                    'assets/images/app_photo.png',
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  );
+                },
               ),
 
               SizedBox(width: 10),

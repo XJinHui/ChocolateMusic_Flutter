@@ -10,6 +10,7 @@ class AppColors {
 
   // 通用面板 / 卡片背景色
   static const Color panel = Color(0xFFF0F0F0);
+  static const Color lyricPgaePanel = Color(0x00000000);
 
   // 透明色
   static const Color transparent = Color(0x00000000);
@@ -30,12 +31,16 @@ class AppColors {
 
   // 悬浮状态颜色
   static const Color floating = Color(0xFFE6E6E6);
+  static const Color lyricPgaeFloating = Color(0x55F0F0F0);
 
   // 应用名颜色
   static const Color appName = Color(0xff505050);
 
   // 按钮图标颜色
-  static const Color buttonIcon = Color(0xff505050);
+  static const Color buttonIcon = Color(0xff000000);
+
+  // 歌词页按钮图标颜色（深色背景上使用）
+  static const Color lyricPgaeButtonIcon = Color(0xffffffff);
 
   // 关闭按钮颜色
   static const Color closeIcon = Color(0xffffffff);
@@ -111,4 +116,7 @@ class AppColors {
 
   // 圆弧边缘颜色
   static const Color border = Color(0xffeeeeee);
+
+  static const Color lyricColor = Color(0xffcccccc);
+  static const Color lyricPlayColor = Color(0xffffffff);
 }

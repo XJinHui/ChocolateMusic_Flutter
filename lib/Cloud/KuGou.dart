@@ -933,7 +933,7 @@ class KuGou implements CloudService {
         options: Options(
           headers: {
             'Cookie':
-            'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}',
+                'token=${this.params['token']}; userid=${this.params['userid']}; dfid=${this.params['dfid']}',
           },
         ),
       );
@@ -1265,9 +1265,9 @@ class KuGou implements CloudService {
 
       // print('获取歌曲歌词信息响应: ${jsonEncode(response.data)}');
 
-      if (response.statusCode != 200 || response.data["status"] != 1) {
+      if (response.statusCode != 200 || response.data["status"] != 200) {
         print('获取歌曲歌词信息失败: ${jsonEncode(response.data)}');
-        return [];
+        return false;
       }
 
       data = response.data['candidates'][0];
@@ -1288,24 +1288,25 @@ class KuGou implements CloudService {
       // return false
       // }
       var response = await KuGou.dio.get(
-        '/lyric?id=${data.id}&accesskey=${data.accesskey}&fmt=krc&decode=true',
+        // '/lyric?id=${data['id']}&accesskey=${data['accesskey']}&fmt=krc&decode=true',
+        '/lyric?id=${data['id']}&accesskey=${data['accesskey']}&fmt=lrc&decode=true',
         queryParameters: this.params,
       );
 
       // print('获取歌曲歌词响应: ${jsonEncode(response.data)}');
 
-      if (response.statusCode != 200 || response.data["status"] != 1) {
+      if (response.statusCode != 200 || response.data["status"] != 200) {
         print('获取歌曲歌词失败: ${jsonEncode(response.data)}');
-        return [];
+        return false;
       }
 
       String lyric = response.data['decodeContent'] as String;
       // String krc = response.data['decodeContent'] as String;
-      // print('获取歌词:', lyric)
+      // print('获取歌词: ${lyric}');
 
       lyric = processLyric(lyric);
       // String lyric = krcToLrc(krc);
-
+      // print('获取歌词: ${lyric}');
       return lyric;
     } catch (error) {
       print('getLyric 异常: $error');
@@ -1604,6 +1605,52 @@ class KuGou implements CloudService {
           );
         })
         .join('\n');
+  }
+
+  krcToLrc(String krc) {
+    String lrc = '';
+
+    // 匹配行级时间戳和句子内容：[开始毫秒,持续时间]句子
+    final sentenceRegex = RegExp(r'\[(\d+),\d+\](.*)');
+    // 匹配逐字时间戳和字符：<偏移毫秒,持续时间,?>字符
+    const charRegexSource = r'<(\d+),\d+,\d+>([^<]+)';
+
+    // 使用 allMatches 遍历所有句子（等价于 JS 中 exec 循环）
+    for (final sentenceMatch in sentenceRegex.allMatches(krc)) {
+      final time = int.parse(sentenceMatch.group(1)!); // 该句起始时间（毫秒）
+      final sentence = sentenceMatch.group(2)!; // 句子内容（含逐字标签）
+      var characters = '';
+
+      // 处理当前句子内的所有逐字标签
+      final charRegex = RegExp(charRegexSource);
+      for (final charMatch in charRegex.allMatches(sentence)) {
+        final timeCharacter = int.parse(charMatch.group(1)!); // 相对于句首的偏移毫秒
+        final char = charMatch.group(2)!;
+
+        if (char.isEmpty) {
+          continue; // 过滤空字符
+        }
+
+        final absoluteTime = time + timeCharacter;
+        characters += '<${msToLrcTime(absoluteTime)}>$char';
+        // characters += char;
+      }
+
+      // 拼接行级时间戳与所有逐字内容
+      lrc += '[${msToLrcTime(time)}]$characters\n';
+    }
+
+    return lrc;
+  }
+
+  /// 将毫秒转换为 LRC 时间格式：mm:ss.xx
+  msToLrcTime(int ms) {
+    final minutes = ms ~/ 60000;
+    final seconds = (ms % 60000) ~/ 1000;
+    final centiseconds = (ms % 1000) ~/ 10;
+    return '${minutes.toString().padLeft(2, '0')}:'
+        '${seconds.toString().padLeft(2, '0')}.'
+        '${centiseconds.toString().padLeft(2, '0')}';
   }
 
   getCover(String coverUrl, {String size = '500'}) {
