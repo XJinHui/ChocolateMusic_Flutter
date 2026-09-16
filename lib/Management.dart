@@ -57,6 +57,8 @@ class Management extends ChangeNotifier {
   late Object displayList; // 显示的列表，可以是Playlist、Album、Singer等类型
   late String displayListType; // 显示的列表类型，可以是Playlist、Album、Singer等类型
 
+  late Music selectedMusic;
+
   List<Music> _displayMusics = []; // 显示的音乐列表
   List<Album> _displayAlbums = []; // 显示的专辑列表
 
@@ -472,6 +474,11 @@ class Management extends ChangeNotifier {
     this.playMusicControl.play();
   }
 
+  switchMusic(Music music) {
+    this.updataPlayMusicSettings(music, playlistType: this.setting.playlistType);
+    this.playMusicControl.play();
+  }
+
   updataPlayMusicSettings(Music music, {playlistType = -1}) {
     var time = formatTime(music.time);
 
@@ -708,7 +715,14 @@ class Management extends ChangeNotifier {
     }
   }
 
-  search(String keyword) {}
+  search(String keyword) async {
+    if (keyword != this.searchKeyword) {
+      this.searchKeyword = keyword;
+      this.searchList = new RecommendList();
+      await this.cloud.search(keyword);
+      refresh();
+    }
+  }
 
   listSearch(String keyword) {
     this.displayListSearchMusic = [];

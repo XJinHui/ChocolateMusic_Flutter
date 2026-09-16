@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 
 import 'package:chocolate_music/theme/app_colors.dart';
@@ -23,6 +25,16 @@ class _LyricsPageState extends State<LyricsPage> {
 
   /// 背景暗化遮罩透明度（0.0 ~ 1.0），保证歌词在亮色封面上的可读性，0 为关闭。
   static const double _bgDimOpacity = 0.50;
+
+  /// widget 测试里没有原生窗口通道，挂上 MoveWindow 会在拖动时触发
+  /// 未捕获的异步异常，所以测试环境一律退化成普通空白。
+  bool get _isTestEnvironment =>
+      Platform.environment.containsKey('FLUTTER_TEST');
+
+  /// 是否使用桌面端的原生窗口拖拽。判定与 TopToolBar 保持一致。
+  bool get _useDesktopWindowChrome =>
+      (Platform.isWindows || Platform.isLinux || Platform.isMacOS) &&
+      !_isTestEnvironment;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +111,17 @@ class _LyricsPageState extends State<LyricsPage> {
                       ),
                     ),
 
-                    Expanded(child: SizedBox()), // 占位
+                    // 顶部中间的空白接住拖动：按住可移动窗口，双击最大化/还原，
+                    // 与 TopToolBar 的拖拽区行为一致。
+                    // 这里不需要外面套 WindowTitleBarBox —— bitsdojo_window 0.1.6
+                    // 的 MoveWindow 只是一个 onPanStart 调原生 startDragging 的
+                    // GestureDetector，WindowTitleBarBox 仅用于限定标题栏高度。
+                    // 左右两侧留出图标（关闭按钮、窗口按钮）不被拖拽抢走点击。
+                    Expanded(
+                      child: _useDesktopWindowChrome
+                          ? MoveWindow()
+                          : const SizedBox(),
+                    ),
 
                     OperationButton(lyricMode: true),
                   ],
@@ -613,38 +635,45 @@ class _DisplayLyricState extends State<DisplayLyric> {
             // 最后几行就只能停在比目标更靠中间的地方。
             final double viewportHeight = constraints.maxHeight;
 
-            return SingleChildScrollView(
-              controller: _scrollController,
-              padding: EdgeInsets.only(
-                top: viewportHeight * _lineAnchor,
-                bottom: viewportHeight * (1 - _lineAnchor),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (int i = 0; i < lyricList.length; i++)
-                    KeyedSubtree(
-                      key: _lineKeys[i],
-                      // 用行索引判断当前行：同一时间戳可能有多行歌词，
-                      // 用 time 比较会同时点亮多行。
-                      //
-                      // 点击跳转交给 _LyricLine（那里包在 Text 外面）：
-                      // 包在这一层会把整行、包括文字右侧的空白都变成点击区域，
-                      // 因为 ListTile 内部无条件套了一层 InkWell，
-                      // 而 InkWell 的 GestureDetector 用的是 HitTestBehavior.opaque。
-                      child: _LyricLine(
-                        lyric: lyricList[i].lyric,
-                        isCurrent: i == currentIndex,
-                        onTap: () {
-                          // 点击歌词文字跳转播放进度
-                          _management.playMusicControl.changeProgress(
-                            lyricList[i].time,
-                          );
-                          print('点击歌词行跳转播放进度: ${lyricList[i].time}');
-                        },
+            // 桌面端 MaterialScrollBehavior.buildScrollbar 会给垂直滚动视图
+            // 自动套一层 Scrollbar，滑块就落在歌词右侧、还会占掉一条宽度。
+            // 歌词页不要这个滑块，在本子树里把它关掉；
+            // 滚轮 / 拖拽滚动仍然照常（那由 Scrollable 自己负责）。
+            return ScrollConfiguration(
+              behavior: const _NoScrollbarBehavior(),
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                padding: EdgeInsets.only(
+                  top: viewportHeight * _lineAnchor,
+                  bottom: viewportHeight * (1 - _lineAnchor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (int i = 0; i < lyricList.length; i++)
+                      KeyedSubtree(
+                        key: _lineKeys[i],
+                        // 用行索引判断当前行：同一时间戳可能有多行歌词，
+                        // 用 time 比较会同时点亮多行。
+                        //
+                        // 点击跳转交给 _LyricLine（那里包在 Text 外面）：
+                        // 包在这一层会把整行、包括文字右侧的空白都变成点击区域，
+                        // 因为 ListTile 内部无条件套了一层 InkWell，
+                        // 而 InkWell 的 GestureDetector 用的是 HitTestBehavior.opaque。
+                        child: _LyricLine(
+                          lyric: lyricList[i].lyric,
+                          isCurrent: i == currentIndex,
+                          onTap: () {
+                            // 点击歌词文字跳转播放进度
+                            _management.playMusicControl.changeProgress(
+                              lyricList[i].time,
+                            );
+                            print('点击歌词行跳转播放进度: ${lyricList[i].time}');
+                          },
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -719,5 +748,24 @@ class _LyricLine extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// 去掉滚动条滚动的行为：只覆写 buildScrollbar，其余（滚动物理、拖拽设备等）
+/// 全部沿用 MaterialScrollBehavior。
+///
+/// 桌面端的 MaterialScrollBehavior.buildScrollbar 在垂直方向会返回
+/// `Scrollbar(controller: details.controller, child: child)`，
+/// 这里直接返回 child，等于这个子树里不构建任何滚动条。
+class _NoScrollbarBehavior extends MaterialScrollBehavior {
+  const _NoScrollbarBehavior();
+
+  @override
+  Widget buildScrollbar(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
+    return child;
   }
 }

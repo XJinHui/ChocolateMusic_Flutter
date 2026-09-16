@@ -369,7 +369,7 @@ class MusicListTag extends StatelessWidget {
   }
 }
 
-class _MusicListTagDelegate extends SliverPersistentHeaderDelegate {
+  class _MusicListTagDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
     BuildContext context,

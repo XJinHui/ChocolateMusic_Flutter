@@ -858,7 +858,16 @@ class KuGou implements CloudService {
     try {
       var response = await KuGou.dio.get(
         '/search/complex',
-        queryParameters: {'keywords': keyword, ...this.params},
+        // 搜索接口必须在 query 里带上 cookie 认证信息（token/userid/dfid），
+        // 否则服务端返回 error_code 152，且响应体会被 <!--KG_TAG_RES_START--> 包裹，
+        // 而 content-type 仍是 application/json，dio 会直接 jsonDecode 失败：
+        // FormatException: Unexpected character (at offset 0)
+        queryParameters: {
+          'keywords': keyword,
+          'cookie':
+              'token=${params['token']};userid=${params['userid']};dfid=${params['dfid']}',
+          ...this.params,
+        },
       );
 
       // print('搜索响应: ${jsonEncode(response.data)}');
@@ -887,7 +896,8 @@ class KuGou implements CloudService {
             singers.add(
               Singer(
                 singer: j['AuthorName'],
-                singerId: j['AuthorId'],
+                // 接口返回的 AuthorId 是 int，Singer.singerId 是 String，必须显式转换
+                singerId: j['AuthorId'].toString(),
                 cover: this.getCover(j['Avatar']),
                 audioCount: j['AudioCount'],
                 albumCount: j['AlbumCount'],
@@ -899,7 +909,8 @@ class KuGou implements CloudService {
             albums.add(
               Album(
                 album: j['albumname'],
-                albumId: j['albumid'],
+                // 接口返回的 albumid 是 int，Album.albumId 是 String，必须显式转换
+                albumId: j['albumid'].toString(),
                 singer: j['singer'],
                 cover: this.getCover(j['img']),
                 audioCount: 0,

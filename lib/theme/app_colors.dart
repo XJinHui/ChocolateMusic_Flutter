@@ -37,7 +37,7 @@ class AppColors {
   static const Color appName = Color(0xff505050);
 
   // 按钮图标颜色
-  static const Color buttonIcon = Color(0xff000000);
+  static const Color buttonIcon = Color(0xff505050);
 
   // 歌词页按钮图标颜色（深色背景上使用）
   static const Color lyricPgaeButtonIcon = Color(0xffffffff);

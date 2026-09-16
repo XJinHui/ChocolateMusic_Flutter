@@ -9,6 +9,8 @@ import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
 import 'package:chocolate_music/Management.dart';
+import 'package:chocolate_music/components/AddMusicDialog.dart';
+import 'package:chocolate_music/components/DownloadDialog.dart';
 // import 'package:chocolate_music/components/ComputerNavBar.dart';
 
 /// 轻提示的文本样式 SnackBar
@@ -19,7 +21,8 @@ const TextStyle _kToastTextStyle = TextStyle(
 );
 
 /// 弹出轻提示：
-void showMusicToast(BuildContext context, {
+void showMusicToast(
+  BuildContext context, {
   required String message,
   bool success = true,
 }) {
@@ -79,8 +82,7 @@ double _toastWidth(String message) {
     text: TextSpan(text: message, style: _kToastTextStyle),
     maxLines: 1,
     textDirection: TextDirection.ltr,
-  )
-    ..layout();
+  )..layout();
   // 22(图标) + 9(间距) + 文本宽度 + 32(SnackBar 内容默认左右内边距)
   final double rawWidth = painter.width + 63;
   return rawWidth.clamp(156.0, 520.0).toDouble();
@@ -91,7 +93,7 @@ class PlaylistWidget extends StatefulWidget {
   final double size;
 
   PlaylistWidget({Key? key, required this.playlist, required this.size})
-      : super(key: key);
+    : super(key: key);
 
   @override
   State<PlaylistWidget> createState() => _PlaylistWidgetState();
@@ -119,7 +121,7 @@ class _PlaylistWidgetState extends State<PlaylistWidget> {
               widget.playlist.cover,
               headers: const {
                 'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
               },
               width: widget.size,
               height: widget.size,
@@ -162,7 +164,7 @@ class AlbumWidget extends StatefulWidget {
   final double size;
 
   AlbumWidget({Key? key, required this.album, required this.size})
-      : super(key: key);
+    : super(key: key);
 
   @override
   State<AlbumWidget> createState() => _AlbumWidgetState();
@@ -190,7 +192,7 @@ class _AlbumWidgetState extends State<AlbumWidget> {
               widget.album.cover,
               headers: const {
                 'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
               },
               width: widget.size,
               height: widget.size,
@@ -233,7 +235,7 @@ class SingerWidget extends StatefulWidget {
   final double size;
 
   SingerWidget({Key? key, required this.singer, required this.size})
-      : super(key: key);
+    : super(key: key);
 
   @override
   State<SingerWidget> createState() => _SingerWidgetState();
@@ -261,7 +263,7 @@ class _SingerWidgetState extends State<SingerWidget> {
               widget.singer.cover,
               headers: const {
                 'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
               },
               width: widget.size,
               height: widget.size,
@@ -304,7 +306,7 @@ class RecommendMusicWidget extends StatefulWidget {
   final double width;
 
   RecommendMusicWidget({Key? key, required this.music, required this.width})
-      : super(key: key);
+    : super(key: key);
 
   @override
   State<RecommendMusicWidget> createState() => _RecommendMusicWidgetState();
@@ -319,14 +321,18 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
     return GestureDetector(
       onSecondaryTapDown: (details) async {
         // TODO: 菜单目前仅显示，动作逻辑后续根据 show 返回的 action 接入
+        Management().selectedMusic = widget.music;
         var action = await MusicSelected.show(
-            context, details.globalPosition, widget.music,
-            type: 'Recommend');
+          context,
+          details.globalPosition,
+          widget.music,
+          type: 'Recommend',
+        );
 
         if (action != null) {
           switch (action) {
             case 'play':
-            // 处理播放逻辑
+              // 处理播放逻辑
               Management().displayList = Playlist(
                 name: '',
                 listId: '',
@@ -340,43 +346,43 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
               print('播放音乐: ${widget.music.name}');
               break;
             case 'playNext':
-            // 处理添加到下一首播放逻辑
+              // 处理添加到下一首播放逻辑
               Management().addNextMusic(widget.music);
               print('添加到下一首播放: ${widget.music.name}');
               break;
             case 'like':
-            // 处理喜欢逻辑
+              // 处理喜欢逻辑
               Management().like(widget.music.id).then((bool success) {
                 // 更新收藏状态
                 final isCollected =
-                    management.cloud.collectionList.contains(
-                      widget.music.id,
-                    ) ??
-                        false;
+                    management.cloud.collectionList.contains(widget.music.id) ??
+                    false;
                 if (success) {
                   showMusicToast(
                     context,
                     message:
-                    '歌曲 《${widget.music.name}》 ${isCollected
-                        ? '收藏'
-                        : '取消收藏'}成功',
+                        '歌曲 《${widget.music.name}》 ${isCollected ? '收藏' : '取消收藏'}成功',
                   );
                 } else {
                   showMusicToast(
                     context,
                     message:
-                    '歌曲 《${widget.music.name}》 ${isCollected
-                        ? '取消收藏'
-                        : '收藏'}失败',
+                        '歌曲 《${widget.music.name}》 ${isCollected ? '取消收藏' : '收藏'}失败',
                     success: false,
                   );
                 }
               });
               break;
             case 'viewSinger':
-            // 处理查看歌手逻辑
+              // 处理查看歌手逻辑
               Management().selectedPage = 'PlaylistPage';
-              Singer singer = Singer(singer: widget.music.singer, singerId: widget.music.singerId, cover: widget.music.cover, audioCount: 0, albumCount: 0);
+              Singer singer = Singer(
+                singer: widget.music.singer,
+                singerId: widget.music.singerId,
+                cover: widget.music.cover,
+                audioCount: 0,
+                albumCount: 0,
+              );
               Management().displayList = singer;
               Management().displayListType = 'Singer';
 
@@ -388,9 +394,15 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
               print('查看歌手: ${singer.singer}');
               break;
             case 'viewAlbum':
-            // 处理查看专辑逻辑
+              // 处理查看专辑逻辑
               Management().selectedPage = 'PlaylistPage';
-              Album album = Album(album: widget.music.album, albumId: widget.music.albumId, cover: widget.music.cover, singer: widget.music.singer, audioCount: 0);
+              Album album = Album(
+                album: widget.music.album,
+                albumId: widget.music.albumId,
+                cover: widget.music.cover,
+                singer: widget.music.singer,
+                audioCount: 0,
+              );
               Management().displayList = album;
               Management().displayListType = 'Album';
 
@@ -402,10 +414,12 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
               print('查看专辑: ${album.album}');
               break;
             case 'addToList':
-            // 处理添加到列表逻辑
+              // 处理添加到列表逻辑
+              await showAddMusicDialog(context);
               break;
             case 'download':
-            // 处理下载逻辑
+              // 处理下载逻辑
+              await showDownloadDialog(context);
               break;
           }
         }
@@ -449,7 +463,7 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
                 widget.music.cover,
                 headers: const {
                   'User-Agent':
-                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
                 },
                 width: 60,
                 height: 60,
@@ -518,39 +532,35 @@ class _RecommendMusicWidgetState extends State<RecommendMusicWidget> {
                           management.cloud.collectionList.contains(
                             widget.music.id,
                           ) ??
-                              false;
+                          false;
                       if (success) {
                         showMusicToast(
                           context,
                           message:
-                          '歌曲 《${widget.music.name}》 ${isCollected
-                              ? '收藏'
-                              : '取消收藏'}成功',
+                              '歌曲 《${widget.music.name}》 ${isCollected ? '收藏' : '取消收藏'}成功',
                         );
                       } else {
                         showMusicToast(
                           context,
                           message:
-                          '歌曲 《${widget.music.name}》 ${isCollected
-                              ? '取消收藏'
-                              : '收藏'}失败',
+                              '歌曲 《${widget.music.name}》 ${isCollected ? '取消收藏' : '收藏'}失败',
                           success: false,
                         );
                       }
                     });
                   },
                   child:
-                  management.cloud.collectionList.contains(widget.music.id)
+                      management.cloud.collectionList.contains(widget.music.id)
                       ? Icon(
-                    BootstrapIcons.heart_fill,
-                    color: AppColors.likeIconColor,
-                    size: 20,
-                  )
+                          BootstrapIcons.heart_fill,
+                          color: AppColors.likeIconColor,
+                          size: 20,
+                        )
                       : Icon(
-                    BootstrapIcons.heart,
-                    color: AppColors.buttonIcon,
-                    size: 20,
-                  ),
+                          BootstrapIcons.heart,
+                          color: AppColors.buttonIcon,
+                          size: 20,
+                        ),
                 ),
             ],
           ),
@@ -566,6 +576,7 @@ class ComputerMusicWidget extends StatefulWidget {
   final Music music;
   final int num;
   final List<Music> displayMusics;
+  final int type; // type为0时为歌单内的音乐组件，1为搜索列表内的音乐组件, 2为当前播放列表内的音乐组件, 3为歌单内搜索的音乐组件
 
   ComputerMusicWidget({
     Key? key,
@@ -574,6 +585,7 @@ class ComputerMusicWidget extends StatefulWidget {
     required this.displayListType,
     required this.num,
     required this.displayMusics,
+    this.type = 0,
   }) : super(key: key);
 
   @override
@@ -594,72 +606,108 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
 
   bool isHovering = false;
 
+  _playMusic() {
+    if (widget.type != 2) {
+      if (widget.type == 1) {
+        if (this.management.currentPlayMusicList.length == 0) {
+          this.management.displayList = Playlist(
+            name: '',
+            listId: '',
+            cover: '',
+            audioCount: 0,
+          );
+          this.management.displayMusics =
+              this.management.playMusicControl.playMusicList;
+        } else {
+          this.management.addNextMusic(widget.music);
+          this.management.playMusic(widget.music);
+          print('播放音乐: ${widget.music.name}');
+        }
+      } else {
+        this.management.displayList = widget.displayList;
+        this.management.displayMusics = widget.displayMusics;
+      }
+
+      this.management.playMusic(widget.music);
+    } else {
+      this.management.switchMusic(widget.music);
+    }
+    print('播放音乐: ${widget.music.name}');
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onSecondaryTapDown: (details) async {
         // TODO: 菜单目前仅显示，动作逻辑后续根据 show 返回的 action 接入
+        Management().selectedMusic = widget.music;
         var action = await MusicSelected.show(
-            context, details.globalPosition, widget.music,
-            type: widget.displayListType,
-            playlistId: widget.displayListType == 'Playlist'
-                ? (widget.displayList as Playlist).listId
-                : '');
+          context,
+          details.globalPosition,
+          widget.music,
+          type: widget.displayListType,
+          playlistId: widget.displayListType == 'Playlist'
+              ? (widget.displayList as Playlist).listId
+              : '',
+        );
 
         if (action != null) {
           switch (action) {
             case 'play':
-            // 处理播放逻辑
-              Management().displayList = widget.displayList;
-              Management().displayMusics = widget.displayMusics;
-              Management().playMusic(widget.music);
-              print('播放音乐: ${widget.music.name}');
+              // 处理播放逻辑
+              // Management().displayList = widget.displayList;
+              // Management().displayMusics = widget.displayMusics;
+              // Management().playMusic(widget.music);
+              // print('播放音乐: ${widget.music.name}');
+              _playMusic();
               break;
             case 'playNext':
-            // 处理添加到下一首播放逻辑
+              // 处理添加到下一首播放逻辑
               Management().addNextMusic(widget.music);
               print('添加到下一首播放: ${widget.music.name}');
               break;
             case 'delete':
-            // 处理删除逻辑
+              // 处理删除逻辑
               if (widget.displayListType == 'Playlist') {
                 Management().deleteMusicFromPlaylist(
-                    (widget.displayList as Playlist).listId, widget.music.id);
+                  (widget.displayList as Playlist).listId,
+                  widget.music.id,
+                );
               }
               break;
             case 'like':
-            // 处理喜欢逻辑
+              // 处理喜欢逻辑
               Management().like(widget.music.id).then((bool success) {
                 // 更新收藏状态
                 final isCollected =
-                    management.cloud.collectionList.contains(
-                      widget.music.id,
-                    ) ??
-                        false;
+                    management.cloud.collectionList.contains(widget.music.id) ??
+                    false;
                 if (success) {
                   showMusicToast(
                     context,
                     message:
-                    '歌曲 《${widget.music.name}》 ${isCollected
-                        ? '收藏'
-                        : '取消收藏'}成功',
+                        '歌曲 《${widget.music.name}》 ${isCollected ? '收藏' : '取消收藏'}成功',
                   );
                 } else {
                   showMusicToast(
                     context,
                     message:
-                    '歌曲 《${widget.music.name}》 ${isCollected
-                        ? '取消收藏'
-                        : '收藏'}失败',
+                        '歌曲 《${widget.music.name}》 ${isCollected ? '取消收藏' : '收藏'}失败',
                     success: false,
                   );
                 }
               });
               break;
             case 'viewSinger':
-            // 处理查看歌手逻辑
+              // 处理查看歌手逻辑
               Management().selectedPage = 'PlaylistPage';
-              Singer singer = Singer(singer: widget.music.singer, singerId: widget.music.singerId, cover: widget.music.cover, audioCount: 0, albumCount: 0);
+              Singer singer = Singer(
+                singer: widget.music.singer,
+                singerId: widget.music.singerId,
+                cover: widget.music.cover,
+                audioCount: 0,
+                albumCount: 0,
+              );
               Management().displayList = singer;
               Management().displayListType = 'Singer';
 
@@ -671,9 +719,15 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
               print('查看歌手: ${singer.singer}');
               break;
             case 'viewAlbum':
-            // 处理查看专辑逻辑
+              // 处理查看专辑逻辑
               Management().selectedPage = 'PlaylistPage';
-              Album album = Album(album: widget.music.album, albumId: widget.music.albumId, cover: widget.music.cover, singer: widget.music.singer, audioCount: 0);
+              Album album = Album(
+                album: widget.music.album,
+                albumId: widget.music.albumId,
+                cover: widget.music.cover,
+                singer: widget.music.singer,
+                audioCount: 0,
+              );
               Management().displayList = album;
               Management().displayListType = 'Album';
 
@@ -685,20 +739,19 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
               print('查看专辑: ${album.album}');
               break;
             case 'addToList':
-            // 处理添加到列表逻辑
+              // 处理添加到列表逻辑
+              await showAddMusicDialog(context);
               break;
             case 'download':
-            // 处理下载逻辑
+              // 处理下载逻辑
+              await showDownloadDialog(context);
               break;
           }
         }
       },
       onTap: () {
         // 处理整行点击，播放当前音乐
-        this.management.displayList = widget.displayList;
-        this.management.displayMusics = widget.displayMusics;
-        this.management.playMusic(widget.music);
-        print('播放音乐: ${widget.music.name}');
+        _playMusic();
       },
       child: MouseRegion(
         onEnter: (_) {
@@ -738,7 +791,7 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
                 widget.music.cover,
                 headers: const {
                   'User-Agent':
-                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
                 },
                 width: 60,
                 height: 60,
@@ -808,42 +861,38 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
                         management.cloud.collectionList.contains(
                           widget.music.id,
                         ) ??
-                            false;
+                        false;
                     if (success) {
                       showMusicToast(
                         context,
                         message:
-                        '歌曲 《${widget.music.name}》 ${isCollected
-                            ? '收藏'
-                            : '取消收藏'}成功',
+                            '歌曲 《${widget.music.name}》 ${isCollected ? '收藏' : '取消收藏'}成功',
                       );
                     } else {
                       showMusicToast(
                         context,
                         message:
-                        '歌曲 《${widget.music.name}》 ${isCollected
-                            ? '取消收藏'
-                            : '收藏'}失败',
+                            '歌曲 《${widget.music.name}》 ${isCollected ? '取消收藏' : '收藏'}失败',
                         success: false,
                       );
                     }
                   });
                 },
                 child:
-                management.cloud?.collectionList.contains(
-                  widget.music.id,
-                ) ??
-                    false
+                    management.cloud?.collectionList.contains(
+                          widget.music.id,
+                        ) ??
+                        false
                     ? Icon(
-                  BootstrapIcons.heart_fill,
-                  color: AppColors.likeIconColor,
-                  size: 20,
-                )
+                        BootstrapIcons.heart_fill,
+                        color: AppColors.likeIconColor,
+                        size: 20,
+                      )
                     : Icon(
-                  BootstrapIcons.heart,
-                  color: AppColors.buttonIcon,
-                  size: 20,
-                ),
+                        BootstrapIcons.heart,
+                        color: AppColors.buttonIcon,
+                        size: 20,
+                      ),
               ),
 
               SizedBox(width: 50),
@@ -890,12 +939,13 @@ class MusicSelected {
   static OverlayEntry? _activeEntry;
   static Completer<String?>? _activeCompleter;
 
-  static Future<String?> show(BuildContext context,
-      Offset position,
-      Music music, {
-        String type = '',
-        String playlistId = '',
-      }) {
+  static Future<String?> show(
+    BuildContext context,
+    Offset position,
+    Music music, {
+    String type = '',
+    String playlistId = '',
+  }) {
     // 同一时间只保留一个菜单：菜单打开期间再次右键其他歌曲时，先收起旧菜单
     _dismissActive(null);
 
@@ -903,26 +953,25 @@ class MusicSelected {
     late final OverlayEntry entry;
 
     entry = OverlayEntry(
-      builder: (_) =>
-          _MusicSelectedMenu(
-            position: position,
-            music: music,
-            type: type,
-            playlistId: playlistId,
-            onClose: (String? result) {
-              if (identical(_activeEntry, entry)) {
-                _activeEntry = null;
-                _activeCompleter = null;
-              }
-              if (!completer.isCompleted) {
-                completer.complete(result);
-              }
-              // 菜单可能已被下一次 show() 收起，避免重复 remove
-              if (entry.mounted) {
-                entry.remove();
-              }
-            },
-          ),
+      builder: (_) => _MusicSelectedMenu(
+        position: position,
+        music: music,
+        type: type,
+        playlistId: playlistId,
+        onClose: (String? result) {
+          if (identical(_activeEntry, entry)) {
+            _activeEntry = null;
+            _activeCompleter = null;
+          }
+          if (!completer.isCompleted) {
+            completer.complete(result);
+          }
+          // 菜单可能已被下一次 show() 收起，避免重复 remove
+          if (entry.mounted) {
+            entry.remove();
+          }
+        },
+      ),
     );
 
     _activeEntry = entry;
@@ -989,8 +1038,7 @@ class _MusicSelectedMenuState extends State<_MusicSelectedMenu> {
       _MenuItemSpec('playNext', BootstrapIcons.skip_end, '下一首播放'),
       // if (widget.type == 'Playlist')
       if (widget.type == 'Playlist' &&
-          Management().cloud.playlist
-              .any((p) => p.listId == widget.playlistId))
+          Management().cloud.playlist.any((p) => p.listId == widget.playlistId))
         _MenuItemSpec('delete', BootstrapIcons.trash, '从歌单中删除'),
       _MenuItemSpec(
         'like',
@@ -1018,9 +1066,7 @@ class _MusicSelectedMenuState extends State<_MusicSelectedMenu> {
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery
-        .of(context)
-        .size;
+    final Size screenSize = MediaQuery.of(context).size;
     final List<_MenuItemSpec> menuItems = _buildMenuItems();
     // 面板高度 = 上下内边距 + 菜单项数 × 单项高度
     final double menuHeight =
@@ -1066,11 +1112,7 @@ class _MusicSelectedMenuState extends State<_MusicSelectedMenu> {
                 ),
               ),
             ),
-            Positioned(
-              left: left,
-              top: top,
-              child: _buildMenuPanel(menuItems),
-            ),
+            Positioned(left: left, top: top, child: _buildMenuPanel(menuItems)),
           ],
         ),
       ),
@@ -1115,7 +1157,7 @@ class _MusicSelectedMenuState extends State<_MusicSelectedMenu> {
             children: menuItems
                 .map(
                   (item) => _buildMenuItem(item.value, item.icon, item.label),
-            )
+                )
                 .toList(),
           ),
         ),

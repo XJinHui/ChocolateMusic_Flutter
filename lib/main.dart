@@ -13,6 +13,7 @@ import 'package:chocolate_music/pages/computer/LoginPage.dart';
 import 'package:chocolate_music/Phone.dart';
 import 'package:chocolate_music/services/independent_window.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
+import 'package:chocolate_music/theme/app_scroll_behavior.dart';
 import 'package:chocolate_music/Management.dart';
 
 bool get _isDesktop =>
@@ -73,6 +74,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false, // 隐藏 DEBUG 标签
+      // 桌面端默认行为不接受鼠标拖拽，横向列表会滚不动
+      scrollBehavior: const AppScrollBehavior(),
       // home: _isDesktop
       //     ? const DesktopWindowShell(child: HomePage())
       //     : const HomePage(),
@@ -268,6 +271,7 @@ class _SubWindowAppState extends State<SubWindowApp> {
     if (windowType == 'account_login') {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
+        scrollBehavior: const AppScrollBehavior(),
         home: Scaffold(
           backgroundColor: AppColors.background,
           body: SafeArea(
@@ -296,6 +300,7 @@ class _SubWindowAppState extends State<SubWindowApp> {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const AppScrollBehavior(),
       home: Scaffold(
         body: Center(
           child: Text('Unknown sub window: $windowType (#${widget.windowId})'),
