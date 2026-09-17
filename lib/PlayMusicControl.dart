@@ -311,6 +311,7 @@ class PlayMusicControl {
         this.management.lyricType = false;
         this.lyric = lyric;
       }
+      this.management.refresh();
       return;
     }
 
@@ -340,6 +341,7 @@ class PlayMusicControl {
       this.lyricList[musicId] = lyricList;
       this.lyricListString[musicId] = lyric;
       // print(lyric);
+      this.management.refresh();
       // print('歌词类型，false为普通歌词，true为逐字歌词: $lyricType');
     }
   }

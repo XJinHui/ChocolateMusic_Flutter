@@ -248,6 +248,15 @@ class _AccountLoginState extends State<AccountLogin> {
 
   @override
   void dispose() {
+    // 退出登录界面即放弃本次登录。不复位状态的话，云端那两条每 2 秒一次的
+    // 二维码轮询会一直请求下去。
+    //
+    // dispose 运行在卸载阶段（widget tree is locked），此时 notifyListeners
+    // 会把登录界面之外的监听者写崩，所以推迟到本帧末尾再复位。
+    final Management management = this.management;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      management.cancelLogin();
+    });
     _countdownTimer?.cancel();
     for (final TextEditingController controller in _phoneControllers.values) {
       controller.dispose();

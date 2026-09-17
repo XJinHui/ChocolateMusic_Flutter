@@ -28,8 +28,16 @@ class _AccountLoginDialogState extends State<_AccountLoginDialog> {
   @override
   void initState() {
     super.initState();
-    _management.loginType = 0;
     _management.addListener(_handleLoginTypeChanged);
+    // 不能在 initState 里同步写 loginType：initState 运行在 build 阶段中，
+    // setter 会立刻 notifyListeners，对话框子树之外的监听者（导航栏、
+    // 账号页等）此时被标脏就会触发 "setState() called during build"。
+    // 推迟到本帧构建结束再写入。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _management.loginType = 0;
+      }
+    });
     unawaited(_loadQrCodesInBackground());
   }
 

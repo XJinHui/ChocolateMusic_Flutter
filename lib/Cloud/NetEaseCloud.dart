@@ -1191,7 +1191,7 @@ class Neteasecloud implements CloudService {
         return false;
       }
 
-      var listid = response.data['id'];
+      var listid = response.data['id'].toString();
       Playlist playlist = Playlist(
         name: name,
         listId: listid,

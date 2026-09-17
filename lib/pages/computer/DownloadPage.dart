@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:chocolate_music/theme/app_colors.dart';
 
-/// 「下载管理」小窗中的页面内容。
-///
-/// 这里只有页面骨架，核心内容（下载任务列表、进度、暂停/删除等）尚未实现，
-/// 后续在 [_content] 里填充即可。
-/// 小窗外壳（居中弹窗 + 关闭按钮）见 `lib/components/DownloadDialog.dart`。
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
 

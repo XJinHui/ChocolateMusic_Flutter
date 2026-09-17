@@ -18,6 +18,10 @@ const TextStyle _kToastTextStyle = TextStyle(
   color: AppColors.accountInk,
   fontSize: 13,
   fontWeight: FontWeight.w700,
+  // Text 会把这份样式跟 SnackBar 的 contentTextStyle（M3 的 bodyMedium，
+  // letterSpacing 0.25）合并，而 _toastWidth 里的 TextPainter 不会合并。
+  // 不显式写 0 的话，实际渲染比量出来的每字宽 0.25px，长文案必定溢出。
+  letterSpacing: 0,
 );
 
 /// 弹出轻提示：
@@ -54,11 +58,15 @@ void showMusicToast(
               ),
             ),
             const SizedBox(width: 9),
-            Text(
-              message,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: _kToastTextStyle,
+            // 宽度按 _toastWidth 量出来的值算，属于「刚好填满」的临界状态；
+            // 这里兜一层，万一以后样式再漂移，退化成省略号而不是溢出报错。
+            Flexible(
+              child: Text(
+                message,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: _kToastTextStyle,
+              ),
             ),
           ],
         ),

@@ -61,7 +61,10 @@ abstract class CloudService {
 
   // getMatchtMusicUrl(String musicId, {String level = 'exhigh'}) async {}
 
-  getMusicsDetails(List<String> musicIds) async {}
+  // 必须声明返回类型：缺省时静态类型是 Future<dynamic>，调用方写
+  // `.then((List<Music> x) {...})` 会在运行时抛 _TypeError（函数形参逆变，
+  // 要求 dynamic <: List<Music>，不成立）。
+  Future<List<Music>> getMusicsDetails(List<String> musicIds) async => [];
 
   getSingerDetails(String singerId) async {}
 

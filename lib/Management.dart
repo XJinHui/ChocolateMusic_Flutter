@@ -57,7 +57,7 @@ class Management extends ChangeNotifier {
   late Object displayList; // 显示的列表，可以是Playlist、Album、Singer等类型
   late String displayListType; // 显示的列表类型，可以是Playlist、Album、Singer等类型
 
-  late Music selectedMusic;
+  late Music selectedMusic; // 当前选择、右键的音乐
 
   List<Music> _displayMusics = []; // 显示的音乐列表
   List<Album> _displayAlbums = []; // 显示的专辑列表
@@ -91,9 +91,9 @@ class Management extends ChangeNotifier {
   late int musicProgress = 0; //歌曲播放进度（毫秒）
   // late String musicDisplayProgress = '00:00';    //歌曲播放进度（分:秒）
   late int musicDuration = 0; //歌曲总时长（毫秒）
-  late int lyricTime = 0;    //歌词时间戳（毫秒）
-  late int lyricWordTime = 0;    //歌词(逐字)时间戳（毫秒）
-  late bool lyricType = false;    //歌词类型，false为普通歌词，true为逐字歌词
+  late int lyricTime = 0; //歌词时间戳（毫秒）
+  late int lyricWordTime = 0; //歌词(逐字)时间戳（毫秒）
+  late bool lyricType = false; //歌词类型，false为普通歌词，true为逐字歌词
 
   /// 播放进度专用通知器。
   ///
@@ -305,6 +305,21 @@ class Management extends ChangeNotifier {
     this.NeteasecloudCloud.qrCodeType = 0;
   }
 
+  /// 放弃进行中的登录尝试，退出登录界面时调用。
+  ///
+  /// 二维码登录会在 [KuGouCloud] / [NeteasecloudCloud] 里各起一个每 2 秒
+  /// 轮询 `/login/qr/check` 的循环，二者都以 `loginType != 0` 判断本次尝试
+  /// 是否已被放弃。退出登录界面时不复位状态，这些请求就会一直发下去。
+  ///
+  /// 只有仍在进行中(0)的尝试才复位；已经成功(1)或失败(2)的不动，
+  /// 免得把结果覆盖掉。
+  cancelLogin() {
+    if (this.loginType != 0) {
+      return;
+    }
+    this.loginType = -1;
+  }
+
   updateAccount() {
     if (this.accountData.login[0] != -1) {
       if (this.accountData.login[0] == 0) {
@@ -475,7 +490,10 @@ class Management extends ChangeNotifier {
   }
 
   switchMusic(Music music) {
-    this.updataPlayMusicSettings(music, playlistType: this.setting.playlistType);
+    this.updataPlayMusicSettings(
+      music,
+      playlistType: this.setting.playlistType,
+    );
     this.playMusicControl.play();
   }
 
@@ -608,8 +626,7 @@ class Management extends ChangeNotifier {
       return displayMusics;
     }
 
-    var displayMusics =
-        await this.cloud.getAlbumMusic(album.albumId);
+    var displayMusics = await this.cloud.getAlbumMusic(album.albumId);
 
     if (displayMusics.isNotEmpty) {
       this.albumMusic[album.albumId] = displayMusics;
@@ -682,18 +699,26 @@ class Management extends ChangeNotifier {
   }
 
   addNextMusic(Music music) {
-    this.currentPlayMusicList = this.currentPlayMusicList.where((item)  => item.id != music.id).toList();
-    this.playMusicControl.playMusicList = this.playMusicControl.playMusicList.where((item) => item.id != music.id).toList();
+    this.currentPlayMusicList = this.currentPlayMusicList
+        .where((item) => item.id != music.id)
+        .toList();
+    this.playMusicControl.playMusicList = this.playMusicControl.playMusicList
+        .where((item) => item.id != music.id)
+        .toList();
 
-    int index = this.currentPlayMusicList.indexWhere((item) => item.id == this.setting.id);
+    int index = this.currentPlayMusicList.indexWhere(
+      (item) => item.id == this.setting.id,
+    );
 
-    if (index == -1){
+    if (index == -1) {
       this.currentPlayMusicList.insert(0, music);
       this.playMusicControl.playMusicList.insert(0, music);
     } else {
       this.currentPlayMusicList.insert(index + 1, music);
-      int playIndex = this.playMusicControl.playMusicList.indexWhere((item) => item.id == this.setting.id);
-      if (playIndex != -1){
+      int playIndex = this.playMusicControl.playMusicList.indexWhere(
+        (item) => item.id == this.setting.id,
+      );
+      if (playIndex != -1) {
         this.playMusicControl.playMusicList.insert(playIndex + 1, music);
       } else {
         this.playMusicControl.playMusicList.insert(0, music);
@@ -760,7 +785,7 @@ class Management extends ChangeNotifier {
     return status;
   }
 
-  addMusicToPlaylist(String listId, String musicId) async {
+  Future<bool> addMusicToPlaylist(String listId, String musicId) async {
     if (await this.cloud.addMusicToPlaylist(listId, musicId) as bool) {
       if (this.setting.playlistId == listId && this.setting.playlistType == 0) {
         var index = this.currentPlayMusicList.indexWhere(
@@ -783,9 +808,7 @@ class Management extends ChangeNotifier {
         List<Music> musics = this.playlistMusics[listId]!;
         if (!musics.any((music) => music.id == musicId)) {
           this.cloud.getMusicsDetails([musicId]).then((List<Music> details) {
-            if (details.length > 0 &&
-                this.setting.playlistId == listId &&
-                this.setting.playlistType == 0) {
+            if (details.length > 0 && this.playlistMusics.containsKey(listId)) {
               this.playlistMusics[listId]!.insert(0, details[0]);
               this.playlistMusicVersion++; // 触发监听
             }
@@ -840,7 +863,10 @@ class Management extends ChangeNotifier {
   }
 
   loginByQrCode() async {
-    while (true) {
+    // loginType 一旦不为 0，说明这次尝试已被放弃（退出了登录界面）或已由
+    // 其它方式结束，本地轮询也该停下，否则每开一次登录界面就会残留一个
+    // 永远转下去的循环。
+    while (this.loginType == 0) {
       await Future.delayed(const Duration(milliseconds: 10));
       if (this.KuGouCloud.qrCodeType == 1 ||
           this.NeteasecloudCloud.qrCodeType == 1) {

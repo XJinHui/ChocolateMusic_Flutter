@@ -215,7 +215,7 @@ class Navidrome implements CloudService {
     }
   }
 
-  getPlaylistMusic(String listId) async {
+  Future<List<Music>> getPlaylistMusic(String listId) async {
     try {
       if (listId == 'starred') {
         var response = await Navidrome.dio.get(
@@ -970,7 +970,7 @@ class Navidrome implements CloudService {
         print('音乐已在歌单中，无需重复添加，音乐id: $musicId, 歌单id: $listId');
         return true;
       }
-
+      print(1);
       var url;
       if (listId == 'starred') {
         url = '/star.view?id=${musicId}';
@@ -978,7 +978,7 @@ class Navidrome implements CloudService {
         url =
             '/updatePlaylist.view?playlistId=${listId}&songIdToAdd=${musicId}';
       }
-
+      print(2);
       var response = await Navidrome.dio.get(
         url,
         queryParameters: {
@@ -992,7 +992,7 @@ class Navidrome implements CloudService {
         },
       );
 
-      // print('删除歌单响应: ${jsonEncode(response.data)}');
+      print('删除歌单响应: ${jsonEncode(response.data)}');
 
       if (response.statusCode != 200 ||
           response.data['subsonic-response']['status'] != 'ok') {

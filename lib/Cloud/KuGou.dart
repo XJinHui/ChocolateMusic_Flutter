@@ -26,6 +26,7 @@ class KuGou implements CloudService {
 
   static final Dio dio = Dio(
     BaseOptions(
+      // baseUrl: "https://kugou.xjinhui.asia/",
       baseUrl: "http://120.77.173.68:4000",
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 30),
@@ -198,7 +199,7 @@ class KuGou implements CloudService {
       var num = list.length - 1; // 添加后的索引（即原来的长度）
       this.accountData.data[0][num] = this.userData;
 
-      print('${this.accountData}');
+      // print('${this.accountData}');
       this.accountData.login = [0, num];
 
       this.token = this.userData.token;
@@ -235,7 +236,7 @@ class KuGou implements CloudService {
         '/login/qr/check?key=${this.key}&timestamp=${timestamp}',
       );
 
-      print(response.data);
+      // print(response.data);
 
       n = response.data['data']['status'];
 
@@ -1358,7 +1359,7 @@ class KuGou implements CloudService {
       );
 
       this.playlist.add(playlist);
-      this.playlist_to_id[listid] = response.data['data']['info']['listid'];
+      this.playlist_to_id[listid] = response.data['data']['info']['listid'].toString();
 
       print('创建歌单成功，歌单id: ${listid}');
 

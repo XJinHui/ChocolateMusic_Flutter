@@ -10,6 +10,8 @@ import 'package:chocolate_music/components/AccountLoginDialog.dart';
 import 'package:chocolate_music/components/EdgeFadeMask.dart';
 import 'package:chocolate_music/pages/computer/SettingsPage.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
+import 'package:chocolate_music/components/MusicComponents.dart';
+import 'package:chocolate_music/components/CreatePlaylistDialog.dart';
 
 class ChocolateNavBar extends StatefulWidget {
   // final selectedPage;
@@ -78,16 +80,17 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
   List<Playlist> get _sidebarPlaylists {
     final String collectionListId = _collectionListId;
     return management.playlists
-        .where((playlist) =>
-            collectionListId.isEmpty || playlist.listId != collectionListId)
+        .where(
+          (playlist) =>
+              collectionListId.isEmpty || playlist.listId != collectionListId,
+        )
         .toList(growable: false);
   }
 
   Playlist get _likedPlaylist {
     final String collectionListId = _collectionListId;
     for (final Playlist playlist in management.playlists) {
-      if (collectionListId.isNotEmpty &&
-          playlist.listId == collectionListId) {
+      if (collectionListId.isNotEmpty && playlist.listId == collectionListId) {
         return playlist;
       }
     }
@@ -97,6 +100,27 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
       listId: collectionListId.isEmpty ? 'starred' : collectionListId,
       cover: '',
       audioCount: 0,
+    );
+  }
+
+  Future<void> _createPlaylist() async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => CreatePlaylistDialog(
+        onConfirm: (String name) async {
+          final bool success = await management.createPlaylist(name);
+          if (!mounted) return;
+
+          showMusicToast(
+            context,
+            message: success ? '创建歌单《$name》成功' : '创建歌单《$name》失败',
+            success: success,
+          );
+
+          if (success) Navigator.of(context).pop();
+        },
+      ),
     );
   }
 
@@ -112,33 +136,14 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
       // color: Colors.deepPurple[50],
       child: Column(
         children: [
-          // SizedBox(height: 10),
-          // Text(
-          //   'Chocolate',
-          //   style: TextStyle(
-          //     fontSize: 20,
-          //     fontWeight: FontWeight.bold,
-          //     fontStyle: FontStyle.italic,
-          //     color: AppColors.appName,
-          //   ),
-          // ),
-          // Text(
-          //   'Music',
-          //   style: TextStyle(
-          //     fontSize: 18,
-          //     fontWeight: FontWeight.bold,
-          //     fontStyle: FontStyle.italic,
-          //     color: AppColors.appName,
-          //   ),
-          // ),
-          // // Text('音乐', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.appName)),
-          // SizedBox(height: 20),
           GestureDetector(
             onTap: () {
               // if (management.account.type != '') {
-              if ( management.accountData.data.any((accounts) => accounts.isNotEmpty) ) {
+              if (management.accountData.data.any(
+                (accounts) => accounts.isNotEmpty,
+              )) {
                 // selectedIndex = 'AccountPage';
-                  // widget.onDestinationSelected('AccountPage');
+                // widget.onDestinationSelected('AccountPage');
                 Management().selectedPage = 'AccountPage';
               } else {
                 unawaited(
@@ -163,7 +168,8 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                   icon: navItems[i]['icon'],
                   selectedIcon: navItems[i]['selectedIcon'],
                   title: navItems[i]['title'],
-                  isSelected: Management().selectedPage == navItems[i]['pageId'],
+                  isSelected:
+                      Management().selectedPage == navItems[i]['pageId'],
                   onTap: () {
                     // selectedIndex = navItems[i]['pageId'];
                     // widget.onDestinationSelected(navItems[i]['pageId']);
@@ -198,7 +204,18 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                 ),
               ),
               Expanded(child: SizedBox()),
-              Icon(Icons.add, size: 25, color: AppColors.buttonIcon),
+
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    // 打开创建歌单窗口
+                    unawaited(_createPlaylist());
+                  },
+                  child: Icon(Icons.add, size: 25, color: AppColors.buttonIcon),
+                ),
+              ),
+
               SizedBox(width: 5),
             ],
           ),
@@ -223,7 +240,10 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
                   final Playlist playlist = _sidebarPlaylists[index];
                   return playlistItem(
                     playlist: playlist,
-                    isSelected: Management().selectedPage == playlist.listId,
+                    isSelected:
+                        Management().selectedPage == 'PlaylistPage' &&
+                        Management().displayListType == 'Playlist' &&
+                        Management().displayList == playlist,
                     onTap: () {
                       // selectedIndex = playlist.listId;
                       // widget.onDestinationSelected('PlaylistPage');
@@ -323,9 +343,11 @@ class _AccountDisplayState extends State<AccountDisplay> {
                       //   fit: BoxFit.cover,
                       // );
                       return SvgPicture.asset(
-                        management.account.type == '酷狗音乐' ? 'assets/images/KuGouConcept.svg' :
-                        management.account.type == '网易云' ? 'assets/images/NetEaseCloud.svg' :
-                        'assets/images/Navidrome.svg',
+                        management.account.type == '酷狗音乐'
+                            ? 'assets/images/KuGouConcept.svg'
+                            : management.account.type == '网易云'
+                            ? 'assets/images/NetEaseCloud.svg'
+                            : 'assets/images/Navidrome.svg',
                         width: 40,
                         height: 40,
                       );
