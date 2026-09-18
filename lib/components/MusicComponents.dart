@@ -940,9 +940,9 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
   }
 }
 
-/// 音乐卡片右键菜单栏
-class MusicSelected {
-  MusicSelected._(); // 仅提供静态方法，禁止实例化
+/// 通用右键菜单栏：按 [items] 渲染菜单，点击后把对应菜单项的 value 回传给调用方
+class ContextMenu {
+  ContextMenu._(); // 仅提供静态方法，禁止实例化
 
   static OverlayEntry? _activeEntry;
   static Completer<String?>? _activeCompleter;
@@ -950,22 +950,18 @@ class MusicSelected {
   static Future<String?> show(
     BuildContext context,
     Offset position,
-    Music music, {
-    String type = '',
-    String playlistId = '',
-  }) {
-    // 同一时间只保留一个菜单：菜单打开期间再次右键其他歌曲时，先收起旧菜单
+    List<MenuItemSpec> items,
+  ) {
+    // 同一时间只保留一个菜单：菜单打开期间再次右键其他目标时，先收起旧菜单
     _dismissActive(null);
 
     final Completer<String?> completer = Completer<String?>();
     late final OverlayEntry entry;
 
     entry = OverlayEntry(
-      builder: (_) => _MusicSelectedMenu(
+      builder: (_) => _ContextMenuPanel(
         position: position,
-        music: music,
-        type: type,
-        playlistId: playlistId,
+        items: items,
         onClose: (String? result) {
           if (identical(_activeEntry, entry)) {
             _activeEntry = null;
@@ -1003,33 +999,79 @@ class MusicSelected {
   }
 }
 
+/// 音乐卡片右键菜单栏
+class MusicSelected {
+  MusicSelected._(); // 仅提供静态方法，禁止实例化
+
+  static Future<String?> show(
+    BuildContext context,
+    Offset position,
+    Music music, {
+    String type = '',
+    String playlistId = '',
+  }) {
+    return ContextMenu.show(
+      context,
+      position,
+      _buildMenuItems(music, type, playlistId),
+    );
+  }
+
+  /// 菜单项清单（value / 图标 / 文案）
+  static List<MenuItemSpec> _buildMenuItems(
+    Music music,
+    String type,
+    String playlistId,
+  ) {
+    final bool isCollected = _isCollected(music);
+    return [
+      MenuItemSpec('play', BootstrapIcons.play, '播放'),
+      MenuItemSpec('playNext', BootstrapIcons.skip_end, '下一首播放'),
+      // if (type == 'Playlist')
+      if (type == 'Playlist' &&
+          Management().cloud.playlist.any((p) => p.listId == playlistId))
+        MenuItemSpec('delete', BootstrapIcons.trash, '从歌单中删除'),
+      MenuItemSpec(
+        'like',
+        isCollected ? BootstrapIcons.heart_fill : BootstrapIcons.heart,
+        isCollected ? '取消收藏' : '收藏',
+      ),
+      if (type != 'Singer')
+        MenuItemSpec('viewSinger', BootstrapIcons.person, '查看艺人'),
+      if (type != 'Album') MenuItemSpec('viewAlbum', BootstrapIcons.disc, '查看专辑'),
+      MenuItemSpec('addToList', BootstrapIcons.plus_square, '添加到歌单'),
+      MenuItemSpec('download', BootstrapIcons.download, '下载'),
+    ];
+  }
+
+  /// 收藏状态是纯读取；cloud 是 late 字段，未登录时未初始化，
+  /// 直接访问会抛异常导致整个菜单构建失败，这里兜底为未收藏
+  static bool _isCollected(Music music) {
+    try {
+      return Management().cloud.collectionList.contains(music.id);
+    } catch (_) {
+      return false;
+    }
+  }
+}
+
 /// 右键菜单浮层：全屏透明屏障 + 定位在鼠标位置的菜单面板。
-class _MusicSelectedMenu extends StatefulWidget {
+class _ContextMenuPanel extends StatefulWidget {
   final Offset position;
-  final Music music;
-
-  /// 外部传入的场景标识（如列表类型），State 里通过 widget.type 使用，
-  /// 可用于按所在页面显示/隐藏部分菜单项
-  final String type;
-
-  /// 外部传入的歌单 id（当前所在歌单场景下才有意义），
-  /// State 里通过 widget.playlistId 使用
-  final String playlistId;
+  final List<MenuItemSpec> items;
   final ValueChanged<String?> onClose;
 
-  const _MusicSelectedMenu({
+  const _ContextMenuPanel({
     required this.position,
-    required this.music,
-    required this.type,
-    required this.playlistId,
+    required this.items,
     required this.onClose,
   });
 
   @override
-  State<_MusicSelectedMenu> createState() => _MusicSelectedMenuState();
+  State<_ContextMenuPanel> createState() => _ContextMenuPanelState();
 }
 
-class _MusicSelectedMenuState extends State<_MusicSelectedMenu> {
+class _ContextMenuPanelState extends State<_ContextMenuPanel> {
   // 宽度为固定值；高度按菜单项数量自动计算（见 build 里的 menuHeight），
   // 增删菜单项时无需再手动同步尺寸常量，否则屏幕边缘的收回计算会失准
   static const double _menuWidth = 160;
@@ -1038,44 +1080,10 @@ class _MusicSelectedMenuState extends State<_MusicSelectedMenu> {
 
   String? _hoveredValue; // 当前悬停的菜单项
 
-  /// 菜单项清单（value / 图标 / 文案）
-  List<_MenuItemSpec> _buildMenuItems() {
-    final bool isCollected = _isCollected();
-    return [
-      _MenuItemSpec('play', BootstrapIcons.play, '播放'),
-      _MenuItemSpec('playNext', BootstrapIcons.skip_end, '下一首播放'),
-      // if (widget.type == 'Playlist')
-      if (widget.type == 'Playlist' &&
-          Management().cloud.playlist.any((p) => p.listId == widget.playlistId))
-        _MenuItemSpec('delete', BootstrapIcons.trash, '从歌单中删除'),
-      _MenuItemSpec(
-        'like',
-        isCollected ? BootstrapIcons.heart_fill : BootstrapIcons.heart,
-        isCollected ? '取消收藏' : '收藏',
-      ),
-      if (widget.type != 'Singer')
-        _MenuItemSpec('viewSinger', BootstrapIcons.person, '查看艺人'),
-      if (widget.type != 'Album')
-        _MenuItemSpec('viewAlbum', BootstrapIcons.disc, '查看专辑'),
-      _MenuItemSpec('addToList', BootstrapIcons.plus_square, '添加到歌单'),
-      _MenuItemSpec('download', BootstrapIcons.download, '下载'),
-    ];
-  }
-
-  /// 收藏状态是纯读取；cloud 是 late 字段，未登录时未初始化，
-  /// 直接访问会抛异常导致整个菜单构建失败，这里兜底为未收藏
-  bool _isCollected() {
-    try {
-      return Management().cloud.collectionList.contains(widget.music.id);
-    } catch (_) {
-      return false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
-    final List<_MenuItemSpec> menuItems = _buildMenuItems();
+    final List<MenuItemSpec> menuItems = widget.items;
     // 面板高度 = 上下内边距 + 菜单项数 × 单项高度
     final double menuHeight =
         menuItems.length * _itemHeight + _panelPadding * 2;
@@ -1128,7 +1136,7 @@ class _MusicSelectedMenuState extends State<_MusicSelectedMenu> {
   }
 
   /// 菜单容器：外圆弧 + 外阴影
-  Widget _buildMenuPanel(List<_MenuItemSpec> menuItems) {
+  Widget _buildMenuPanel(List<MenuItemSpec> menuItems) {
     // Overlay 里没有 Material 祖先时，Text 会退化成带黄色下划线的兜底样式，
     // 这里用透明 Material 提供正常的文字环境，自身不绘制任何背景
     return Material(
@@ -1211,10 +1219,10 @@ class _MusicSelectedMenuState extends State<_MusicSelectedMenu> {
 }
 
 /// 菜单项描述：动作标识 / 图标 / 文案
-class _MenuItemSpec {
+class MenuItemSpec {
   final String value;
   final IconData icon;
   final String label;
 
-  const _MenuItemSpec(this.value, this.icon, this.label);
+  const MenuItemSpec(this.value, this.icon, this.label);
 }

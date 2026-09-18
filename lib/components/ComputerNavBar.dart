@@ -12,6 +12,7 @@ import 'package:chocolate_music/pages/computer/SettingsPage.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
 import 'package:chocolate_music/components/MusicComponents.dart';
 import 'package:chocolate_music/components/CreatePlaylistDialog.dart';
+import 'package:chocolate_music/components/ConfirmDialog.dart';
 
 class ChocolateNavBar extends StatefulWidget {
   // final selectedPage;
@@ -524,6 +525,49 @@ class _playlistItemState extends State<playlistItem> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap, // 点击时调用回调函数
+      onSecondaryTapDown: (details) async {
+        final String? action = await ContextMenu.show(
+          context,
+          details.globalPosition,
+          const [MenuItemSpec('deletePlaylist', BootstrapIcons.trash, '删除歌单')],
+        );
+
+        if (action != 'deletePlaylist') {
+          return;
+        }
+
+        // 菜单收起后才走到这里，中间跨了 await，用 context 前先确认还在树上
+        if (!context.mounted) {
+          return;
+        }
+
+        final bool confirmed = await showConfirmDialog(
+          context,
+          title: '删除歌单',
+          message: '确定要删除歌单《${widget.playlist.name}》吗？删除后不可恢复。',
+          confirmText: '删除',
+          danger: true,
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        final bool success = await Management().deletePlaylist(
+          widget.playlist.listId,
+        );
+
+        // 删除期间跨了 await，弹提示前再确认一次还在树上
+        if (!context.mounted) {
+          return;
+        }
+
+        showMusicToast(
+          context,
+          message: '歌单 《${widget.playlist.name}》 删除${success ? '成功' : '失败'}',
+          success: success,
+        );
+      },
       child: MouseRegion(
         onEnter: (_) {
           setState(() {

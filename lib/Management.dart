@@ -765,7 +765,7 @@ class Management extends ChangeNotifier {
     }
   }
 
-  createPlaylist(String name) async {
+  Future<bool> createPlaylist(String name) async {
     bool status = await this.cloud.createPlaylist(name);
 
     if (status) {
@@ -775,7 +775,7 @@ class Management extends ChangeNotifier {
     return status;
   }
 
-  deletePlaylist(String listId) async {
+  Future<bool> deletePlaylist(String listId) async {
     bool status = await this.cloud.deletePlaylist(listId);
 
     if (status) {

@@ -108,9 +108,9 @@ class playlistItem extends StatefulWidget {
 }
 
 class _playlistItemState extends State<playlistItem> {
-  @override
   bool isHovering = false;
 
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap, // 点击时调用回调函数

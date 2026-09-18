@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:chocolate_music/pages/computer/DownloadPage.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 
-/// 弹出居中的「下载管理」小窗。
-///
-/// 调用方直接 `showDownloadDialog(context)` 即可，不需要自己包 Dialog。
-/// 样式与登录小窗（`AccountLoginDialog.dart`）保持一致。
 Future<void> showDownloadDialog(BuildContext context) {
   return showDialog<void>(
     context: context,

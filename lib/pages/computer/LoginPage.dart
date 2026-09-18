@@ -8,7 +8,6 @@ import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-
 class LoginPage extends StatefulWidget {
   final Management management = Management();
 
@@ -64,9 +63,9 @@ class _LoginPageState extends State<LoginPage> {
                   colorFilter: isSelected
                       ? null
                       : const ColorFilter.mode(
-                    Color(0xFF8A8A8A),
-                    BlendMode.srcIn,
-                  ),
+                          Color(0xFF8A8A8A),
+                          BlendMode.srcIn,
+                        ),
                 ),
               ),
             ),
@@ -228,9 +227,9 @@ class _AccountLoginState extends State<AccountLogin> {
   late Management management = Management();
 
   final Map<String, TextEditingController> _phoneControllers =
-  <String, TextEditingController>{};
+      <String, TextEditingController>{};
   final Map<String, TextEditingController> _codeControllers =
-  <String, TextEditingController>{};
+      <String, TextEditingController>{};
   final Map<String, int> _remainingSeconds = <String, int>{};
   final TextEditingController musicSourceController = TextEditingController();
   final TextEditingController apiController = TextEditingController();
@@ -390,24 +389,24 @@ class _AccountLoginState extends State<AccountLogin> {
                 keyboardType: TextInputType.number,
                 decoration: _inputDecoration(label: '验证码', hint: '请输入验证码')
                     .copyWith(
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.only(right: 4),
-                    child: TextButton(
-                      onPressed: remainingSeconds == 0
-                          ? _requestVerificationCode
-                          : null,
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.selectedText,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                      ),
-                      child: Text(
-                        remainingSeconds == 0
-                            ? '获取验证码'
-                            : '$remainingSeconds 秒后重试',
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: TextButton(
+                          onPressed: remainingSeconds == 0
+                              ? _requestVerificationCode
+                              : null,
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.selectedText,
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                          ),
+                          child: Text(
+                            remainingSeconds == 0
+                                ? '获取验证码'
+                                : '$remainingSeconds 秒后重试',
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
               ),
 
               const SizedBox(height: 24),
@@ -425,7 +424,10 @@ class _AccountLoginState extends State<AccountLogin> {
                       borderRadius: BorderRadius.circular(24),
                     ),
                   ),
-                  child: const Text('登录'),
+                  child: const Text(
+                    '登录',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
                 ),
               ),
             ],
@@ -499,7 +501,10 @@ class _AccountLoginState extends State<AccountLogin> {
                       borderRadius: BorderRadius.circular(24),
                     ),
                   ),
-                  child: const Text('登录'),
+                  child: const Text(
+                    '登录',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
                 ),
               ),
             ],
