@@ -247,21 +247,19 @@ class PlayMusicControl {
 
     var qualityTier = this.management.setting.qualityTier;
 
-    // var musicData = await this.management.musicManagement.searchMusicData(
-    //     this.playlistManagement.setting.name,
-    //     this.playlistManagement.setting.singer,
-    //     this.playlistManagement.setting.qualityTier
-    // );
-    // if (musicData != null) {
-    //   let filePath = musicData.filePath
-    //
-    //   const file = fs.openSync(filePath, fs.OpenMode.READ_ONLY);
-    //   const fd = file.fd; // 获取文件描述符
-    //
-    //   this.url = `fd://${fd}`
-    //   console.log('本地音乐url:', this.url)
-    //   return
-    // }
+    var musicData = await this.management.musicManagement.searchMusicData(
+      this.management.setting.name,
+      this.management.setting.singer,
+      this.management.setting.qualityTier,
+    );
+
+    if (musicData != null) {
+      var filePath = musicData['filePath'];
+      final mediaUri = Uri.file(filePath).toString();
+      this.url = mediaUri;
+      print('本地音乐url: ${this.url}');
+      return;
+    }
 
     if (this.musicList.containsKey(musicId) &&
         this.musicList[musicId]![qualityTier] != '') {
@@ -315,7 +313,14 @@ class PlayMusicControl {
       return;
     }
 
-    var lyric = await this.management.cloud.getLyric(musicId);
+
+    var lyric = await this.management.musicManagement.searchLyric(this.management.setting.name, this.management.setting.singer);
+
+    // var lyric = '';
+    if (lyric == '') {
+      lyric = await this.management.cloud.getLyric(musicId);
+    }
+
     if (!(lyric is bool) && lyric != '') {
       List<LyricsMap> lyricList = [];
       var lyricType = this.detectionLyricsType(lyric);

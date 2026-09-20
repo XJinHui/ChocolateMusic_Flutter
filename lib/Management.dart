@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:chocolate_music/FileManage.dart';
 import 'package:chocolate_music/PlayMusicControl.dart';
+import 'package:chocolate_music/MusicManagement.dart';
 import 'package:chocolate_music/Cloud/KuGou.dart';
 import 'package:chocolate_music/Cloud/Navidrome.dart';
 import 'package:chocolate_music/Cloud/NetEaseCloud.dart';
@@ -16,6 +15,7 @@ class Management extends ChangeNotifier {
   late PlayMusicControl playMusicControl = PlayMusicControl(
     this,
   ); // 播放音乐控制类，负责播放音乐、获取歌词、获取歌曲信息等
+  late MusicManagement musicManagement = MusicManagement(this); // 本地音乐管理
 
   String _selectedPage = 'RecommendPage';
 
@@ -166,6 +166,7 @@ class Management extends ChangeNotifier {
 
   Future<void> init() async {
     await fileManage.init();
+    await playMusicControl;
 
     if (await fileManage.checkFile('data/setting.json')) {
       // await this.readSetting();
@@ -185,6 +186,8 @@ class Management extends ChangeNotifier {
     } else {
       await this.fileManage.writeRecommendListDate(this.recommendListDate);
     }
+
+    await musicManagement.init();
 
     this.setting.play = false;
 
@@ -234,6 +237,7 @@ class Management extends ChangeNotifier {
       playlistType: 0,
       qualityTier: 0,
       downloadQualityTier: 0,
+      downloadPath: this.setting.downloadPath,
     );
     this.setting = setting;
     this.fileManage.writeSetting(this.setting);
@@ -1036,6 +1040,7 @@ class Management extends ChangeNotifier {
       playlistType: 0,
       qualityTier: 0,
       downloadQualityTier: 0,
+      downloadPath: '',
     );
 
     init();

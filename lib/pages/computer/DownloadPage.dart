@@ -4,6 +4,7 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/components/RemoteImage.dart';
+import 'package:chocolate_music/components/MusicComponents.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -18,7 +19,51 @@ class _DownloadPageState extends State<DownloadPage> {
   final qualityTiers = ['标准音质', '高品音质', '无损音质'];
 
   _downloadMusic() {
-    print('下载音乐《${Management().selectedMusic.name}》，选择的音质等级：${qualityTiers[downloadQualityTier]}');
+    final NavigatorState navigator = Navigator.of(context);
+
+    print(
+      '下载音乐《${Management().selectedMusic.name}》，选择的音质等级：${qualityTiers[downloadQualityTier]}',
+    );
+    Management().musicManagement
+        .searchMusicData(
+          Management().selectedMusic.name,
+          Management().selectedMusic.singer,
+          downloadQualityTier,
+        )
+        .then(
+          (result) => {
+            if (result == null)
+              {
+                Management().musicManagement
+                    .downloadAndSaveMusic(
+                      Management().selectedMusic,
+                      downloadQualityTier,
+                    )
+                    .then((success) {
+                      showMusicToast(
+                        context,
+                        message:
+                            '歌曲《${Management().selectedMusic.name}》下载${success ? "成功" : "失败"}',
+                        success: success,
+                      );
+
+                      if (success) {
+                        navigator.pop();
+                      }
+                    }),
+              }
+            else
+              {
+                showMusicToast(
+                  context,
+                  message: '歌曲《${Management().selectedMusic.name}》已下载',
+                  success: true,
+                ),
+
+                navigator.pop()
+              },
+          },
+        );
   }
 
   @override

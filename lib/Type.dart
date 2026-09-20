@@ -244,6 +244,9 @@ class Setting {
   // 下载音质等级 (0 -> 标准， 1 -> 高品质， 2 -> 无损)
   int downloadQualityTier;
 
+  // 默认项目/Music
+  String downloadPath;
+
   Setting({
     required this.name,
     required this.singer,
@@ -262,6 +265,7 @@ class Setting {
     required this.playlistType,
     required this.qualityTier,
     required this.downloadQualityTier,
+    required this.downloadPath,
   });
 
   Map<String, dynamic> toJson() {
@@ -283,6 +287,7 @@ class Setting {
       'playlistType': playlistType,
       'qualityTier': qualityTier,
       'downloadQualityTier': downloadQualityTier,
+      'downloadPath': downloadPath,
     };
   }
 
@@ -305,6 +310,7 @@ class Setting {
       playlistType: json['playlistType'],
       qualityTier: json['qualityTier'],
       downloadQualityTier: json['downloadQualityTier'],
+      downloadPath: json['downloadPath'],
     );
   }
 }

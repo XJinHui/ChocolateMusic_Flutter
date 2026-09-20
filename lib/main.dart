@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'package:chocolate_music/Computer.dart';
@@ -22,6 +23,14 @@ bool get _isDesktop =>
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized(); // 必须调用 -- 媒体播放
+
+  if (_isDesktop) {
+    // sqflite 的原生插件在桌面端没有实现，必须切到 FFI 版实现，
+    // 否则全局 openDatabase 会抛 Bad state: databaseFactory not initialized。
+    // 子窗口是独立 engine 重跑本入口，所以这段要在多窗口分支之前执行。
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
   if (_isDesktop) {
     await windowManager.ensureInitialized();
