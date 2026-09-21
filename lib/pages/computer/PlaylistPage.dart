@@ -9,6 +9,7 @@ import 'package:chocolate_music/components/RemoteImage.dart';
 
 class PlaylistPage extends StatefulWidget {
   final Management management = Management();
+
   // late List<Music> displayMusics = [];
   // late List<Album> displayAlbums = [];
 
@@ -18,13 +19,11 @@ class PlaylistPage extends StatefulWidget {
     management.displayMusics = [];
     management.displayAlbums = [];
 
-    if (management.displayListType == 'Playlist'){
+    if (management.displayListType == 'Playlist') {
       management.getDisplayPlaylist(management.displayList as Playlist);
-    }
-    else if (management.displayListType == 'Album'){
+    } else if (management.displayListType == 'Album') {
       management.getDisplayAlbum(management.displayList as Album);
-    }
-    else if (management.displayListType == 'Singer'){
+    } else if (management.displayListType == 'Singer') {
       management.getDisplaySinger(management.displayList as Singer);
       // displayMusics = display['musics'];
       // displayAlbums = display['albums'];
@@ -55,61 +54,61 @@ class _PlaylistPageState extends State<PlaylistPage> {
               // 开顶部渐隐会把它们一起盖住，这里只保留底部渐隐
               topFade: false,
               child: CustomScrollView(
-          // child: Column(
-          // mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
-          // crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
-          slivers: [
-            // SizedBox(height: 10),
-            SliverAppBar(
-              pinned: true,
-              // 折叠后固定在顶部
-              // floating: false,            // 下拉时立即展开
-              // snap: true,                // 松手后自动吸附到展开/折叠状态
-              expandedHeight: 170.0,
-              // 展开时的高度
-              collapsedHeight: 60.0,
-              // 折叠时的高度
-              backgroundColor: AppColors.background,
-              // flexibleSpace: FlexibleSpaceBar(
-              //   // 把 PlaylistDate 放在这里
-              //   background: PlaylistDate(),
-              // ),
-              surfaceTintColor:
-                  Colors.transparent, // <--- 添加这一行，禁用 Material 3 表面染色
-              flexibleSpace: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  // 当前 AppBar 的实际高度
-                  double currentHeight = constraints.maxHeight;
+                // child: Column(
+                // mainAxisAlignment: MainAxisAlignment.center, // 垂直居中
+                // crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
+                slivers: [
+                  // SizedBox(height: 10),
+                  SliverAppBar(
+                    pinned: true,
+                    // 折叠后固定在顶部
+                    // floating: false,            // 下拉时立即展开
+                    // snap: true,                // 松手后自动吸附到展开/折叠状态
+                    expandedHeight: 170.0,
+                    // 展开时的高度
+                    collapsedHeight: 60.0,
+                    // 折叠时的高度
+                    backgroundColor: AppColors.background,
+                    // flexibleSpace: FlexibleSpaceBar(
+                    //   // 把 PlaylistDate 放在这里
+                    //   background: PlaylistDate(),
+                    // ),
+                    surfaceTintColor: Colors.transparent,
+                    // <--- 添加这一行，禁用 Material 3 表面染色
+                    flexibleSpace: LayoutBuilder(
+                      builder: (BuildContext context, BoxConstraints constraints) {
+                        // 当前 AppBar 的实际高度
+                        double currentHeight = constraints.maxHeight;
 
-                  // 计算展开比例 (80.0 到 170.0 之间转化为 0.0 到 1.0)
-                  // double expandRatio = ((currentHeight - 80.0) / (170.0 - 80.0)).clamp(0.0, 1.0);
+                        // 计算展开比例 (80.0 到 170.0 之间转化为 0.0 到 1.0)
+                        // double expandRatio = ((currentHeight - 80.0) / (170.0 - 80.0)).clamp(0.0, 1.0);
 
-                  // 将比例传给组件
-                  return PlaylistDate(currentHeight: currentHeight);
-                  // return Container(
-                  //   color: AppColors.background,
-                  //   child: PlaylistDate(currentHeight: currentHeight),
-                  // );
-                },
-              ),
-            ),
+                        // 将比例传给组件
+                        return PlaylistDate(currentHeight: currentHeight);
+                        // return Container(
+                        //   color: AppColors.background,
+                        //   child: PlaylistDate(currentHeight: currentHeight),
+                        // );
+                      },
+                    ),
+                  ),
 
-            // PlaylistDate(),
-            SliverToBoxAdapter(child: SizedBox(height: 10)),
+                  // PlaylistDate(),
+                  SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-            // SizedBox(height: 10),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _MusicListTagDelegate(),
-            ),
+                  // SizedBox(height: 10),
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _MusicListTagDelegate(),
+                  ),
 
-            // MusicListTag(),
-            SliverToBoxAdapter(child: SizedBox(height: 10)),
-            // SizedBox(height: 10),
+                  // MusicListTag(),
+                  SliverToBoxAdapter(child: SizedBox(height: 10)),
+                  // SizedBox(height: 10),
 
-            // 歌曲列表：懒加载，只构建视口内的行，滚出视口即被回收
-            MusicListSliver(management: widget.management),
-          ],
+                  // 歌曲列表：懒加载，只构建视口内的行，滚出视口即被回收
+                  MusicListSliver(management: widget.management),
+                ],
               ),
             ),
           ),
@@ -237,7 +236,9 @@ class _PlaylistDateState extends State<PlaylistDate> {
                   onPressed: () {
                     /* 点击逻辑 */
                     if (widget.management.displayMusics.length != 0) {
-                      widget.management.playMusic(widget.management.displayMusics[0]);
+                      widget.management.playMusic(
+                        widget.management.displayMusics[0],
+                      );
                       print('播放音乐: ${widget.management.displayMusics[0].name}');
                     }
                   },
@@ -310,13 +311,19 @@ class MusicListTag extends StatelessWidget {
       children: [
         SizedBox(width: 15),
 
-        Text(
-          '#',
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 16,
-            color: AppColors.musicIndexColor,
-            fontWeight: FontWeight.bold,
+        SizedBox(
+          width: 20,
+          child: Align(
+            alignment: Alignment.center,
+            child: Text(
+              '#',
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.musicIndexColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
 
@@ -369,7 +376,7 @@ class MusicListTag extends StatelessWidget {
   }
 }
 
-  class _MusicListTagDelegate extends SliverPersistentHeaderDelegate {
+class _MusicListTagDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
     BuildContext context,

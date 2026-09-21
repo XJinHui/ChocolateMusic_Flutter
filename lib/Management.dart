@@ -41,6 +41,18 @@ class Management extends ChangeNotifier {
     notifyListeners(); // 通知所有监听者（含 Computer.dart 的 ListenableBuilder）
   }
 
+  bool _playlistShow = false; // 播放列表侧边栏显示状态，点击播放栏的播放列表按钮打开，点击侧边栏以外的区域关闭
+
+  bool get playlistShow => _playlistShow;
+
+  set playlistShow(bool value) {
+    if (_playlistShow == value) {
+      return; // 值没变就不通知，避免整棵树无意义重建
+    }
+    _playlistShow = value;
+    notifyListeners(); // 通知所有监听者（含 Computer.dart 的 ListenableBuilder）
+  }
+
   late Setting setting; // 设置数据，包含当前播放歌曲信息、播放状态、音量等
   late int logining = 0; // 登录状态，0正在登录，1登录成功，-1未登录
 
@@ -538,9 +550,13 @@ class Management extends ChangeNotifier {
     }
 
     if (this.setting.playlistType == 0) {
-      this.playMusicList = await this.cloud.getPlaylistMusic(
-        this.setting.playlistId,
-      );
+      if (this.setting.playlistId == 'Download') {
+        return;
+      } else {
+        this.playMusicList = await this.cloud.getPlaylistMusic(
+          this.setting.playlistId,
+        );
+      }
 
       if (this.playMusicList.length != 0) {
         this.playlistMusics[this.setting.playlistId] = this.playMusicList;

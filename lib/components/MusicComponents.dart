@@ -584,7 +584,7 @@ class ComputerMusicWidget extends StatefulWidget {
   final Music music;
   final int num;
   final List<Music> displayMusics;
-  final int type; // type为0时为歌单内的音乐组件，1为搜索列表内的音乐组件, 2为当前播放列表内的音乐组件, 3为歌单内搜索的音乐组件
+  final int type; // type为0时为歌单内的音乐组件，1为搜索列表内的音乐组件, 2为当前下载列表内的音乐组件, 3为歌单内搜索的音乐组件
 
   ComputerMusicWidget({
     Key? key,
@@ -638,9 +638,12 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
 
       this.management.playMusic(widget.music);
     } else {
-      this.management.switchMusic(widget.music);
+      // 为下载列表内的音乐组件
+      this.management.displayList = widget.displayList;
+      this.management.displayMusics = widget.displayMusics;
+      this.management.playMusic(widget.music);
     }
-    print('播放音乐: ${widget.music.name}');
+    // print('播放音乐: ${widget.music.name}');
   }
 
   @override
@@ -784,12 +787,24 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
 
           child: Row(
             children: [
-              Text(
-                widget.num.toString(),
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.musicIndexColor,
+              SizedBox(
+                width: 20,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: management.setting.id == widget.music.id
+                      ? Icon(
+                          BootstrapIcons.play_fill,
+                          size: 25,
+                          color: AppColors.selectedText,
+                        )
+                      : Text(
+                          widget.num.toString(),
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: AppColors.musicIndexColor,
+                          ),
+                        ),
                 ),
               ),
 
@@ -838,7 +853,9 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
                         textAlign: TextAlign.left,
                         style: TextStyle(
                           fontSize: 18,
-                          color: AppColors.musicNameColor,
+                          color: management.setting.id == widget.music.id
+                              ? AppColors.selectedText
+                              : AppColors.musicNameColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -850,7 +867,9 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
                         textAlign: TextAlign.left,
                         style: TextStyle(
                           fontSize: 16,
-                          color: AppColors.musicSingerColor,
+                          color: management.setting.id == widget.music.id
+                              ? AppColors.selectedText
+                              : AppColors.musicSingerColor,
                         ),
                       ),
                     ],
@@ -860,48 +879,50 @@ class _ComputerMusicWidgetState extends State<ComputerMusicWidget> {
 
               SizedBox(width: 10),
 
-              GestureDetector(
-                onTap: () {
-                  // 处理喜欢按钮点击事件
-                  Management().like(widget.music.id).then((bool success) {
-                    // 更新收藏状态
-                    final isCollected =
-                        management.cloud.collectionList.contains(
-                          widget.music.id,
-                        ) ??
-                        false;
-                    if (success) {
-                      showMusicToast(
-                        context,
-                        message:
-                            '歌曲 《${widget.music.name}》 ${isCollected ? '收藏' : '取消收藏'}成功',
-                      );
-                    } else {
-                      showMusicToast(
-                        context,
-                        message:
-                            '歌曲 《${widget.music.name}》 ${isCollected ? '取消收藏' : '收藏'}失败',
-                        success: false,
-                      );
-                    }
-                  });
-                },
-                child:
-                    management.cloud?.collectionList.contains(
-                          widget.music.id,
-                        ) ??
-                        false
-                    ? Icon(
-                        BootstrapIcons.heart_fill,
-                        color: AppColors.likeIconColor,
-                        size: 20,
-                      )
-                    : Icon(
-                        BootstrapIcons.heart,
-                        color: AppColors.buttonIcon,
-                        size: 20,
-                      ),
-              ),
+              widget.type != 2
+                  ? GestureDetector(
+                      onTap: () {
+                        // 处理喜欢按钮点击事件
+                        Management().like(widget.music.id).then((bool success) {
+                          // 更新收藏状态
+                          final isCollected =
+                              management.cloud.collectionList.contains(
+                                widget.music.id,
+                              ) ??
+                              false;
+                          if (success) {
+                            showMusicToast(
+                              context,
+                              message:
+                                  '歌曲 《${widget.music.name}》 ${isCollected ? '收藏' : '取消收藏'}成功',
+                            );
+                          } else {
+                            showMusicToast(
+                              context,
+                              message:
+                                  '歌曲 《${widget.music.name}》 ${isCollected ? '取消收藏' : '收藏'}失败',
+                              success: false,
+                            );
+                          }
+                        });
+                      },
+                      child:
+                          management.cloud?.collectionList.contains(
+                                widget.music.id,
+                              ) ??
+                              false
+                          ? Icon(
+                              BootstrapIcons.heart_fill,
+                              color: AppColors.likeIconColor,
+                              size: 20,
+                            )
+                          : Icon(
+                              BootstrapIcons.heart,
+                              color: AppColors.buttonIcon,
+                              size: 20,
+                            ),
+                    )
+                  : SizedBox(width: 20),
 
               SizedBox(width: 50),
 
@@ -1031,16 +1052,20 @@ class MusicSelected {
       if (type == 'Playlist' &&
           Management().cloud.playlist.any((p) => p.listId == playlistId))
         MenuItemSpec('delete', BootstrapIcons.trash, '从歌单中删除'),
-      MenuItemSpec(
-        'like',
-        isCollected ? BootstrapIcons.heart_fill : BootstrapIcons.heart,
-        isCollected ? '取消收藏' : '收藏',
-      ),
-      if (type != 'Singer')
+      if (playlistId != 'Download')
+        MenuItemSpec(
+          'like',
+          isCollected ? BootstrapIcons.heart_fill : BootstrapIcons.heart,
+          isCollected ? '取消收藏' : '收藏',
+        ),
+      if (type != 'Singer' && playlistId != 'Download')
         MenuItemSpec('viewSinger', BootstrapIcons.person, '查看艺人'),
-      if (type != 'Album') MenuItemSpec('viewAlbum', BootstrapIcons.disc, '查看专辑'),
-      MenuItemSpec('addToList', BootstrapIcons.plus_square, '添加到歌单'),
-      MenuItemSpec('download', BootstrapIcons.download, '下载'),
+      if (type != 'Album' && playlistId != 'Download')
+        MenuItemSpec('viewAlbum', BootstrapIcons.disc, '查看专辑'),
+      if (playlistId != 'Download')
+        MenuItemSpec('addToList', BootstrapIcons.plus_square, '添加到歌单'),
+      if (playlistId != 'Download')
+        MenuItemSpec('download', BootstrapIcons.download, '下载'),
     ];
   }
 

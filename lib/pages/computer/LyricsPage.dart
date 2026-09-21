@@ -215,7 +215,7 @@ class _MusicDisplayWidgetState extends State<MusicDisplayWidget> {
 
                     SizedBox(height: coverSize / 20),
 
-                    PlaybackControlButton(),
+                    PlayControlButton(),
                   ],
                 ),
               ),
@@ -309,12 +309,12 @@ class _LyricsDisplayWidgetState extends State<LyricsDisplayWidget> {
   }
 }
 
-class PlaybackControlButton extends StatefulWidget {
+class PlayControlButton extends StatefulWidget {
   @override
-  _PlaybackControlButtonState createState() => _PlaybackControlButtonState();
+  _PlayControlButtonState createState() => _PlayControlButtonState();
 }
 
-class _PlaybackControlButtonState extends State<PlaybackControlButton> {
+class _PlayControlButtonState extends State<PlayControlButton> {
   final management = Management();
 
   static const List sequence = [
@@ -399,6 +399,7 @@ class _PlaybackControlButtonState extends State<PlaybackControlButton> {
         GestureDetector(
           onTap: () {
             // TODO: 实现查看播放列表功能
+            management.playlistShow = !management.playlistShow;
           },
           child: Icon(
             BootstrapIcons.music_note_list,

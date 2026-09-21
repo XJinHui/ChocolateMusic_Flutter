@@ -55,7 +55,7 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
       'icon': BootstrapIcons.arrow_down_square,
       'selectedIcon': BootstrapIcons.arrow_down_square_fill,
       'title': '本地下载',
-      'pageId': 'DownloadPage',
+      'pageId': 'LocalDownloadPage',
     },
   ];
 

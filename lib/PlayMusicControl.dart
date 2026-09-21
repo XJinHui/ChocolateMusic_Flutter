@@ -247,6 +247,23 @@ class PlayMusicControl {
 
     var qualityTier = this.management.setting.qualityTier;
 
+    if (this.management.setting.id == '${this.management.setting.singer} - ${this.management.setting.name}') {
+      // 播放本地下载音乐
+      var musicData = await this.management.musicManagement.searchMusicData(
+        this.management.setting.name,
+        this.management.setting.singer,
+        0,
+      );
+
+      if (musicData != null) {
+        var filePath = musicData['filePath'];
+        final mediaUri = Uri.file(filePath).toString();
+        this.url = mediaUri;
+        print('本地音乐url: ${this.url}');
+        return;
+      }
+    }
+
     var musicData = await this.management.musicManagement.searchMusicData(
       this.management.setting.name,
       this.management.setting.singer,
@@ -271,7 +288,7 @@ class PlayMusicControl {
       musicId,
       quality: this.management.setting.qualityTier,
     );
-    print('获取到的音乐url: ${url}');
+
     if (url != '') {
       if (musicId == this.management.setting.id) {
         this.url = url;

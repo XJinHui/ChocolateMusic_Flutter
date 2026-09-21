@@ -12,6 +12,15 @@ class AppColors {
   static const Color panel = Color(0xFFF0F0F0);
   static const Color lyricPgaePanel = Color(0x00000000);
 
+  // 浮层表面色（侧边栏等盖在页面上的面板）。
+  // 和 AppColors.background 同为纯白，浮层盖在白色页面上时
+  // 靠背后的 AppColors.scrim 暗化层和自身投影分离出来。
+  static const Color overlaySurface = Color(0xFFFFFFFF);
+
+  // 浮层背后的暗化遮罩：压暗浮层以外的整片页面，
+  // 避免纯白浮层和白色页面糊成一片、看不出边界。
+  static const Color scrim = Color(0x4D000000);
+
   // 透明色
   static const Color transparent = Color(0x00000000);
 

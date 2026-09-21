@@ -7,6 +7,7 @@ import 'package:chocolate_music/pages/computer/PlaylistPage.dart';
 import 'package:chocolate_music/pages/computer/AccountPage.dart';
 import 'package:chocolate_music/pages/computer/SettingsPage.dart';
 import 'package:chocolate_music/pages/computer/SearchPage.dart';
+import 'package:chocolate_music/pages/computer/LocalDownloadPage.dart';
 
 // 计算机页面
 
@@ -33,6 +34,8 @@ class _MainViewState extends State<MainView> {
         return SettingsPage();
       case 'SearchPage':
         return SearchPage();
+      case 'LocalDownloadPage':
+        return LocalDownloadPage();
       default:
         return Text(widget.management.selectedPage);
     }

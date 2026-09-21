@@ -26,6 +26,7 @@ class MusicManagement {
   late String tempDir;
 
   late Map<String, String> lyricPath = {};
+  late List<Music> localMusics = [];
 
   MusicManagement(Management management) {
     this.management = management;
@@ -118,7 +119,7 @@ class MusicManagement {
       fileList[normalizeSeparator(fullPath)] = fullPath;
     }
 
-    final rows = await musicLibrary.query('MUSIC');
+    var rows = await musicLibrary.query('MUSIC');
     final Map<String, String> sqlFileList = {};
     for (var row in rows) {
       final filePath = row['filePath'] as String?;
@@ -167,6 +168,53 @@ class MusicManagement {
       // 调用 addMusicData 插入数据库
       await this.addMusicData(name, singer, filePath);
     }
+
+    Map<String, Music> localMusicsMap = {};
+    rows = await musicLibrary.query('MUSIC');
+    for (var row in rows) {
+      var id = p.basenameWithoutExtension(row['filePath'] as String);
+      if (localMusicsMap.containsKey(id)) {
+        // 如果已经存在，跳过
+        var newAlbum = row['album']?.toString();
+        var newSinger = row['singer']?.toString();
+        Music music = localMusicsMap[id]!; // 这里是 Music 对象
+
+        localMusicsMap[id] = Music(
+          id: id,
+          name: music.name,
+          singer: music.singer != '' ? music.singer : (newSinger ?? ''),
+          singerId: '',
+          album: music.album != '' ? music.album : (newAlbum ?? ''),
+          albumId: '',
+          time: music.time,
+          cover: music.cover,
+        );
+
+        continue;
+      } else {
+        final music = Music(
+          id: id,
+          name: row['name'] as String,
+          singer: row['singer'] as String,
+          singerId: '',
+          album: row['album'] as String? ?? '',
+          albumId: '',
+          time: row['time'] as int? ?? 0,
+          cover: row['cover'] as String? ?? '',
+        );
+
+        localMusicsMap[id] = music;
+      }
+    }
+    for (var item in localMusicsMap.values) {
+      this.localMusics.add(item);
+    }
+    print(jsonEncode(this.localMusics));
+    if (this.management.setting.playlistId == 'Download') {
+      this.management.playMusicList = this.localMusics;
+      this.management.getPlayList();
+    }
+    // print(jsonEncode(this.localMusics));
   }
 
   Future<bool> downloadAndSaveMusic(Music music, int quality) async {
@@ -185,7 +233,9 @@ class MusicManagement {
         return false;
       }
 
-      final stamp = DateTime.now().millisecondsSinceEpoch;
+      final stamp = DateTime
+          .now()
+          .millisecondsSinceEpoch;
       tempPath = p.join(tempDir, 'music_${music.id}_$stamp.tmp');
 
       final response = await dio.download(
@@ -209,9 +259,23 @@ class MusicManagement {
       print('保存音乐文件到: ${filePath}');
 
       var result = await this.addMusicData(
-        music.name,
-        music.singer,
-        filePath,
+          music.name,
+          music.singer,
+          filePath,
+          album: music.album,
+          cover: music.cover,
+      );
+
+      this.localMusics.add(
+          Music(id: '${music.singer} - ${music.name}',
+              name: music.name,
+              singer: music.singer,
+              singerId: music.singerId,
+              album: music.album,
+              albumId: music.albumId,
+              time: music.time,
+              cover: music.cover
+          )
       );
 
       downloadAndSaveLyrics(music);
@@ -245,9 +309,13 @@ class MusicManagement {
     }
   }
 
-  addMusicData(String name, String singer, String filePath) async {
+  addMusicData(String name, String singer, String filePath,
+      {String album = '', String cover = ''}) async {
     try {
       var data = await getAudioMetadata(filePath);
+
+      album = album != '' ? album : data['album'] ?? '';
+      cover = cover != '' ? cover : data['cover'] ?? '';
 
       var bitrate = data['bitrate'] ?? 128000;
 
@@ -267,6 +335,9 @@ class MusicManagement {
         'bitrate': qualityTier,
         'filePath': filePath,
         'mimeType': data['mimeType'] ?? '',
+        'album': album,
+        'cover': cover,
+        'time': data['time'] ?? 0,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
 
       return true;
@@ -308,7 +379,8 @@ class MusicManagement {
       }
 
       if (data['bitrate'] < qualityTier) {
-        print('查询到的数据音质等级低于要求: ${data['bitrate']} < $qualityTier');
+        print(
+            '查询到的数据音质等级低于要求: ${data['bitrate']} < $qualityTier');
         return null;
       }
 
@@ -340,7 +412,6 @@ class MusicManagement {
         return lrc;
       }
 
-      print('未找到歌词文件');
       return '';
     } catch (error) {
       print('搜索歌词文件失败: ${error}');
@@ -359,7 +430,10 @@ class MusicManagement {
       singer TEXT NOT NULL,
       bitrate INTEGER,
       filePath TEXT NOT NULL,
-      mimeType TEXT
+      album TEXT,
+      time Int,
+      mimeType TEXT,
+      cover TEXT
     )
   ''';
 
@@ -392,7 +466,9 @@ class MusicManagement {
     try {
       raf = await File(filePath).open();
       final bytes = await raf.read(64);
-      return FileType.fromBuffer(bytes)?.ext;
+      return FileType
+          .fromBuffer(bytes)
+          ?.ext;
     } catch (_) {
       return null;
     } finally {
@@ -420,7 +496,7 @@ class MusicManagement {
         'name': metadata.title,
         'singer': metadata.artist,
         'album': metadata.album,
-        'time': metadata.duration,
+        'time': metadata.duration?.inMilliseconds ?? 0,
         'mimeType': mimeType,
       };
 
