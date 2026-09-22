@@ -194,9 +194,9 @@ class _PlaylistDateState extends State<PlaylistDate> {
                   ),
         ),
 
-        if (widget.currentHeight == 170)
+        if (widget.currentHeight > 120)
           SizedBox(
-            height: 170, // 跟左边图片同高
+            height: widget.currentHeight, // 跟左边图片同高
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
               children: [
@@ -206,7 +206,10 @@ class _PlaylistDateState extends State<PlaylistDate> {
                   style: TextStyle(
                     color: AppColors.playlistNameColor,
                     fontWeight: FontWeight.bold,
-                    fontSize: 30,
+                    fontSize: 20 +
+                        10 *
+                            ((widget.currentHeight - 60.0) / (170.0 - 60.0))
+                                .clamp(0.0, 1.0),
                   ),
                 ),
 
@@ -299,6 +302,27 @@ class _PlaylistDateState extends State<PlaylistDate> {
               ),
             ],
           ),
+
+
+        Expanded(child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SearchBar(),
+
+            SizedBox(
+              height:
+              15 -
+                  10 *
+                      ((widget.currentHeight - 60.0) / (170.0 - 60.0)).clamp(
+                        0.0,
+                        1.0,
+                      ),
+            ),
+          ],
+        )
+        )
+
       ],
     );
   }
@@ -423,6 +447,7 @@ class MusicListSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Music> musics = management.displayMusics;
+    final List<Music> displayMusics = management.displayListSearchMusic.length != 0 ? management.displayListSearchMusic : management.displayMusics;
 
     return SliverFixedExtentList(
       itemExtent: rowExtent,
@@ -432,7 +457,7 @@ class MusicListSliver extends StatelessWidget {
             // 行间距放在 item 内部，保证每行高度都恰好等于 rowExtent
             padding: const EdgeInsets.only(bottom: 10),
             child: ComputerMusicWidget(
-              music: musics[index],
+              music: displayMusics[index],
               displayList: management.displayList,
               displayListType: management.displayListType,
               num: index + 1,
@@ -440,11 +465,59 @@ class MusicListSliver extends StatelessWidget {
             ),
           );
         },
-        childCount: musics.length,
+        childCount: displayMusics.length,
         // 不保活：滚出视口的行连 State 一起释放，避免内存常驻
         addAutomaticKeepAlives: false,
         // 长列表不需要语义索引，去掉可减少每行的语义节点
         addSemanticIndexes: false,
+      ),
+    );
+  }
+}
+
+class SearchBar extends StatefulWidget {
+  const SearchBar({super.key});
+
+  @override
+  State<SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<SearchBar> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 30,
+      width: 200,
+      decoration: BoxDecoration(
+        color: AppColors.panel,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: TextField(
+        // controller: _controller,
+        cursorHeight: 18,        // 关键：光标高度，比字号略大即可
+        cursorWidth: 1.5,        // 可选：细一点更精致
+        decoration: InputDecoration(
+          hintText: '搜索',
+          border: InputBorder.none,
+          // 前置图标
+          prefixIcon:const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Icon(BootstrapIcons.search),
+            ),
+          // prefixIcon 默认最小 48x48，会顶开高 30 的标题栏，这里显式收窄
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 34,
+            minHeight: 30,
+          ),
+          // border: OutlineInputBorder(), // 边框样式
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+        ),
+        onChanged: (value) {
+          // 处理搜索输入变化
+          print('搜索输入: $value');
+          Management().listSearch(value.trim());
+        }
       ),
     );
   }

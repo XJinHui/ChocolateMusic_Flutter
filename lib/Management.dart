@@ -783,6 +783,8 @@ class Management extends ChangeNotifier {
         this.displayListSearchMusic.add(music);
       }
     }
+
+    refresh();
   }
 
   Future<bool> createPlaylist(String name) async {

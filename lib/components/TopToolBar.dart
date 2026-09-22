@@ -102,7 +102,7 @@ class _ToolbarSearchBarState extends State<ToolbarSearchBar> {
       ),
       child: TextField(
         controller: _controller,
-        cursorHeight: 14,        // 关键：光标高度，比字号略大即可
+        cursorHeight: 18,        // 关键：光标高度，比字号略大即可
         cursorWidth: 1.5,        // 可选：细一点更精致
         decoration: InputDecoration(
           hintText: '搜索',

@@ -26,8 +26,8 @@ class KuGou implements CloudService {
 
   static final Dio dio = Dio(
     BaseOptions(
-      // baseUrl: "https://kugou.xjinhui.asia/",
-      baseUrl: "http://120.77.173.68:4000",
+      baseUrl: "https://kugou.xjinhui.asia/",
+      // baseUrl: "http://120.77.173.68:4000",
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 30),
     ),

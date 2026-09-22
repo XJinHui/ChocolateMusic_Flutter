@@ -21,13 +21,25 @@ class _PlaybackControlBarState extends State<PlaybackControlBar> {
     FocusManager.instance.addEarlyKeyEventHandler(_handlePlaybackKey);
   }
 
+  /// 当前焦点是否落在文本输入框内。
+  ///
+  /// 输入框自己注册的空格快捷键只会返回 [KeyEventResult.ignored]，
+  /// 把"插入空格"交给 IME，所以这里必须主动放行，否则会被当成播放/暂停。
+  static bool _isTextInputFocused() {
+    // primaryFocus 可能是输入框内部的 Focus 节点，向上找 EditableText 才准。
+    return FocusManager.instance.primaryFocus?.context
+            ?.findAncestorWidgetOfExactType<EditableText>() !=
+        null;
+  }
+
   KeyEventResult _handlePlaybackKey(KeyEvent event) {
     final keyboard = HardwareKeyboard.instance;
     if (event.logicalKey != LogicalKeyboardKey.space ||
         keyboard.isControlPressed ||
         keyboard.isAltPressed ||
         keyboard.isMetaPressed ||
-        keyboard.isShiftPressed) {
+        keyboard.isShiftPressed ||
+        _isTextInputFocused()) {
       return KeyEventResult.ignored;
     }
 
