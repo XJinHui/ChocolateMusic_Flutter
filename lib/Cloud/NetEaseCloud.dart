@@ -25,7 +25,7 @@ class Neteasecloud implements CloudService {
 
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: "http://120.77.173.68:3000",
+      baseUrl: "https://neteasecloud.xjinhui.asia",
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
     ),
@@ -77,7 +77,9 @@ class Neteasecloud implements CloudService {
 
   getVerificationCode(String mobile, String mainUrl) async {
     print('获取验证码: mobile=$mobile, mainUrl=$mainUrl');
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final timestamp = DateTime
+        .now()
+        .millisecondsSinceEpoch;
     final response = await Neteasecloud.dio.get(
       '/captcha/sent?phone=${mobile}&timestamp=${timestamp}',
     );
@@ -88,7 +90,9 @@ class Neteasecloud implements CloudService {
 
   getQrCode(String mainUrl) async {
     try {
-      var timestamp = DateTime.now().millisecondsSinceEpoch;
+      var timestamp = DateTime
+          .now()
+          .millisecondsSinceEpoch;
       var response = await Neteasecloud.dio.get(
         '/login/qr/key?timestamp=${timestamp}',
       );
@@ -185,7 +189,9 @@ class Neteasecloud implements CloudService {
         return false;
       }
 
-      timestamp = DateTime.now().millisecondsSinceEpoch;
+      timestamp = DateTime
+          .now()
+          .millisecondsSinceEpoch;
       response = await Neteasecloud.dio.get(
         '/login/qr/check?key=${this.key}&timestamp=${timestamp}',
       );
@@ -321,6 +327,78 @@ class Neteasecloud implements CloudService {
     }
   }
 
+    getFreeDuration() async {
+      var timestamp;
+      var response;
+
+      while (true) {
+        if (this.management.accountData.login[0] != 1) {
+          return;
+        }
+        try {
+          timestamp = DateTime
+              .now()
+              .millisecondsSinceEpoch;
+          // 获取广告
+          response = await Neteasecloud.dio.get(
+            '/ad/get?timestamp=${timestamp}',
+            options: Options(headers: {'Cookie': this.cookies}),
+          );
+
+          if (response.statusCode != 200 || response.data['code'] != 200) {
+            print('获取广告失败: ${jsonEncode(response.data)}');
+            continue;
+          }
+
+          var id = response.data['ads']['400002_0']['id'];
+
+          // 领取免费时长
+          response = await Neteasecloud.dio.get(
+            '/ad/listening/rights/gain?reqUid=${id}&timestamp=${timestamp}',
+            options: Options(headers: {'Cookie': this.cookies}),
+          );
+
+          if (response.statusCode != 200 || response.data['code'] != 200 || !response.data['data']['data']['gainFlag']) {
+            print('领取免费时长失败: ${jsonEncode(response.data)}');
+            await Future.delayed(const Duration(milliseconds: 5000));
+            continue;
+          }
+
+          // 获取免费时长
+          response = await Neteasecloud.dio.get(
+            '/ad/listening/rights?timestamp=${timestamp}',
+            options: Options(headers: {'Cookie': this.cookies}),
+          );
+
+          if (response.statusCode != 200 || response.data['code'] != 200) {
+            print('获取免费时长长度失败: ${jsonEncode(response.data)}');
+            continue;
+          }
+          var data = response.data['data'];
+
+          final d = Duration(milliseconds: data['rightsRemainingTime']);
+          final hours = d.inHours;
+          final minutes = d.inMinutes.remainder(60);
+          final seconds = d.inSeconds.remainder(60);
+          final millis = d.inMilliseconds.remainder(1000);
+          String two(int n) => n.toString().padLeft(2, '0');
+          String three(int n) => n.toString().padLeft(3, '0');
+          var time = '${two(hours)}:${two(minutes)}:${two(seconds)}.${three(millis)}';
+
+          print('剩余权益时间: ${time}');
+          print(data['rightsUpperLimit']);
+          if (data['rightsUpperLimit']) {
+            print('已达到权益上限');
+          }
+          await Future.delayed(const Duration(milliseconds: 15000));
+        } catch (error) {
+          print('getFreeDuration 异常: ${error}');
+          await Future.delayed(const Duration(milliseconds: 5000));
+          continue;
+        }
+      }
+    }
+
   getData() async {
     if (this.vipCookies == '' && this.accountData.data[1].length > 1) {
       await Future.wait([this.getVipCookie(), this.getPlaylist()]);
@@ -328,7 +406,7 @@ class Neteasecloud implements CloudService {
       await this.getPlaylist();
       this.getVipCookie();
     }
-
+    this.getFreeDuration();
     this.getCollectionList();
   }
 
@@ -340,11 +418,14 @@ class Neteasecloud implements CloudService {
       }
     }
 
-    var timestamp = DateTime.now().millisecondsSinceEpoch;
+    var timestamp = DateTime
+        .now()
+        .millisecondsSinceEpoch;
 
     try {
       var response = await Neteasecloud.dio.get(
-        '/playlist/track/all?id=${this.collectionListId}&timestamp=${timestamp}',
+        '/playlist/track/all?id=${this
+            .collectionListId}&timestamp=${timestamp}',
         options: Options(headers: {'Cookie': this.cookies}),
       );
 
@@ -369,11 +450,14 @@ class Neteasecloud implements CloudService {
   }
 
   Future<List<Playlist>> getPlaylist() async {
-    var timestamp = DateTime.now().millisecondsSinceEpoch;
+    var timestamp = DateTime
+        .now()
+        .millisecondsSinceEpoch;
     // let url: string = `${this.mainUrl}/user/playlist?uid=${this.userData?.userid}&limit=300&timestamp=${timestamp}`
     try {
       var response = await Neteasecloud.dio.get(
-        '/user/playlist?uid=${this.userData.userid}&limit=300&timestamp=${timestamp}',
+        '/user/playlist?uid=${this.userData
+            .userid}&limit=300&timestamp=${timestamp}',
         options: Options(headers: {'Cookie': this.cookies}),
       );
 
@@ -421,13 +505,16 @@ class Neteasecloud implements CloudService {
 
     for (var i in this.playlist) {
       if (i.listId == listId) {
-        timestamp = DateTime.now().millisecondsSinceEpoch;
+        timestamp = DateTime
+            .now()
+            .millisecondsSinceEpoch;
         break;
       }
     }
 
     var url =
-        '${this.mainUrl}/playlist/track/all?id=${listId}&timestamp=${timestamp}';
+        '${this
+        .mainUrl}/playlist/track/all?id=${listId}&timestamp=${timestamp}';
 
     try {
       var response = await Neteasecloud.dio.get(
@@ -726,7 +813,8 @@ class Neteasecloud implements CloudService {
       print('推荐歌单数量: ${data.length}');
 
       // var shuffled = this.shuffleArray(data.map((item) => item['id']).toList());
-      var shuffled = data.map((item) => item['id']).toList()..shuffle();
+      var shuffled = data.map((item) => item['id']).toList()
+        ..shuffle();
 
       num = num > shuffled.length ? shuffled.length : num;
       var targetIds = shuffled.sublist(0, num);
@@ -900,7 +988,7 @@ class Neteasecloud implements CloudService {
   getMusicUrl(String musicId, {String bitrate = 'exhigh'}) async {
     try {
       var response = await Neteasecloud.dio.get(
-        '/song/url/v1?id=${musicId}&level=${bitrate}',
+        '/song/url?id=${musicId}&level=${bitrate}',
         options: Options(headers: {'Cookie': this.cookies}),
       );
 
@@ -934,7 +1022,7 @@ class Neteasecloud implements CloudService {
   getMatchtMusicUrl(String musicId, {String level = 'exhigh'}) async {
     try {
       var response = await Neteasecloud.dio.get(
-        '/song/url/v1?id=${musicId}&level=${level}&unblock=true',
+        '/song/url?id=${musicId}&level=${level}&unblock=true',
         options: Options(headers: {'Cookie': this.cookies}),
       );
 
@@ -1097,7 +1185,9 @@ class Neteasecloud implements CloudService {
 
   getPlaylistDetails(String listId) async {
     try {
-      var timestamp = DateTime.now().millisecondsSinceEpoch;
+      var timestamp = DateTime
+          .now()
+          .millisecondsSinceEpoch;
       var response = await Neteasecloud.dio.get(
         '/playlist/detail?id=${listId}&timestamp=${timestamp}',
         options: Options(headers: {'Cookie': this.cookies}),
@@ -1176,7 +1266,9 @@ class Neteasecloud implements CloudService {
 
   createPlaylist(String name) async {
     try {
-      var timestamp = DateTime.now().millisecondsSinceEpoch;
+      var timestamp = DateTime
+          .now()
+          .millisecondsSinceEpoch;
 
       var response = await Neteasecloud.dio.get(
         '/playlist/create?timestamp=${timestamp}',
@@ -1217,7 +1309,9 @@ class Neteasecloud implements CloudService {
     }
 
     try {
-      var timestamp = DateTime.now().millisecondsSinceEpoch;
+      var timestamp = DateTime
+          .now()
+          .millisecondsSinceEpoch;
 
       var response = await Neteasecloud.dio.get(
         '/playlist/delete?id=${listId}&timestamp=${timestamp}',
@@ -1251,7 +1345,9 @@ class Neteasecloud implements CloudService {
 
   addMusicToPlaylist(String listId, String musicId) async {
     try {
-      var timestamp = DateTime.now().millisecondsSinceEpoch;
+      var timestamp = DateTime
+          .now()
+          .millisecondsSinceEpoch;
 
       var response = await Neteasecloud.dio.get(
         '/playlist/tracks?op=add&pid=${listId}&tracks=${musicId}&timestamp=${timestamp}',
@@ -1293,7 +1389,8 @@ class Neteasecloud implements CloudService {
       if (index != -1) {
         this.playlist[index].audioCount += 1;
         print(
-          '歌单音乐数量加1，歌单id: ${listId}, 当前数量: ${this.playlist[index].audioCount}',
+          '歌单音乐数量加1，歌单id: ${listId}, 当前数量: ${this.playlist[index]
+              .audioCount}',
         );
       } else {
         print('未找到对应歌单，无法更新音乐数量，歌单id: ${listId}');
@@ -1308,7 +1405,9 @@ class Neteasecloud implements CloudService {
 
   deleteMusicFromPlaylist(String listId, String musicId) async {
     try {
-      var timestamp = DateTime.now().millisecondsSinceEpoch;
+      var timestamp = DateTime
+          .now()
+          .millisecondsSinceEpoch;
 
       var response = await Neteasecloud.dio.get(
         '/playlist/tracks?op=del&pid=${listId}&tracks=${musicId}&timestamp=${timestamp}',
@@ -1349,7 +1448,8 @@ class Neteasecloud implements CloudService {
           this.playlist[index].audioCount - 1,
         );
         print(
-          '歌单音乐数量减1，歌单id: ${listId}, 当前数量: ${this.playlist[index].audioCount}',
+          '歌单音乐数量减1，歌单id: ${listId}, 当前数量: ${this.playlist[index]
+              .audioCount}',
         );
       } else {
         print('未找到对应歌单，无法更新音乐数量，歌单id: ${listId}');

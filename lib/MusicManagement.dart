@@ -209,7 +209,7 @@ class MusicManagement {
     for (var item in localMusicsMap.values) {
       this.localMusics.add(item);
     }
-    print(jsonEncode(this.localMusics));
+
     if (this.management.setting.playlistId == 'Download') {
       this.management.playMusicList = this.localMusics;
       this.management.getPlayList();
