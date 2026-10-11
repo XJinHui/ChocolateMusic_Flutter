@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/Cloud/CloudService.dart';
+import 'package:chocolate_music/Cloud/NetEaseCloudRustAdapter.dart';
 import 'package:chocolate_music/Management.dart';
 import 'dart:math';
 
@@ -23,13 +24,27 @@ class Neteasecloud implements CloudService {
 
   late int qrCodeType = -1; // 二维码登陆状态，-1为未登录，0正在登陆，1为登录成功，2为登录失败
 
-  static final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: "https://neteasecloud.xjinhui.asia",
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ),
-  );
+  /// ⚠️ 这个 Dio 实例**不发 HTTP**。
+  ///
+  /// 它被换上了 [NetEaseCloudRustAdapter]，请求全部转给本地 Rust 实现
+  /// （FFI 进程内调用），返回值与原先那台自建服务器（api-enhanced）**完全一致** ——
+  /// 服务器本身就是把上游响应重新包装成 `{code: 200, ...}`。
+  ///
+  /// 因此本文件里所有 `Neteasecloud.dio.get('/xxx?...')` 的写法与解析代码都无需改动。
+  /// 详见 `Cloud/NetEaseCloudRustAdapter.dart`。
+  static final Dio dio = _createDio();
+
+  static Dio _createDio() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: "https://neteasecloud.xjinhui.asia",
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
+    dio.httpClientAdapter = NetEaseCloudRustAdapter();
+    return dio;
+  }
 
   Neteasecloud({required this.accountData, required this.management});
 
