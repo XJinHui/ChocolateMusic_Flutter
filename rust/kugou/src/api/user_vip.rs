@@ -14,28 +14,29 @@ use serde_json::json;
 /// 用 [`beijing_date`] 生成，避免跨日时段取错日期。
 ///
 /// ⚠️ 原实现声明了 `x-www-form-urlencoded` 但参数在 query，请求体为空。
+/// 构造「领取每日 VIP」请求
+pub(crate) fn build_youth_day_vip(receive_day: &str) -> RequestOptions {
+    RequestOptions::post("/youth/v1/recharge/receive_vip_listen_song")
+        .header("content-type", "application/x-www-form-urlencoded")
+        .param("source_id", 90139)
+        .param("receive_day", receive_day)
+}
+
 pub async fn youth_day_vip(t: &Transport, receive_day: &str) -> Result<()> {
-    t.send(
-        RequestOptions::post("/youth/v1/recharge/receive_vip_listen_song")
-            .header("content-type", "application/x-www-form-urlencoded")
-            .param("source_id", 90139)
-            .param("receive_day", receive_day),
-    )
-    .await?;
+    t.send(build_youth_day_vip(receive_day)).await?;
     Ok(())
 }
 
-/// 升级 VIP
-///
-/// 对应 Dart 的 `getVip()` 里的 `/youth/day/vip/upgrade`。无业务参数。
-pub async fn youth_day_vip_upgrade(t: &Transport) -> Result<()> {
+/// 构造「升级 VIP」请求
+pub(crate) fn build_youth_day_vip_upgrade(t: &Transport) -> RequestOptions {
     let kugouid: i64 = t.account.userid.parse().unwrap_or(0);
-    t.send(
-        RequestOptions::post("/youth/v1/listen_song/upgrade_vip_reward")
-            .param("kugouid", kugouid)
-            .param("ad_type", 1),
-    )
-    .await?;
+    RequestOptions::post("/youth/v1/listen_song/upgrade_vip_reward")
+        .param("kugouid", kugouid)
+        .param("ad_type", 1)
+}
+
+pub async fn youth_day_vip_upgrade(t: &Transport) -> Result<()> {
+    t.send(build_youth_day_vip_upgrade(t)).await?;
     Ok(())
 }
 
@@ -46,7 +47,8 @@ pub async fn youth_day_vip_upgrade(t: &Transport) -> Result<()> {
 /// ⚠️ `play_start` 固定为 `play_end - 30 秒` —— 假装播放了 30 秒广告。
 /// ⚠️ 次数用光时 `status` **仍是 1**，靠 `error_msg == "今天次数已用光"` 区分。
 /// ⚠️ body 里的时间戳是**毫秒**，而 query 里的 `clienttime` 是**秒**。
-pub async fn youth_vip(t: &Transport) -> Result<()> {
+/// 构造「广告上报换 VIP」请求
+pub(crate) fn build_youth_vip() -> RequestOptions {
     let now = now_millis();
     let body = json!({
         "ad_id": 12307537187i64,
@@ -54,12 +56,13 @@ pub async fn youth_vip(t: &Transport) -> Result<()> {
         "play_end": now
     });
 
-    t.send(
-        RequestOptions::post("/youth/v1/ad/play_report")
-            .header("Content-Type", "application/json")
-            .json_body(&body),
-    )
-    .await?;
+    RequestOptions::post("/youth/v1/ad/play_report")
+        .header("Content-Type", "application/json")
+        .json_body(&body)
+}
+
+pub async fn youth_vip(t: &Transport) -> Result<()> {
+    t.send(build_youth_vip()).await?;
     Ok(())
 }
 

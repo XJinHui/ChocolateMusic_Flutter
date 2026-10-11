@@ -225,6 +225,75 @@ impl KuGouClient {
     }
 
     // ========================================================
+    //  原始响应透传
+    // ========================================================
+
+    /// 按原服务器的路由发一次请求，返回**酷狗上游的原始响应体**（JSON 文本）
+    ///
+    /// `path` 是原服务器的路由（如 `/song/url`），`query` 是原样的查询参数。
+    /// 返回值与自建服务器返回的**完全一致**，因此 `KuGou.dart` 只需把
+    /// `KuGou.dio.get(...)` 换成 FFI 调用，解析代码一行都不用改。
+    ///
+    /// ```no_run
+    /// # async fn run() -> Result<(), kugou::Error> {
+    /// # let mut client = kugou::KuGouClient::new(kugou::Platform::Lite);
+    /// let mut q = std::collections::HashMap::new();
+    /// q.insert("hash".to_string(), "abc".to_string());
+    /// q.insert("quality".to_string(), "320".to_string());
+    /// let json = client.raw_request("/song/url".into(), q).await?;
+    /// # Ok(()) }
+    /// ```
+    ///
+    /// ## ⚠️ 凭据来源
+    ///
+    /// 与原服务器一致：**`query` 里的 `token` / `userid` / `dfid` 即权威凭据**，
+    /// 非空时会覆盖客户端内部持有的值。原服务器也是把 query 里的这三个值
+    /// 转成 Cookie 发给上游的。
+    ///
+    /// ## 副作用
+    ///
+    /// `/register/dev` 拿到的 `dfid`、登录接口拿到的 `token`/`userid`
+    /// 会自动写回客户端并持久化到身份文件。
+    pub async fn raw_request(
+        &mut self,
+        path: String,
+        query: std::collections::HashMap<String, String>,
+    ) -> Result<String> {
+        // ① query 里的凭据覆盖本地状态（保持「query 即凭据」语义）
+        if let Some(v) = query.get("token").filter(|s| !s.is_empty()) {
+            self.transport.account.token = v.clone();
+        }
+        if let Some(v) = query.get("userid").filter(|s| !s.is_empty()) {
+            self.transport.account.userid = v.clone();
+        }
+        if let Some(v) = query.get("dfid").filter(|s| !s.is_empty()) {
+            self.transport.device.dfid = Some(v.clone());
+        }
+
+        // ② 分发
+        let out = crate::raw::dispatch(&self.transport, &path, &query).await?;
+
+        // ③ 回写副作用并持久化
+        let mut dirty = false;
+
+        if let Some(dfid) = out.dfid {
+            if self.transport.device.dfid.as_deref() != Some(dfid.as_str()) {
+                self.transport.device.dfid = Some(dfid);
+                dirty = true;
+            }
+        }
+        if let Some(login) = out.login {
+            self.apply_login(&login);
+            dirty = true;
+        }
+        if dirty {
+            let _ = self.save_session();
+        }
+
+        Ok(out.body.to_string())
+    }
+
+    // ========================================================
     //  设备与登录
     // ========================================================
 

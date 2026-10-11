@@ -21,6 +21,17 @@ use serde_json::Value;
 ///
 /// ⚠️ 返回字段是 **PascalCase**（`FileHash` / `AuthorId` / `albumid`），
 /// 三种命名风格混用，详见 `docs/rewrite/api/endpoints/search_complex.md`。
+/// 构造「综合搜索」请求
+pub(crate) fn build_search_complex(keyword: &str, page: u32, pagesize: u32) -> RequestOptions {
+    RequestOptions::get("/v6/search/complex")
+        .base_url("https://complexsearch.kugou.com")
+        .param("platform", "AndroidFilter")
+        .param("keyword", keyword)
+        .param("page", if page == 0 { 1 } else { page })
+        .param("pagesize", if pagesize == 0 { 30 } else { pagesize })
+        .param("cursor", 0)
+}
+
 pub async fn search_complex(
     t: &Transport,
     keyword: &str,
@@ -28,15 +39,7 @@ pub async fn search_complex(
     pagesize: u32,
 ) -> Result<SearchResult> {
     let resp = t
-        .send(
-            RequestOptions::get("/v6/search/complex")
-                .base_url("https://complexsearch.kugou.com")
-                .param("platform", "AndroidFilter")
-                .param("keyword", keyword)
-                .param("page", if page == 0 { 1 } else { page })
-                .param("pagesize", if pagesize == 0 { 30 } else { pagesize })
-                .param("cursor", 0),
-        )
+        .send(build_search_complex(keyword, page, pagesize))
         .await?;
 
     let mut out = SearchResult::default();

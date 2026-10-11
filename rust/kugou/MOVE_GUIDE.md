@@ -239,6 +239,55 @@ Future<void> demo() async {
 
 ---
 
+### 8. 两份 `src/` 会分叉（本次踩到）
+
+`D:\XJH\Rust\KuGou`（独立项目）与 `chocolate_music/rust/kugou`（Flutter 里的副本）
+**不是简单的复制关系** —— 后者有几处 FRB 专属调整：
+
+| 文件 | Flutter 副本的不同 |
+| --- | --- |
+| `lib.rs` | 多一行 `mod frb_generated;` |
+| `client.rs` | 字段改私有、`usize` → `u32`、删掉 `default_identity_path()` |
+| `main.rs` | `client.collection_list_id` → `client.favorite_playlist_id()` |
+| — | 多出 `src/frb_generated.rs` |
+
+所以**不能整目录覆盖**。改完独立项目后，按下面同步：
+
+```bash
+SRC=/d/XJH/Rust/KuGou
+DST=/d/XJH/Flutter/chocolate_music/rust/kugou
+
+# ① 整份复制（这几个文件两边一致）
+cp "$SRC/src/api/"*.rs "$DST/src/api/"
+cp "$SRC/src/raw.rs" "$SRC/src/request.rs" "$DST/src/"
+
+# ② lib.rs / client.rs 要手工改（两边内容不同）
+```
+
+> 反过来改 Flutter 副本时同理 —— 先想清楚改的是哪一边，再决定要不要回灌。
+
+---
+
+## Dart 侧接入：dio adapter
+
+`KuGou.dart` 的 1600+ 行解析代码**一行都没改** —— 靠的是 `raw.rs` 透传层 +
+`lib/Cloud/KuGouRustAdapter.dart` 这个自定义 dio adapter。
+
+详见 [README.md](README.md) 的「Dart 侧改造：`raw_request` 透传层」。
+
+调用链：
+
+```text
+KuGou.dio.get('/login/qr/key?timestamp=1')
+  → KuGouRustAdapter.fetch()             ← lib/Cloud/KuGouRustAdapter.dart，进程内
+  → KuGouClient.rawRequest(path, query)  ← FFI，进程内
+  → Rust 直连酷狗上游                     ← 唯一一次真实网络请求
+```
+
+⚠️ `KuGou.dio` 名字里虽然有 dio，但**不发 HTTP** —— 换 adapter 之后所有请求都走 FFI。
+
+---
+
 ## 完整重建步骤（换机器 / 清理后）
 
 ```bash

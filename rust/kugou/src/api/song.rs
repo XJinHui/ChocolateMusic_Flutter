@@ -44,7 +44,8 @@ pub fn normalize_quality(q: &str) -> String {
 /// 否则会提示「本次请求需要验证」。
 ///
 /// 返回播放地址；无版权或需 VIP 时返回空字符串。
-pub async fn song_url(t: &Transport, hash: &str, quality: &str) -> Result<String> {
+/// 构造「获取音乐播放地址」请求
+pub(crate) fn build_song_url(t: &Transport, hash: &str, quality: &str) -> RequestOptions {
     let is_lite = t.platform == Platform::Lite;
 
     let page_id = if is_lite { 967177915 } else { 151369488 };
@@ -57,31 +58,31 @@ pub async fn song_url(t: &Transport, hash: &str, quality: &str) -> Result<String
 
     let q = if quality.is_empty() { "128" } else { quality };
 
-    let resp = t
-        .send(
-            RequestOptions::get("/v5/url")
-                .router("trackercdn.kugou.com")
-                .encrypt_key(true)
-                .param("album_id", 0)
-                .param("area_code", 1)
-                .param("hash", hash.to_lowercase())
-                .param("ssa_flag", "is_fromtrack")
-                .param("version", 11430)
-                .param("page_id", page_id)
-                .param("quality", normalize_quality(q))
-                .param("album_audio_id", 0)
-                .param("behavior", "play")
-                .param("pid", pid)
-                .param("cmd", 26)
-                .param("pidversion", 3001)
-                .param("IsFreePart", 0)
-                .param("ppage_id", ppage_id)
-                .param("cdnBackup", 1)
-                .param("module", "")
-                // ⚠️ 覆盖默认的 clientver
-                .param("clientver", 11430),
-        )
-        .await?;
+    RequestOptions::get("/v5/url")
+        .router("trackercdn.kugou.com")
+        .encrypt_key(true)
+        .param("album_id", 0)
+        .param("area_code", 1)
+        .param("hash", hash.to_lowercase())
+        .param("ssa_flag", "is_fromtrack")
+        .param("version", 11430)
+        .param("page_id", page_id)
+        .param("quality", normalize_quality(q))
+        .param("album_audio_id", 0)
+        .param("behavior", "play")
+        .param("pid", pid)
+        .param("cmd", 26)
+        .param("pidversion", 3001)
+        .param("IsFreePart", 0)
+        .param("ppage_id", ppage_id)
+        .param("cdnBackup", 1)
+        .param("module", "")
+        // ⚠️ 覆盖默认的 clientver
+        .param("clientver", 11430)
+}
+
+pub async fn song_url(t: &Transport, hash: &str, quality: &str) -> Result<String> {
+    let resp = t.send(build_song_url(t, hash, quality)).await?;
 
     // ⚠️ 播放地址在**顶层** `url` 数组，不在 `data` 下
     Ok(resp
@@ -117,11 +118,8 @@ pub async fn song_urls(
 /// 对应 Dart 的 `getMusicsDetails(ids)` 的前半部分（`/privilege/lite`）。
 ///
 /// 返回上游的原始 `data` 数组，字段说明见 `docs/rewrite/api/endpoints/privilege_lite.md`。
-pub async fn privilege_lite(t: &Transport, hashes: &[String]) -> Result<Vec<Value>> {
-    if hashes.is_empty() {
-        return Ok(Vec::new());
-    }
-
+/// 构造「歌曲详情（批量）」请求
+pub(crate) fn build_privilege_lite(t: &Transport, hashes: &[String]) -> RequestOptions {
     let resource: Vec<Value> = hashes
         .iter()
         .map(|h| json!({ "type": "audio", "page_id": 0, "hash": h, "album_id": 0 }))
@@ -142,14 +140,18 @@ pub async fn privilege_lite(t: &Transport, hashes: &[String]) -> Result<Vec<Valu
         ]
     });
 
-    let resp = t
-        .send(
-            RequestOptions::post("/v2/get_res_privilege/lite")
-                .router("media.store.kugou.com")
-                .header("Content-Type", "application/json")
-                .json_body(&body),
-        )
-        .await?;
+    RequestOptions::post("/v2/get_res_privilege/lite")
+        .router("media.store.kugou.com")
+        .header("Content-Type", "application/json")
+        .json_body(&body)
+}
+
+pub async fn privilege_lite(t: &Transport, hashes: &[String]) -> Result<Vec<Value>> {
+    if hashes.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let resp = t.send(build_privilege_lite(t, hashes)).await?;
 
     Ok(resp.data().as_array().cloned().unwrap_or_default())
 }
@@ -159,15 +161,11 @@ pub async fn privilege_lite(t: &Transport, hashes: &[String]) -> Result<Vec<Valu
 /// 对应 Dart 的 `getAlbumAudioId(ids)`。
 ///
 /// 返回 `(album_audio_id, album_id, singer_id)` 三元组列表。
-pub async fn krm_audio(
-    t: &Transport,
+/// 构造「`album_audio_id` → 专辑 / 歌手 ID」请求
+pub(crate) fn build_krm_audio(
     album_audio_ids: &[String],
     fields: &str,
-) -> Result<Vec<(String, String, String)>> {
-    if album_audio_ids.is_empty() {
-        return Ok(Vec::new());
-    }
-
+) -> RequestOptions {
     let data: Vec<Value> = album_audio_ids
         .iter()
         .filter_map(|s| s.parse::<i64>().ok())
@@ -179,14 +177,22 @@ pub async fn krm_audio(
         "fields": if fields.is_empty() { "base" } else { fields }
     });
 
-    let resp = t
-        .send(
-            RequestOptions::post("/kmr/v2/audio")
-                .router("openapi.kugou.com")
-                .header("KG-TID", "238")
-                .json_body(&body),
-        )
-        .await?;
+    RequestOptions::post("/kmr/v2/audio")
+        .router("openapi.kugou.com")
+        .header("KG-TID", "238")
+        .json_body(&body)
+}
+
+pub async fn krm_audio(
+    t: &Transport,
+    album_audio_ids: &[String],
+    fields: &str,
+) -> Result<Vec<(String, String, String)>> {
+    if album_audio_ids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let resp = t.send(build_krm_audio(album_audio_ids, fields)).await?;
 
     let out = resp
         .data()
@@ -227,22 +233,23 @@ pub struct LyricCandidate {
 /// 对应 Dart 的 `getLyric(musicId)` 的第一步。
 ///
 /// ⚠️ 本接口成功码是 **200**（其他接口是 1）。
+/// 构造「搜索歌词」请求
+pub(crate) fn build_search_lyric(t: &Transport, hash: &str) -> RequestOptions {
+    RequestOptions::get("/v1/search")
+        .base_url("https://lyrics.kugou.com")
+        .clear_default_params(true)
+        .param("album_audio_id", 0)
+        .param("appid", t.platform.appid())
+        .param("clientver", t.platform.clientver())
+        .param("duration", 0)
+        .param("hash", hash)
+        .param("keyword", "")
+        .param("lrctxt", 1)
+        .param("man", "no")
+}
+
 pub async fn search_lyric(t: &Transport, hash: &str) -> Result<Vec<LyricCandidate>> {
-    let resp = t
-        .send(
-            RequestOptions::get("/v1/search")
-                .base_url("https://lyrics.kugou.com")
-                .clear_default_params(true)
-                .param("album_audio_id", 0)
-                .param("appid", t.platform.appid())
-                .param("clientver", t.platform.clientver())
-                .param("duration", 0)
-                .param("hash", hash)
-                .param("keyword", "")
-                .param("lrctxt", 1)
-                .param("man", "no"),
-        )
-        .await?;
+    let resp = t.send(build_search_lyric(t, hash)).await?;
 
     let out = resp
         .body
@@ -286,6 +293,53 @@ pub async fn lyric(t: &Transport, hash: &str, fmt: &str) -> Result<String> {
     Ok(process_lyric(&text))
 }
 
+/// 构造「按 `id` + `accesskey` 取歌词」请求
+pub(crate) fn build_lyric_by_id(id: &str, accesskey: &str, fmt: &str) -> RequestOptions {
+    let fmt = if fmt.is_empty() { "lrc" } else { fmt };
+
+    RequestOptions::get("/download")
+        .base_url("https://lyrics.kugou.com")
+        .param("ver", 1)
+        .param("client", "android")
+        .param("id", id)
+        .param("accesskey", accesskey)
+        .param("fmt", fmt)
+        .param("charset", "utf8")
+        .param("decode", "true")
+}
+
+/// 按 `id` + `accesskey` 取歌词
+///
+/// 返回**加了 `decodeContent` 字段的完整响应体** —— 与原服务器的行为一致
+/// （服务器在 `?decode=true` 时把解码结果挂在 `decodeContent` 上，`content` 保留）。
+pub(crate) async fn lyric_by_id_body(
+    t: &Transport,
+    id: &str,
+    accesskey: &str,
+    fmt: &str,
+) -> Result<Value> {
+    let fmt = if fmt.is_empty() { "lrc" } else { fmt };
+
+    let resp = t.send(build_lyric_by_id(id, accesskey, fmt)).await?;
+
+    let content = resp
+        .str_at(&["content"])
+        .ok_or_else(|| Error::Invalid(format!("歌词响应无 content: {}", resp.body)))?;
+
+    // contenttype != 0 表示明文；否则是 KRC
+    let contenttype = resp.i64_at(&["contenttype"]).unwrap_or(0);
+    let decoded = if fmt == "lrc" || contenttype != 0 {
+        base64_decode_to_string(&content)
+    } else {
+        let raw = base64_decode(&content);
+        decode_krc(&raw)
+    };
+
+    let mut body = resp.body.clone();
+    body["decodeContent"] = Value::String(decoded);
+    Ok(body)
+}
+
 /// 按 `id` + `accesskey` 取歌词原文
 ///
 /// 对应 Dart 里第二次 `dio.get('/lyric?...')`。
@@ -295,34 +349,12 @@ pub async fn lyric_by_id(
     accesskey: &str,
     fmt: &str,
 ) -> Result<String> {
-    let fmt = if fmt.is_empty() { "lrc" } else { fmt };
-
-    let resp = t
-        .send(
-            RequestOptions::get("/download")
-                .base_url("https://lyrics.kugou.com")
-                .param("ver", 1)
-                .param("client", "android")
-                .param("id", id)
-                .param("accesskey", accesskey)
-                .param("fmt", fmt)
-                .param("charset", "utf8")
-                .param("decode", "true"),
-        )
-        .await?;
-
-    let content = resp
-        .str_at(&["content"])
-        .ok_or_else(|| Error::Invalid(format!("歌词响应无 content: {}", resp.body)))?;
-
-    // contenttype != 0 表示明文；否则是 KRC
-    let contenttype = resp.i64_at(&["contenttype"]).unwrap_or(0);
-    if fmt == "lrc" || contenttype != 0 {
-        Ok(base64_decode_to_string(&content))
-    } else {
-        let raw = base64_decode(&content);
-        Ok(decode_krc(&raw))
-    }
+    let body = lyric_by_id_body(t, id, accesskey, fmt).await?;
+    Ok(body
+        .get("decodeContent")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string())
 }
 
 /// KRC 解码：跳过 4 字节头 → XOR → zlib 解压

@@ -20,14 +20,15 @@ use serde_json::{json, Value};
 ///
 /// 返回 `data.song_list` 原始数组（每首含 80+ 字段）。
 /// 若只需 hash 列表，用 [`everyday_recommend_hashes`]。
+/// 构造「每日推荐」请求
+pub(crate) fn build_everyday_recommend() -> RequestOptions {
+    RequestOptions::post("/everyday_song_recommend")
+        .router("everydayrec.service.kugou.com")
+        .param("platform", "ios")
+}
+
 pub async fn everyday_recommend(t: &Transport) -> Result<Vec<Value>> {
-    let resp = t
-        .send(
-            RequestOptions::post("/everyday_song_recommend")
-                .router("everydayrec.service.kugou.com")
-                .param("platform", "ios"),
-        )
-        .await?;
+    let resp = t.send(build_everyday_recommend()).await?;
 
     Ok(resp.arr_at(&["data", "song_list"]))
 }
@@ -51,18 +52,19 @@ pub async fn everyday_recommend_hashes(t: &Transport) -> Result<Vec<String>> {
 ///
 /// ⚠️ `clientver` 被覆盖为 **12349**（其他接口用 20489）。
 /// ⚠️ `audio_count` 填的是 `extra.play_count`（**播放量**），不是歌曲数。
-pub async fn top_ip(t: &Transport) -> Result<Vec<Playlist>> {
+/// 构造「推荐歌单（IP 专区日推）」请求
+pub(crate) fn build_top_ip() -> RequestOptions {
     let body = json!({ "tags": {} });
 
-    let resp = t
-        .send(
-            RequestOptions::post("/v1/daily_recommend")
-                .base_url("http://musicadservice.kugou.com")
-                .param("clientver", 12349)
-                .param("area_code", 1)
-                .json_body(&body),
-        )
-        .await?;
+    RequestOptions::post("/v1/daily_recommend")
+        .base_url("http://musicadservice.kugou.com")
+        .param("clientver", 12349)
+        .param("area_code", 1)
+        .json_body(&body)
+}
+
+pub async fn top_ip(t: &Transport) -> Result<Vec<Playlist>> {
+    let resp = t.send(build_top_ip()).await?;
 
     let mut out = Vec::new();
     for item in resp.arr_at(&["data", "list"]) {

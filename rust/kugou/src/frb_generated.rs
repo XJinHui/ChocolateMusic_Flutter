@@ -40,7 +40,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueNom,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1887945082;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1491126804;
 
 // Section: executor
 
@@ -1927,6 +1927,58 @@ fn wire__crate__client__KuGouClient_qr_login_wait_impl(
         },
     )
 }
+fn wire__crate__client__KuGouClient_raw_request_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    that: impl CstDecode<
+        RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<KuGouClient>>,
+    >,
+    path: impl CstDecode<String>,
+    query: impl CstDecode<std::collections::HashMap<String, String>>,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "KuGouClient_raw_request",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.cst_decode();
+            let api_path = path.cst_decode();
+            let api_query = query.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, crate::Error>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, true,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref_mut().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let mut api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::client::KuGouClient::raw_request(
+                            &mut *api_that_guard,
+                            api_path,
+                            api_query,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__client__KuGouClient_refresh_token_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     that: impl CstDecode<
@@ -2708,6 +2760,14 @@ impl SseDecode for KuGouClient {
     }
 }
 
+impl SseDecode for std::collections::HashMap<String, String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <Vec<(String, String)>>::sse_decode(deserializer);
+        return inner.into_iter().collect();
+    }
+}
+
 impl SseDecode
     for RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<KuGouClient>>
 {
@@ -2907,6 +2967,18 @@ impl SseDecode for Vec<u8> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<u8>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<(String, String)> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<(String, String)>::sse_decode(deserializer));
         }
         return ans_;
     }
@@ -3488,6 +3560,13 @@ impl SseEncode for KuGouClient {
     }
 }
 
+impl SseEncode for std::collections::HashMap<String, String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<(String, String)>>::sse_encode(self.into_iter().collect(), serializer);
+    }
+}
+
 impl SseEncode
     for RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<KuGouClient>>
 {
@@ -3654,6 +3733,16 @@ impl SseEncode for Vec<u8> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <u8>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<(String, String)> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <(String, String)>::sse_encode(item, serializer);
         }
     }
 }
@@ -3890,6 +3979,15 @@ mod io {
             ))
         }
     }
+    impl CstDecode<std::collections::HashMap<String, String>>
+        for *mut wire_cst_list_record_string_string
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> std::collections::HashMap<String, String> {
+            let vec: Vec<(String, String)> = self.cst_decode();
+            vec.into_iter().collect()
+        }
+    }
     impl
         CstDecode<
             RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<KuGouClient>>,
@@ -4046,6 +4144,16 @@ mod io {
                 let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
                 flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
             }
+        }
+    }
+    impl CstDecode<Vec<(String, String)>> for *mut wire_cst_list_record_string_string {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> Vec<(String, String)> {
+            let vec = unsafe {
+                let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
+                flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
+            };
+            vec.into_iter().map(CstDecode::cst_decode).collect()
         }
     }
     impl CstDecode<Vec<crate::models::Singer>> for *mut wire_cst_list_singer {
@@ -4723,6 +4831,16 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_chocolate_music_wire__crate__client__KuGouClient_raw_request(
+        port_: i64,
+        that: usize,
+        path: *mut wire_cst_list_prim_u_8_strict,
+        query: *mut wire_cst_list_record_string_string,
+    ) {
+        wire__crate__client__KuGouClient_raw_request_impl(port_, that, path, query)
+    }
+
+    #[unsafe(no_mangle)]
     pub extern "C" fn frbgen_chocolate_music_wire__crate__client__KuGouClient_refresh_token(
         port_: i64,
         that: usize,
@@ -5002,6 +5120,20 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_chocolate_music_cst_new_list_record_string_string(
+        len: i32,
+    ) -> *mut wire_cst_list_record_string_string {
+        let wrap = wire_cst_list_record_string_string {
+            ptr: flutter_rust_bridge::for_generated::new_leak_vec_ptr(
+                <wire_cst_record_string_string>::new_with_null_ptr(),
+                len,
+            ),
+            len,
+        };
+        flutter_rust_bridge::for_generated::new_leak_box_ptr(wrap)
+    }
+
+    #[unsafe(no_mangle)]
     pub extern "C" fn frbgen_chocolate_music_cst_new_list_singer(
         len: i32,
     ) -> *mut wire_cst_list_singer {
@@ -5122,6 +5254,12 @@ mod io {
     #[derive(Clone, Copy)]
     pub struct wire_cst_list_prim_u_8_strict {
         ptr: *mut u8,
+        len: i32,
+    }
+    #[repr(C)]
+    #[derive(Clone, Copy)]
+    pub struct wire_cst_list_record_string_string {
+        ptr: *mut wire_cst_record_string_string,
         len: i32,
     }
     #[repr(C)]
@@ -5394,6 +5532,18 @@ mod web {
             self.into_vec()
         }
     }
+    impl CstDecode<Vec<(String, String)>>
+        for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> Vec<(String, String)> {
+            self.dyn_into::<flutter_rust_bridge::for_generated::js_sys::Array>()
+                .unwrap()
+                .iter()
+                .map(CstDecode::cst_decode)
+                .collect()
+        }
+    }
     impl CstDecode<Vec<crate::models::Singer>>
         for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
     {
@@ -5594,6 +5744,15 @@ mod web {
             >::cst_decode(
                 self
             ))
+        }
+    }
+    impl CstDecode<std::collections::HashMap<String, String>>
+        for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> std::collections::HashMap<String, String> {
+            let vec: Vec<(String, String)> = self.cst_decode();
+            vec.into_iter().collect()
         }
     }
     impl
@@ -6054,6 +6213,16 @@ mod web {
             interval_secs,
             max_attempts,
         )
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__client__KuGouClient_raw_request(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
+        path: String,
+        query: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
+    ) {
+        wire__crate__client__KuGouClient_raw_request_impl(port_, that, path, query)
     }
 
     #[wasm_bindgen]

@@ -16,6 +16,7 @@ import 'package:chocolate_music/services/independent_window.dart';
 import 'package:chocolate_music/theme/app_colors.dart';
 import 'package:chocolate_music/theme/app_scroll_behavior.dart';
 import 'package:chocolate_music/Management.dart';
+import 'package:chocolate_music/src/rust/frb_generated.dart';
 
 bool get _isDesktop =>
     Platform.isWindows || Platform.isLinux || Platform.isMacOS;
@@ -23,6 +24,12 @@ bool get _isDesktop =>
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized(); // 必须调用 -- 媒体播放
+
+  // ⚠️ 必须在使用任何 Rust 函数前调用。
+  // 酷狗 API 已从「请求自建服务器」改为「进程内调用 Rust」（见
+  // Cloud/KuGouRustAdapter.dart），KuGou.dio 一被访问就会用到它。
+  // 子窗口是独立 engine 重跑本入口，所以这段要在多窗口分支**之前**执行。
+  await RustLib.init();
 
   if (_isDesktop) {
     // sqflite 的原生插件在桌面端没有实现，必须切到 FFI 版实现，

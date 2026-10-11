@@ -48,6 +48,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Map<String, String> dco_decode_Map_String_String_None(dynamic raw);
+
+  @protected
   KuGouClient
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     dynamic raw,
@@ -97,6 +100,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
   List<Singer> dco_decode_list_singer(dynamic raw);
@@ -171,6 +177,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Map<String, String> sse_decode_Map_String_String_None(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   KuGouClient
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     SseDeserializer deserializer,
@@ -220,6 +231,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  List<(String, String)> sse_decode_list_record_string_string(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<Singer> sse_decode_list_singer(SseDeserializer deserializer);
@@ -276,6 +292,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt sse_decode_usize(SseDeserializer deserializer);
+
+  @protected
+  ffi.Pointer<wire_cst_list_record_string_string>
+  cst_encode_Map_String_String_None(Map<String, String> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return cst_encode_list_record_string_string(
+      raw.entries.map((e) => (e.key, e.value)).toList(),
+    );
+  }
 
   @protected
   ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_String(String raw) {
@@ -354,6 +379,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     // Codec=Cst (C-struct based), see doc to use other codecs
     final ans = wire.cst_new_list_prim_u_8_strict(raw.length);
     ans.ref.ptr.asTypedList(raw.length).setAll(0, raw);
+    return ans;
+  }
+
+  @protected
+  ffi.Pointer<wire_cst_list_record_string_string>
+  cst_encode_list_record_string_string(List<(String, String)> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    final ans = wire.cst_new_list_record_string_string(raw.length);
+    for (var i = 0; i < raw.length; ++i) {
+      cst_api_fill_to_wire_record_string_string(raw[i], ans.ref.ptr[i]);
+    }
     return ans;
   }
 
@@ -661,6 +697,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_Map_String_String_None(
+    Map<String, String> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient self,
@@ -721,6 +763,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_prim_u_8_strict(
     Uint8List self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_record_string_string(
+    List<(String, String)> self,
     SseSerializer serializer,
   );
 
@@ -896,6 +944,23 @@ class RustLibWire implements BaseWire {
       >('frbgen_chocolate_music_cst_new_list_prim_u_8_strict');
   late final _cst_new_list_prim_u_8_strict = _cst_new_list_prim_u_8_strictPtr
       .asFunction<ffi.Pointer<wire_cst_list_prim_u_8_strict> Function(int)>();
+
+  ffi.Pointer<wire_cst_list_record_string_string>
+  cst_new_list_record_string_string(int len) {
+    return _cst_new_list_record_string_string(len);
+  }
+
+  late final _cst_new_list_record_string_stringPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Pointer<wire_cst_list_record_string_string> Function(ffi.Int32)
+        >
+      >('frbgen_chocolate_music_cst_new_list_record_string_string');
+  late final _cst_new_list_record_string_string =
+      _cst_new_list_record_string_stringPtr
+          .asFunction<
+            ffi.Pointer<wire_cst_list_record_string_string> Function(int)
+          >();
 
   ffi.Pointer<wire_cst_list_singer> cst_new_list_singer(int len) {
     return _cst_new_list_singer(len);
@@ -1898,6 +1963,42 @@ class RustLibWire implements BaseWire {
             )
           >();
 
+  void wire__crate__client__KuGouClient_raw_request(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> path,
+    ffi.Pointer<wire_cst_list_record_string_string> query,
+  ) {
+    return _wire__crate__client__KuGouClient_raw_request(
+      port_,
+      that,
+      path,
+      query,
+    );
+  }
+
+  late final _wire__crate__client__KuGouClient_raw_requestPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_record_string_string>,
+          )
+        >
+      >('frbgen_chocolate_music_wire__crate__client__KuGouClient_raw_request');
+  late final _wire__crate__client__KuGouClient_raw_request =
+      _wire__crate__client__KuGouClient_raw_requestPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_record_string_string>,
+            )
+          >();
+
   void wire__crate__client__KuGouClient_refresh_token(int port_, int that) {
     return _wire__crate__client__KuGouClient_refresh_token(port_, that);
   }
@@ -2617,6 +2718,21 @@ final class wire_cst_list_prim_u_8_strict extends ffi.Struct {
     required ffi.Pointer<ffi.Uint8> ptr,
     required int len,
   }) => $allocator<wire_cst_list_prim_u_8_strict>()
+    ..ref.ptr = ptr
+    ..ref.len = len;
+}
+
+final class wire_cst_list_record_string_string extends ffi.Struct {
+  external ffi.Pointer<wire_cst_record_string_string> ptr;
+
+  @ffi.Int32()
+  external int len;
+
+  static ffi.Pointer<wire_cst_list_record_string_string> $allocate(
+    ffi.Allocator $allocator, {
+    required ffi.Pointer<wire_cst_record_string_string> ptr,
+    required int len,
+  }) => $allocator<wire_cst_list_record_string_string>()
     ..ref.ptr = ptr
     ..ref.len = len;
 }

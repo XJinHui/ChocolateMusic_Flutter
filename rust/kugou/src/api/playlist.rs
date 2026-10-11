@@ -36,29 +36,40 @@ pub struct TrackItem {
 /// 里的 `/playlist/track/all` 循环。
 ///
 /// `id` 是 **`global_collection_id`**。
+/// 构造「获取歌单全部歌曲」请求
+pub(crate) fn build_playlist_track_all(
+    global_collection_id: &str,
+    page: u32,
+    pagesize: u32,
+) -> RequestOptions {
+    let pagesize = if pagesize == 0 { 300 } else { pagesize };
+    let page = if page == 0 { 1 } else { page };
+
+    RequestOptions::get("/pubsongs/v2/get_other_list_file_nofilt")
+        .param("area_code", 1)
+        // ⚠️ 用 begin_idx 而非 page
+        .param("begin_idx", (page - 1) * pagesize)
+        .param("plat", 1)
+        .param("type", 1)
+        .param("mode", 1)
+        .param("personal_switch", 1)
+        .param("extend_fields", "abtags,hot_cmt,popularization")
+        .param("pagesize", pagesize)
+        .param("global_collection_id", global_collection_id)
+}
+
 pub async fn playlist_track_all(
     t: &Transport,
     global_collection_id: &str,
     page: u32,
     pagesize: u32,
 ) -> Result<Vec<TrackItem>> {
-    let pagesize = if pagesize == 0 { 300 } else { pagesize };
-    let page = if page == 0 { 1 } else { page };
-
     let resp = t
-        .send(
-            RequestOptions::get("/pubsongs/v2/get_other_list_file_nofilt")
-                .param("area_code", 1)
-                // ⚠️ 用 begin_idx 而非 page
-                .param("begin_idx", (page - 1) * pagesize)
-                .param("plat", 1)
-                .param("type", 1)
-                .param("mode", 1)
-                .param("personal_switch", 1)
-                .param("extend_fields", "abtags,hot_cmt,popularization")
-                .param("pagesize", pagesize)
-                .param("global_collection_id", global_collection_id),
-        )
+        .send(build_playlist_track_all(
+            global_collection_id,
+            page,
+            pagesize,
+        ))
         .await?;
 
     Ok(resp
@@ -155,11 +166,8 @@ pub async fn find_fileid(
 /// 对应 Dart 的 `getPlaylistDetails(listId)`。
 ///
 /// `ids` 是 **`global_collection_id`**（逗号分隔）。
-pub async fn playlist_detail(t: &Transport, ids: &[String]) -> Result<Vec<Playlist>> {
-    if ids.is_empty() {
-        return Ok(Vec::new());
-    }
-
+/// 构造「歌单详情」请求
+pub(crate) fn build_playlist_detail(t: &Transport, ids: &[String]) -> RequestOptions {
     let data: Vec<Value> = ids
         .iter()
         .map(|id| json!({ "global_collection_id": id }))
@@ -171,13 +179,17 @@ pub async fn playlist_detail(t: &Transport, ids: &[String]) -> Result<Vec<Playli
         "token": t.account.token
     });
 
-    let resp = t
-        .send(
-            RequestOptions::post("/v3/get_list_info")
-                .router("pubsongs.kugou.com")
-                .json_body(&body),
-        )
-        .await?;
+    RequestOptions::post("/v3/get_list_info")
+        .router("pubsongs.kugou.com")
+        .json_body(&body)
+}
+
+pub async fn playlist_detail(t: &Transport, ids: &[String]) -> Result<Vec<Playlist>> {
+    if ids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let resp = t.send(build_playlist_detail(t, ids)).await?;
 
     Ok(resp
         .data()
@@ -207,7 +219,8 @@ pub async fn playlist_detail(t: &Transport, ids: &[String]) -> Result<Vec<Playli
 /// `kind` 传 `0` 新建（默认），传 `1` 收藏他人歌单（此时需要 `create_from`）。
 ///
 /// 返回新歌单的 `(global_collection_id, listid)`。
-pub async fn playlist_add(t: &Transport, name: &str, kind: i64) -> Result<(String, String)> {
+/// 构造「新建 / 收藏歌单」请求
+pub(crate) fn build_playlist_add(t: &Transport, name: &str, kind: i64) -> RequestOptions {
     let clienttime = now_secs();
 
     let mut body = json!({
@@ -238,7 +251,11 @@ pub async fn playlist_add(t: &Transport, name: &str, kind: i64) -> Result<(Strin
             .param("token", t.account.token.clone());
     }
 
-    let resp = t.send(opt).await?;
+    opt
+}
+
+pub async fn playlist_add(t: &Transport, name: &str, kind: i64) -> Result<(String, String)> {
+    let resp = t.send(build_playlist_add(t, name, kind)).await?;
 
     Ok((
         resp.str_at(&["data", "info", "global_collection_id"])
@@ -305,7 +322,12 @@ pub async fn playlist_del(t: &Transport, listid: &str) -> Result<Value> {
 /// ⚠️ 只传 3 段时 `mixsongid` 为 0，部分歌曲可能添加失败。
 ///
 /// 便捷入口见 [`add_music_by_hash`]。
-pub async fn playlist_tracks_add(t: &Transport, listid: &str, data: &str) -> Result<()> {
+/// 构造「歌单添加歌曲」请求
+pub(crate) fn build_playlist_tracks_add(
+    t: &Transport,
+    listid: &str,
+    data: &str,
+) -> RequestOptions {
     let clienttime = now_secs();
 
     let resource: Vec<Value> = data
@@ -338,15 +360,16 @@ pub async fn playlist_tracks_add(t: &Transport, listid: &str, data: &str) -> Res
         "data": resource
     });
 
-    t.send(
-        RequestOptions::post("/cloudlist.service/v6/add_song")
-            .param("last_time", clienttime)
-            .param("last_area", "gztx")
-            .param("userid", t.account.userid.clone())
-            .param("token", t.account.token.clone())
-            .json_body(&body),
-    )
-    .await?;
+    RequestOptions::post("/cloudlist.service/v6/add_song")
+        .param("last_time", clienttime)
+        .param("last_area", "gztx")
+        .param("userid", t.account.userid.clone())
+        .param("token", t.account.token.clone())
+        .json_body(&body)
+}
+
+pub async fn playlist_tracks_add(t: &Transport, listid: &str, data: &str) -> Result<()> {
+    t.send(build_playlist_tracks_add(t, listid, data)).await?;
     Ok(())
 }
 
@@ -370,7 +393,12 @@ pub async fn add_music_by_hash(
 /// 对应 Dart 的 `deleteMusicFromPlaylist(listId, musicId)` 的第二步。
 ///
 /// ⚠️ 需要 **`fileid`**（数字），不是 `hash`。用 [`find_fileid`] 获取。
-pub async fn playlist_tracks_del(t: &Transport, listid: &str, fileids: &str) -> Result<()> {
+/// 构造「歌单删除歌曲」请求
+pub(crate) fn build_playlist_tracks_del(
+    t: &Transport,
+    listid: &str,
+    fileids: &str,
+) -> RequestOptions {
     let resource: Vec<Value> = fileids
         .split(',')
         .filter(|s| !s.is_empty())
@@ -386,12 +414,13 @@ pub async fn playlist_tracks_del(t: &Transport, listid: &str, fileids: &str) -> 
         "list_ver": 0
     });
 
-    t.send(
-        RequestOptions::post("/v4/delete_songs")
-            .router("cloudlist.service.kugou.com")
-            .json_body(&body),
-    )
-    .await?;
+    RequestOptions::post("/v4/delete_songs")
+        .router("cloudlist.service.kugou.com")
+        .json_body(&body)
+}
+
+pub async fn playlist_tracks_del(t: &Transport, listid: &str, fileids: &str) -> Result<()> {
+    t.send(build_playlist_tracks_del(t, listid, fileids)).await?;
     Ok(())
 }
 

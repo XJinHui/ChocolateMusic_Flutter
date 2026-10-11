@@ -71,7 +71,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1887945082;
+  int get rustContentHash => 1491126804;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -253,6 +253,12 @@ abstract class RustLibApi extends BaseApi {
     required String key,
     required BigInt intervalSecs,
     required int maxAttempts,
+  });
+
+  Future<String> crateClientKuGouClientRawRequest({
+    required KuGouClient that,
+    required String path,
+    required Map<String, String> query,
   });
 
   Future<LoginResult> crateClientKuGouClientRefreshToken({
@@ -1765,6 +1771,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<String> crateClientKuGouClientRawRequest({
+    required KuGouClient that,
+    required String path,
+    required Map<String, String> query,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+                that,
+              );
+          var arg1 = cst_encode_String(path);
+          var arg2 = cst_encode_Map_String_String_None(query);
+          return wire.wire__crate__client__KuGouClient_raw_request(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_String,
+          decodeErrorData: dco_decode_error,
+        ),
+        constMeta: kCrateClientKuGouClientRawRequestConstMeta,
+        argValues: [that, path, query],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateClientKuGouClientRawRequestConstMeta =>
+      const TaskConstMeta(
+        debugName: "KuGouClient_raw_request",
+        argNames: ["that", "path", "query"],
+      );
+
+  @override
   Future<LoginResult> crateClientKuGouClientRefreshToken({
     required KuGouClient that,
   }) {
@@ -2420,6 +2465,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Map<String, String> dco_decode_Map_String_String_None(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return Map.fromEntries(
+      dco_decode_list_record_string_string(
+        raw,
+      ).map((e) => MapEntry(e.$1, e.$2)),
+    );
+  }
+
+  @protected
   KuGouClient
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     dynamic raw,
@@ -2567,6 +2622,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
+  }
+
+  @protected
+  List<(String, String)> dco_decode_list_record_string_string(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_record_string_string).toList();
   }
 
   @protected
@@ -2792,6 +2853,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Map<String, String> sse_decode_Map_String_String_None(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_record_string_string(deserializer);
+    return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
+  }
+
+  @protected
   KuGouClient
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     SseDeserializer deserializer,
@@ -2989,6 +3059,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  List<(String, String)> sse_decode_list_record_string_string(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <(String, String)>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_record_string_string(deserializer));
+    }
+    return ans_;
   }
 
   @protected
@@ -3332,6 +3416,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_Map_String_String_None(
+    Map<String, String> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_record_string_string(
+      self.entries.map((e) => (e.key, e.value)).toList(),
+      serializer,
+    );
+  }
+
+  @protected
   void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient self,
@@ -3500,6 +3596,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_list_record_string_string(
+    List<(String, String)> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_record_string_string(item, serializer);
+    }
   }
 
   @protected
@@ -3938,6 +4046,41 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
     key: key,
     intervalSecs: intervalSecs,
     maxAttempts: maxAttempts,
+  );
+
+  /// 按原服务器的路由发一次请求，返回**酷狗上游的原始响应体**（JSON 文本）
+  ///
+  /// `path` 是原服务器的路由（如 `/song/url`），`query` 是原样的查询参数。
+  /// 返回值与自建服务器返回的**完全一致**，因此 `KuGou.dart` 只需把
+  /// `KuGou.dio.get(...)` 换成 FFI 调用，解析代码一行都不用改。
+  ///
+  /// ```no_run
+  /// # async fn run() -> Result<(), kugou::Error> {
+  /// # let mut client = kugou::KuGouClient::new(kugou::Platform::Lite);
+  /// let mut q = std::collections::HashMap::new();
+  /// q.insert("hash".to_string(), "abc".to_string());
+  /// q.insert("quality".to_string(), "320".to_string());
+  /// let json = client.raw_request("/song/url".into(), q).await?;
+  /// # Ok(()) }
+  /// ```
+  ///
+  /// ## ⚠️ 凭据来源
+  ///
+  /// 与原服务器一致：**`query` 里的 `token` / `userid` / `dfid` 即权威凭据**，
+  /// 非空时会覆盖客户端内部持有的值。原服务器也是把 query 里的这三个值
+  /// 转成 Cookie 发给上游的。
+  ///
+  /// ## 副作用
+  ///
+  /// `/register/dev` 拿到的 `dfid`、登录接口拿到的 `token`/`userid`
+  /// 会自动写回客户端并持久化到身份文件。
+  Future<String> rawRequest({
+    required String path,
+    required Map<String, String> query,
+  }) => RustLib.instance.api.crateClientKuGouClientRawRequest(
+    that: this,
+    path: path,
+    query: query,
   );
 
   /// 刷新 token（对应 `refreshToken()`）

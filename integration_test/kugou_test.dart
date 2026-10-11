@@ -5,12 +5,13 @@
 //
 // 只测**纯函数**与**免登录接口**，不会修改任何账号数据。
 
+import 'package:chocolate_music/Cloud/KuGou.dart';
+import 'package:chocolate_music/src/rust/frb_api.dart';
+import 'package:chocolate_music/src/rust/frb_generated.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
-
-import 'package:chocolate_music/src/rust/frb_api.dart';
-import 'package:chocolate_music/src/rust/frb_generated.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -101,6 +102,50 @@ void main() {
         expect(s.id, isNotEmpty);
         expect(s.name, isNotEmpty);
       }
+    }, timeout: const Timeout(Duration(minutes: 2)));
+  });
+
+  // ------------------------------------------------------------------
+  //  KuGou.dart 的真实调用路径：dio → KuGouRustAdapter → FFI → Rust
+  //
+  //  这组用例验证「响应体形状」与原自建服务器完全一致 —— 只要它们过了，
+  //  KuGou.dart 里那些 response.data[...] 的解析代码就一定能照常工作。
+  // ------------------------------------------------------------------
+  group('dio adapter（KuGou.dart 的真实路径）', () {
+    test('免登录接口返回与原服务器同款的响应体', () async {
+      // ① 存活探测：本地没有服务器，恒为成功
+      final ping = await KuGou.dio.get('');
+      expect(ping.statusCode, 200);
+      expect(ping.data['status'], 1);
+
+      // ② /register/dev —— 响应体已 AES 解密
+      final dev = await KuGou.dio.get('/register/dev');
+      expect(dev.statusCode, 200);
+      expect(dev.data['status'], 1, reason: '${dev.data}');
+
+      // ③ /everyday/recommend —— 原始形状是 data.song_list
+      final rec = await KuGou.dio.get('/everyday/recommend');
+      expect(rec.statusCode, 200);
+      expect(rec.data['status'], 1, reason: '${rec.data}');
+      final songs = rec.data['data']['song_list'] as List;
+      expect(songs, isNotEmpty);
+
+      // ④ /song/url —— 地址在**顶层** url 数组，不在 data 下
+      final hash = songs.first['hash'] as String;
+      final url = await KuGou.dio.get('/song/url?hash=$hash&quality=128');
+      expect(url.statusCode, 200);
+      expect(url.data['status'], isA<int>());
+      if (url.data['status'] == 1) {
+        expect(url.data['url'], isA<List>());
+        expect(url.data['url'][0], isNotEmpty);
+      }
+      // status == 2 表示无版权，上游**完全不返回** url 字段，这也是原样透传
+
+      // ⑤ 未实现的路径要抛异常，而不是静默返回空
+      await expectLater(
+        KuGou.dio.get('/not/a/route'),
+        throwsA(isA<DioException>()),
+      );
     }, timeout: const Timeout(Duration(minutes: 2)));
   });
 }

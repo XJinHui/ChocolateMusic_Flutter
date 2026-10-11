@@ -21,7 +21,8 @@ use serde_json::{json, Value};
 ///
 /// ⚠️ 原项目 Dart 客户端用 `name == '我喜欢'` 判断收藏歌单，但实际名称是
 /// **`我喜欢的音乐`**，导致判断永不成立。用 [`find_favorite_playlist`] 代替。
-pub async fn user_playlist(t: &Transport, page: u32, pagesize: u32) -> Result<Vec<Playlist>> {
+/// 构造「获取用户歌单列表」请求
+pub(crate) fn build_user_playlist(t: &Transport, page: u32, pagesize: u32) -> RequestOptions {
     let body = json!({
         "userid": t.account.userid,
         "token": t.account.token,
@@ -33,16 +34,16 @@ pub async fn user_playlist(t: &Transport, page: u32, pagesize: u32) -> Result<Ve
 
     let userid_num: i64 = t.account.userid.parse().unwrap_or(0);
 
-    let resp = t
-        .send(
-            RequestOptions::post("/v7/get_all_list")
-                .router("cloudlist.service.kugou.com")
-                .param("plat", 1)
-                .param("userid", userid_num)
-                .param("token", t.account.token.clone())
-                .json_body(&body),
-        )
-        .await?;
+    RequestOptions::post("/v7/get_all_list")
+        .router("cloudlist.service.kugou.com")
+        .param("plat", 1)
+        .param("userid", userid_num)
+        .param("token", t.account.token.clone())
+        .json_body(&body)
+}
+
+pub async fn user_playlist(t: &Transport, page: u32, pagesize: u32) -> Result<Vec<Playlist>> {
+    let resp = t.send(build_user_playlist(t, page, pagesize)).await?;
 
     Ok(resp
         .arr_at(&["data", "info"])

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:chocolate_music/Type.dart';
 import 'package:chocolate_music/Management.dart';
 import 'package:chocolate_music/Cloud/CloudService.dart';
+import 'package:chocolate_music/Cloud/KuGouRustAdapter.dart';
 import 'dart:math';
 
 class KuGou implements CloudService {
@@ -24,14 +25,29 @@ class KuGou implements CloudService {
 
   late int qrCodeType = -1; // 二维码登陆状态，-1为未登录，0正在登陆，1为登录成功，2为登录失败
 
-  static final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: "https://kugou.xjinhui.asia/",
-      // baseUrl: "http://120.77.173.68:4000",
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 30),
-    ),
-  )..options.validateStatus = (status) => true;
+  /// ⚠️ 这个 Dio 实例**不发 HTTP**。
+  ///
+  /// 它被换上了 [KuGouRustAdapter]，请求全部转给本地 Rust 实现（FFI 进程内调用），
+  /// 返回值与原先那台自建服务器（KuGouMusicApi）**完全一致** —— 服务器本身就是
+  /// 个纯透传，把酷狗上游的响应体原样返回。
+  ///
+  /// 因此本文件里所有 `KuGou.dio.get('/xxx?...')` 的写法与解析代码都无需改动。
+  /// 详见 `Cloud/KuGouRustAdapter.dart`。
+  static final Dio dio = _createDio();
+
+  static Dio _createDio() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: "https://kugou.xjinhui.asia/",
+        // baseUrl: "http://120.77.173.68:4000",
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+    dio.options.validateStatus = (status) => true;
+    dio.httpClientAdapter = KuGouRustAdapter();
+    return dio;
+  }
 
   KuGou({required this.accountData, required this.management});
 

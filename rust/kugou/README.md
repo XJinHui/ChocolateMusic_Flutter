@@ -118,34 +118,63 @@ final url = await client.getMusicUrl(hash: songs.first.id, quality: '320');
 | `getCover(url, size:)` | `kugou::models::get_cover(url, size)` | |
 | `shuffleArray(ids)` | `kugou::client::shuffle(&mut v)` | |
 
-## Dart 侧改造示例
+## Dart 侧改造：`raw_request` 透传层
 
-**改造前**（`KuGou.dart`）：
+`KuGou.dart` 有 1600+ 行，全是 `KuGou.dio.get('/xxx')` + `response.data[...]` 的解析。
+逐方法改写成强类型调用要重写上千行，风险高。
+
+**更好的办法**：原服务器（KuGouMusicApi）其实是个**纯透传** ——
+
+```js
+// server.js:420
+res.header(moduleResponse.headers).status(moduleResponse.status).send(moduleResponse.body);
+```
+
+`moduleResponse.body` 就是酷狗上游的原始 JSON。所以只要 Rust 把同一份原始体
+原样吐回来，`KuGou.dart` 的解析代码**一行都不用改**。
 
 ```dart
-getMusicUrl(String musicId, {String bitrate = '128'}) async {
-  var response = await KuGou.dio.get(
-    '/song/url?hash=${musicId}&quality=${bitrate}',
-    queryParameters: this.params,
-    options: Options(headers: {
-      'Cookie': 'token=${params['token']}; userid=${params['userid']}; dfid=${params['dfid']}',
-    }),
-  );
-  if (response.statusCode != 200 || response.data["status"] != 1) return '';
-  return response.data['url'][0];
+// KuGou.dart 里只改这一处：给 dio 换上 adapter
+static Dio _createDio() {
+  final dio = Dio(BaseOptions(baseUrl: "https://kugou.xjinhui.asia/"));
+  dio.options.validateStatus = (status) => true;
+  dio.httpClientAdapter = KuGouRustAdapter();   // ← 新增
+  return dio;
 }
 ```
 
-**改造后**：
+`KuGouRustAdapter`（在 Flutter 项目里，`lib/Cloud/KuGouRustAdapter.dart`）把 dio 的
+请求截下来转给 [`KuGouClient::raw_request`]，**不发起任何 HTTP**，返回与原服务器
+一致的响应体。
+
+### 与服务器的三处不一致（已补齐）
+
+| 路径 | 服务器的额外处理 |
+| --- | --- |
+| `/register/dev` | 响应体是二进制，需 AES 解密 |
+| `/login/cellphone`、`/login/token` | 把 `secu_params` 解密后合并进 `data` |
+| `/lyric?decode=true` | base64 / KRC 解码后挂到 `decodeContent` |
+
+### 凭据语义
+
+与原服务器一致：**`query` 里的 `token` / `userid` / `dfid` 即权威凭据**，
+非空时覆盖客户端内部持有的值（服务器也是把它们转成 Cookie 发给上游的）。
+
+### 业务失败不算异常
+
+`status: 0` / `error_code != 0` 这类业务失败，原服务器是用 HTTP 200 返回响应体的。
+`raw_request` 同样照常返回响应体，由 `KuGou.dart` 自己判断 `status` ——
+否则 `getVip8()` 里 `error_msg == '今天次数已用光'` 这种判断就没法做了。
+
+### 想用强类型接口也可以
+
+`raw_request` 只是兼容层。新代码可以直接用 [`KuGouClient`] 上的强类型方法：
 
 ```dart
-Future<String> getMusicUrl(String musicId, {String bitrate = '128'}) async {
-  return KuGouNative.getMusicUrl(musicId, bitrate);   // 走 FFI 调 Rust
-}
+final url = await client.getMusicUrl(hash: musicId, quality: bitrate);
 ```
 
-> ⚠️ Dart 调 Rust 需要 **FFI 绑定层**（`flutter_rust_bridge` 或手写 `dart:ffi`）。
-> 当前 crate 已按「方法签名与 Dart 一一对应」组织，加绑定层时直接暴露 [`KuGouClient`] 即可。
+> 完整映射见上面的「Dart → Rust 方法映射」表。
 
 ## 架构
 
@@ -157,6 +186,7 @@ src/
 ├── platform.rs     标准版 / 概念版配置（显式值对象，非全局 env）
 ├── device.rs       设备身份（GUID / MID / DEV / MAC / WEBGL）+ 持久化
 ├── request.rs      请求层（参数注入 · 签名 · 发送 · 响应归一化）
+├── raw.rs          原始响应透传（按原服务器路由分发，供 KuGou.dart 无改动迁移）
 ├── models.rs       Music · Singer · Album · Playlist · KugouData
 ├── lyric.rs        LRC 清洗 · KRC 转 LRC
 ├── client.rs       KuGouClient 门面（与 KuGou.dart 的 KuGou 类对应）
@@ -171,6 +201,9 @@ src/
     ├── recommend.rs 每日推荐 · 推荐歌单
     └── user_vip.rs VIP 领取
 ```
+
+> `api/` 里每个接口都拆成了「构造请求」+「解析响应」两部分
+> （`build_xxx()` / `xxx_body()`），typed 版本与 `raw.rs` 的透传版本共用同一份请求构造。
 
 ## 关键实现要点
 

@@ -64,6 +64,7 @@ pub mod device;
 pub mod lyric;
 pub mod models;
 pub mod platform;
+pub mod raw;
 pub mod request;
 pub mod sign;
 

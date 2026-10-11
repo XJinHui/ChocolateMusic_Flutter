@@ -34,7 +34,7 @@ const TOKEN_LITE_IV: &str = "adc01946dba4fdf7";
 //  设备注册
 // ============================================================
 
-/// 获取 `dfid`（设备指纹 ID）
+/// 设备注册
 ///
 /// 对应 Dart 的 `getDfid()`。
 ///
@@ -45,8 +45,9 @@ const TOKEN_LITE_IV: &str = "adc01946dba4fdf7";
 /// 响应   = AES-128-CBC 解密 → { status, data: { dfid } }
 /// ```
 ///
-/// 成功后返回 `dfid`，调用方应持久化。
-pub async fn register_dev(t: &Transport) -> Result<String> {
+/// 返回**解密后的完整响应体**（未做状态判断），供 [`crate::raw`] 原样透传给 Dart。
+/// 需要 `dfid` 本身请用 [`register_dev`]。
+pub(crate) async fn register_dev_body(t: &Transport) -> Result<Value> {
     let guid = t.device.guid.clone();
 
     // 31 个设备字段
@@ -100,8 +101,15 @@ pub async fn register_dev(t: &Transport) -> Result<String> {
 
     // ③ 解密响应
     let plain = playlist_aes_decrypt(&base64_encode(&resp.raw), &aes.key);
-    let body: Value = serde_json::from_str(&plain)
-        .map_err(|e| Error::Invalid(format!("register_dev 响应解密失败: {e}")))?;
+    serde_json::from_str(&plain)
+        .map_err(|e| Error::Invalid(format!("register_dev 响应解密失败: {e}")))
+}
+
+/// 获取 `dfid`（设备指纹 ID）
+///
+/// 对应 Dart 的 `getDfid()`。成功后返回 `dfid`，调用方应持久化。
+pub async fn register_dev(t: &Transport) -> Result<String> {
+    let body = register_dev_body(t).await?;
 
     if body.get("status").and_then(|v| v.as_i64()) != Some(1) {
         return Err(Error::Invalid(format!("register_dev 失败: {body}")));
@@ -122,20 +130,22 @@ pub async fn register_dev(t: &Transport) -> Result<String> {
 /// 对应 Dart 的 `getVerificationCode(mobile, _)`。
 ///
 /// ⚠️ 原实现此接口的 cookie 只带 `mid`，因此 `dfid` 为 `-`。
-pub async fn captcha_sent(t: &Transport, mobile: &str) -> Result<()> {
+/// 构造「发送手机验证码」请求
+pub(crate) fn build_captcha_sent(mobile: &str) -> RequestOptions {
     let body = json!({
         "businessid": 5,
         "mobile": mobile,
         "plat": 3
     });
 
-    t.send(
-        RequestOptions::post("/v7/send_mobile_code")
-            .base_url("http://login.user.kugou.com")
-            .dfid("-")
-            .json_body(&body),
-    )
-    .await?;
+    RequestOptions::post("/v7/send_mobile_code")
+        .base_url("http://login.user.kugou.com")
+        .dfid("-")
+        .json_body(&body)
+}
+
+pub async fn captcha_sent(t: &Transport, mobile: &str) -> Result<()> {
+    t.send(build_captcha_sent(mobile)).await?;
     Ok(())
 }
 
@@ -150,24 +160,25 @@ pub async fn captcha_sent(t: &Transport, mobile: &str) -> Result<()> {
 /// 返回 `(key, qrcode_img)`：
 /// - `key` 传给 [`qr_check`]
 /// - `qrcode_img` 是 `data:image/png;base64,...`，可直接渲染
-pub async fn qr_key(t: &Transport) -> Result<(String, String)> {
+/// 构造「生成二维码 key」请求
+pub(crate) fn build_qr_key(t: &Transport) -> RequestOptions {
     let appid = t.platform.appid();
     let qrcode_txt = format!(
         "https://h5.kugou.com/apps/loginQRCode/html/index.html?appid={appid}&"
     );
 
-    let resp = t
-        .send(
-            RequestOptions::get("/v2/qrcode")
-                .base_url("https://login-user.kugou.com")
-                .encrypt_type(EncryptType::Web)
-                .param("appid", 1001)
-                .param("type", 1)
-                .param("plat", 4)
-                .param("qrcode_txt", qrcode_txt)
-                .param("srcappid", 2919),
-        )
-        .await?;
+    RequestOptions::get("/v2/qrcode")
+        .base_url("https://login-user.kugou.com")
+        .encrypt_type(EncryptType::Web)
+        .param("appid", 1001)
+        .param("type", 1)
+        .param("plat", 4)
+        .param("qrcode_txt", qrcode_txt)
+        .param("srcappid", 2919)
+}
+
+pub async fn qr_key(t: &Transport) -> Result<(String, String)> {
+    let resp = t.send(build_qr_key(t)).await?;
 
     let key = resp
         .str_at(&["data", "qrcode"])
@@ -207,19 +218,20 @@ impl QrStatus {
 /// 对应 Dart 的 `loginByQrCode` 循环体。
 ///
 /// ⚠️ 状态码**没有 3**，是上游定义的跳跃取值。
+/// 构造「检测扫码状态」请求
+pub(crate) fn build_qr_check(t: &Transport, key: &str) -> RequestOptions {
+    RequestOptions::get("/v2/get_userinfo_qrcode")
+        .base_url("https://login-user.kugou.com")
+        .encrypt_type(EncryptType::Web)
+        .param("plat", 4)
+        .param("appid", t.platform.appid())
+        .param("srcappid", 2919)
+        .param("qrcode", key)
+        .param("dev", t.device.dev.clone())
+}
+
 pub async fn qr_check(t: &Transport, key: &str) -> Result<QrStatus> {
-    let resp = t
-        .send(
-            RequestOptions::get("/v2/get_userinfo_qrcode")
-                .base_url("https://login-user.kugou.com")
-                .encrypt_type(EncryptType::Web)
-                .param("plat", 4)
-                .param("appid", t.platform.appid())
-                .param("srcappid", 2919)
-                .param("qrcode", key)
-                .param("dev", t.device.dev.clone()),
-        )
-        .await?;
+    let resp = t.send(build_qr_check(t, key)).await?;
 
     let code = resp.i64_at(&["data", "status"]).unwrap_or(-1);
     Ok(match code {
@@ -259,7 +271,13 @@ pub struct LoginResult {
 /// 对应 Dart 的 `loginByMobile(mobile, _, code)`。
 ///
 /// 服务端会用请求时的 AES 密钥加密 `data.secu_params`，这里自动解密并合并。
-pub async fn login_cellphone(t: &Transport, mobile: &str, code: &str) -> Result<LoginResult> {
+///
+/// 返回**合并后的完整响应体**，供 [`crate::raw`] 原样透传。
+pub(crate) async fn login_cellphone_body(
+    t: &Transport,
+    mobile: &str,
+    code: &str,
+) -> Result<Value> {
     let is_lite = t.platform == Platform::Lite;
     let date_time = now_millis();
 
@@ -320,7 +338,14 @@ pub async fn login_cellphone(t: &Transport, mobile: &str, code: &str) -> Result<
         )
         .await?;
 
-    parse_login_response(&resp, &encrypt.key)
+    Ok(merge_login_body(&resp, &encrypt.key))
+}
+
+/// 手机验证码登录（强类型）
+pub async fn login_cellphone(t: &Transport, mobile: &str, code: &str) -> Result<LoginResult> {
+    let body = login_cellphone_body(t, mobile, code).await?;
+    ensure_login_ok(&body)?;
+    Ok(login_result_from(&body))
 }
 
 // ============================================================
@@ -335,7 +360,9 @@ pub async fn login_cellphone(t: &Transport, mobile: &str, code: &str) -> Result<
 /// 1. `pk` **没有** `.to_uppercase()`
 /// 2. `params` 是**空对象**的 AES
 /// 3. `secu_params` 用 `encrypt_params.key` 解密（不是 `p3` 的密钥）
-pub async fn login_token(t: &Transport) -> Result<LoginResult> {
+///
+/// 返回**合并后的完整响应体**，供 [`crate::raw`] 原样透传。
+pub(crate) async fn login_token_body(t: &Transport) -> Result<Value> {
     let is_lite = t.platform == Platform::Lite;
     let date_now = now_millis();
 
@@ -398,19 +425,29 @@ pub async fn login_token(t: &Transport) -> Result<LoginResult> {
         )
         .await?;
 
-    parse_login_response(&resp, &encrypt_params.key)
+    Ok(merge_login_body(&resp, &encrypt_params.key))
+}
+
+/// 刷新登录令牌（强类型）
+pub async fn login_token(t: &Transport) -> Result<LoginResult> {
+    let body = login_token_body(t).await?;
+    ensure_login_ok(&body)?;
+    Ok(login_result_from(&body))
 }
 
 // ============================================================
 //  内部工具
 // ============================================================
 
-/// 解析登录响应：解密 `secu_params` 并合并
-fn parse_login_response(resp: &crate::ApiResponse, aes_key: &str) -> Result<LoginResult> {
-    let mut data = resp.data().clone();
-    if !data.is_object() {
-        return Err(Error::Invalid(format!("登录响应异常: {}", resp.body)));
-    }
+/// 解密 `secu_params` 并合并进 `data`，返回**合并后的完整响应体**
+///
+/// 与原服务器行为一致 —— 服务器也是把 `body.data` 整个换成合并后的对象再返回。
+/// `data` 不是对象时原样返回，由调用方判断（[`ensure_login_ok`]）。
+pub(crate) fn merge_login_body(resp: &crate::ApiResponse, aes_key: &str) -> Value {
+    let mut body = resp.body.clone();
+    let Some(mut data) = body.get("data").cloned().filter(Value::is_object) else {
+        return body;
+    };
 
     // 解密 secu_params
     if let Some(secu) = data.get("secu_params").and_then(|v| v.as_str()) {
@@ -435,10 +472,27 @@ fn parse_login_response(resp: &crate::ApiResponse, aes_key: &str) -> Result<Logi
         }
     }
 
+    body["data"] = data;
+    body
+}
+
+/// 校验登录响应里确实带 `data` 对象
+fn ensure_login_ok(body: &Value) -> Result<()> {
+    if body.get("data").map(Value::is_object).unwrap_or(false) {
+        Ok(())
+    } else {
+        Err(Error::Invalid(format!("登录响应异常: {body}")))
+    }
+}
+
+/// 从合并后的响应体提取登录结果
+pub(crate) fn login_result_from(body: &Value) -> LoginResult {
+    let data = body.get("data").cloned().unwrap_or(Value::Null);
+
     let s = |k: &str| data.get(k).and_then(|v| v.as_str()).map(str::to_string);
     let n = |k: &str| data.get(k).and_then(|v| v.as_i64());
 
-    Ok(LoginResult {
+    LoginResult {
         token: s("token").unwrap_or_default(),
         userid: s("userid").unwrap_or_default(),
         vip_type: n("vip_type").unwrap_or(0),
@@ -447,7 +501,7 @@ fn parse_login_response(resp: &crate::ApiResponse, aes_key: &str) -> Result<Logi
         nickname: s("nickname").unwrap_or_default(),
         pic: s("pic").unwrap_or_default(),
         t1: s("t1").unwrap_or_default(),
-    })
+    }
 }
 
 /// 手机号脱敏：`13800138000` → `13*****0`

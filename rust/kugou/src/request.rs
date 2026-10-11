@@ -523,6 +523,33 @@ impl Transport {
     pub async fn get_json(&self, opt: RequestOptions) -> Result<ApiResponse, crate::Error> {
         self.send(opt).await
     }
+
+    /// 发一次请求并返回**原始响应体**，不做业务状态判定
+    ///
+    /// 与原服务器一致：业务失败（`status: 0` / `error_code != 0`）也照常把响应体
+    /// 返回，由调用方自己判断。只有网络层错误才返回 `Err`。
+    ///
+    /// 供 [`crate::raw`] 透传用 —— `KuGou.dart` 里到处是
+    /// `response.data["status"] != 1` 这种判断，必须拿到原始体才做得了。
+    pub async fn send_raw(&self, opt: RequestOptions) -> Result<Value, crate::Error> {
+        match self.send(opt).await {
+            Ok(r) => Ok(r.body),
+            Err(e) => recover_body(e),
+        }
+    }
+}
+
+/// 从 [`crate::Error::Api`] 里取回响应体（原服务器会照常返回它）
+///
+/// 业务失败在 [`Transport::send`] 里被转成了 `Err`，但响应体原样保存在
+/// `Error::Api.body` 中，这里解回来。非业务错误（网络等）继续向上抛。
+pub fn recover_body(e: crate::Error) -> Result<Value, crate::Error> {
+    match e {
+        crate::Error::Api { body, .. } => Ok(serde_json::from_str(&body).unwrap_or_else(|_| {
+            serde_json::json!({ "status": 0, "error_code": -1, "error_msg": body })
+        })),
+        other => Err(other),
+    }
 }
 
 // ============================================================

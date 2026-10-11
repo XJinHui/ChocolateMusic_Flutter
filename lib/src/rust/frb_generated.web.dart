@@ -50,6 +50,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Map<String, String> dco_decode_Map_String_String_None(dynamic raw);
+
+  @protected
   KuGouClient
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     dynamic raw,
@@ -99,6 +102,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
   List<Singer> dco_decode_list_singer(dynamic raw);
@@ -173,6 +179,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Map<String, String> sse_decode_Map_String_String_None(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   KuGouClient
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     SseDeserializer deserializer,
@@ -222,6 +233,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  List<(String, String)> sse_decode_list_record_string_string(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<Singer> sse_decode_list_singer(SseDeserializer deserializer);
@@ -278,6 +294,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt sse_decode_usize(SseDeserializer deserializer);
+
+  @protected
+  JSAny cst_encode_Map_String_String_None(Map<String, String> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return cst_encode_list_record_string_string(
+      raw.entries.map((e) => (e.key, e.value)).toList(),
+    );
+  }
 
   @protected
   String cst_encode_String(String raw) {
@@ -403,6 +427,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   JSAny cst_encode_list_prim_u_8_strict(Uint8List raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return raw.jsify()!;
+  }
+
+  @protected
+  JSAny cst_encode_list_record_string_string(List<(String, String)> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw.map(cst_encode_record_string_string).toList().jsify()!;
   }
 
   @protected
@@ -610,6 +640,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_Map_String_String_None(
+    Map<String, String> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient self,
@@ -670,6 +706,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_prim_u_8_strict(
     Uint8List self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_record_string_string(
+    List<(String, String)> self,
     SseSerializer serializer,
   );
 
@@ -1071,6 +1113,18 @@ class RustLibWire implements BaseWire {
     max_attempts,
   );
 
+  void wire__crate__client__KuGouClient_raw_request(
+    NativePortType port_,
+    int that,
+    String path,
+    JSAny query,
+  ) => wasmModule.wire__crate__client__KuGouClient_raw_request(
+    port_,
+    that,
+    path,
+    query,
+  );
+
   void wire__crate__client__KuGouClient_refresh_token(
     NativePortType port_,
     int that,
@@ -1456,6 +1510,13 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
     String key,
     JSAny interval_secs,
     int max_attempts,
+  );
+
+  external void wire__crate__client__KuGouClient_raw_request(
+    NativePortType port_,
+    int that,
+    String path,
+    JSAny query,
   );
 
   external void wire__crate__client__KuGouClient_refresh_token(

@@ -17,17 +17,18 @@ use serde_json::{json, Value};
 /// `intro` / `offline_url` / `dycover`）。建议不超过 100。
 ///
 /// 返回 `(分组名, 歌手列表)`，客户端通常只取 `title == "热门"` 那组。
+/// 构造「歌手列表」请求
+pub(crate) fn build_artist_lists(hotsize: u32) -> RequestOptions {
+    RequestOptions::get("/ocean/v6/singer/list")
+        .param("musician", 0)
+        .param("sextype", 0)
+        .param("showtype", 2)
+        .param("type", 0)
+        .param("hotsize", if hotsize == 0 { 30 } else { hotsize })
+}
+
 pub async fn artist_lists(t: &Transport, hotsize: u32) -> Result<Vec<(String, Vec<Singer>)>> {
-    let resp = t
-        .send(
-            RequestOptions::get("/ocean/v6/singer/list")
-                .param("musician", 0)
-                .param("sextype", 0)
-                .param("showtype", 2)
-                .param("type", 0)
-                .param("hotsize", if hotsize == 0 { 30 } else { hotsize }),
-        )
-        .await?;
+    let resp = t.send(build_artist_lists(hotsize)).await?;
 
     let mut groups = Vec::new();
     for group in resp.arr_at(&["data", "info"]) {
@@ -76,12 +77,13 @@ pub async fn hot_singers(t: &Transport, hotsize: u32) -> Result<Vec<Singer>> {
 /// `sort` 传 `"hot"` 取最热（上游 `1`），否则取最新（上游 `2`）。
 ///
 /// ⚠️ `pagesize` 无上限校验，建议 ≤ 100。
-pub async fn artist_audios(
+/// 构造「歌手单曲」请求
+pub(crate) fn build_artist_audios(
     t: &Transport,
     singer_id: &str,
     pagesize: u32,
     sort: &str,
-) -> Result<Vec<String>> {
+) -> RequestOptions {
     let clienttime = now_secs();
     let key = sign_params_key(t.platform, &clienttime.to_string(), None, None);
 
@@ -98,14 +100,21 @@ pub async fn artist_audios(
         "area_code": "all"
     });
 
+    RequestOptions::post("/kmr/v1/audio_group/author")
+        .base_url("https://openapi.kugou.com")
+        .router("openapi.kugou.com")
+        .header("kg-tid", "220")
+        .json_body(&body)
+}
+
+pub async fn artist_audios(
+    t: &Transport,
+    singer_id: &str,
+    pagesize: u32,
+    sort: &str,
+) -> Result<Vec<String>> {
     let resp = t
-        .send(
-            RequestOptions::post("/kmr/v1/audio_group/author")
-                .base_url("https://openapi.kugou.com")
-                .router("openapi.kugou.com")
-                .header("kg-tid", "220")
-                .json_body(&body),
-        )
+        .send(build_artist_audios(t, singer_id, pagesize, sort))
         .await?;
 
     // data 直接是数组
@@ -126,12 +135,8 @@ pub async fn artist_audios(
 ///
 /// ⚠️ `sort` 的取值与 [`artist_audios`] **不同**：这里 `"hot"` → 上游 `3`，默认 → `1`。
 /// 这是上游 API 的不一致，不要「统一」。
-pub async fn artist_albums(
-    t: &Transport,
-    singer_id: &str,
-    pagesize: u32,
-    sort: &str,
-) -> Result<Vec<Album>> {
+/// 构造「歌手专辑」请求
+pub(crate) fn build_artist_albums(singer_id: &str, pagesize: u32, sort: &str) -> RequestOptions {
     let body = json!({
         "author_id": singer_id,
         "pagesize": if pagesize == 0 { 30 } else { pagesize },
@@ -141,13 +146,20 @@ pub async fn artist_albums(
         "area_code": "all"
     });
 
+    RequestOptions::post("/kmr/v1/author/albums")
+        .router("openapi.kugou.com")
+        .header("kg-tid", "36")
+        .json_body(&body)
+}
+
+pub async fn artist_albums(
+    t: &Transport,
+    singer_id: &str,
+    pagesize: u32,
+    sort: &str,
+) -> Result<Vec<Album>> {
     let resp = t
-        .send(
-            RequestOptions::post("/kmr/v1/author/albums")
-                .router("openapi.kugou.com")
-                .header("kg-tid", "36")
-                .json_body(&body),
-        )
+        .send(build_artist_albums(singer_id, pagesize, sort))
         .await?;
 
     Ok(resp
@@ -170,17 +182,18 @@ pub async fn artist_albums(
 /// 歌手详情
 ///
 /// 对应 Dart 的 `getSingerDetails(singerId)`。
-pub async fn artist_detail(t: &Transport, singer_id: &str) -> Result<Singer> {
+/// 构造「歌手详情」请求
+pub(crate) fn build_artist_detail(singer_id: &str) -> RequestOptions {
     let body = json!({ "author_id": singer_id });
 
-    let resp = t
-        .send(
-            RequestOptions::post("/kmr/v3/author")
-                .router("openapi.kugou.com")
-                .header("kg-tid", "36")
-                .json_body(&body),
-        )
-        .await?;
+    RequestOptions::post("/kmr/v3/author")
+        .router("openapi.kugou.com")
+        .header("kg-tid", "36")
+        .json_body(&body)
+}
+
+pub async fn artist_detail(t: &Transport, singer_id: &str) -> Result<Singer> {
+    let resp = t.send(build_artist_detail(singer_id)).await?;
 
     let d = resp.data();
     Ok(Singer {

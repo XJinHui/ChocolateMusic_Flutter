@@ -184,6 +184,37 @@ abstract class KuGouClient implements RustOpaqueInterface {
     required int maxAttempts,
   });
 
+  /// 按原服务器的路由发一次请求，返回**酷狗上游的原始响应体**（JSON 文本）
+  ///
+  /// `path` 是原服务器的路由（如 `/song/url`），`query` 是原样的查询参数。
+  /// 返回值与自建服务器返回的**完全一致**，因此 `KuGou.dart` 只需把
+  /// `KuGou.dio.get(...)` 换成 FFI 调用，解析代码一行都不用改。
+  ///
+  /// ```no_run
+  /// # async fn run() -> Result<(), kugou::Error> {
+  /// # let mut client = kugou::KuGouClient::new(kugou::Platform::Lite);
+  /// let mut q = std::collections::HashMap::new();
+  /// q.insert("hash".to_string(), "abc".to_string());
+  /// q.insert("quality".to_string(), "320".to_string());
+  /// let json = client.raw_request("/song/url".into(), q).await?;
+  /// # Ok(()) }
+  /// ```
+  ///
+  /// ## ⚠️ 凭据来源
+  ///
+  /// 与原服务器一致：**`query` 里的 `token` / `userid` / `dfid` 即权威凭据**，
+  /// 非空时会覆盖客户端内部持有的值。原服务器也是把 query 里的这三个值
+  /// 转成 Cookie 发给上游的。
+  ///
+  /// ## 副作用
+  ///
+  /// `/register/dev` 拿到的 `dfid`、登录接口拿到的 `token`/`userid`
+  /// 会自动写回客户端并持久化到身份文件。
+  Future<String> rawRequest({
+    required String path,
+    required Map<String, String> query,
+  });
+
   /// 刷新 token（对应 `refreshToken()`）
   Future<LoginResult> refreshToken();
 
