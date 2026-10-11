@@ -205,7 +205,117 @@ error[E0599]: no method named `into_into_dart` found for enum `Value`
 
 ---
 
----
+### 10. ⚠️ 概率性「连接被重置」—— 根因是 IPv6
+
+这是本项目**最费劲**的一个坑：症状完全随机，重跑就好，日志里没有任何线索。
+
+#### 症状
+
+```text
+DioException [unknown]: AnyhowException(网络错误: error sending request for url
+  (https://interface3.music.163.com/xeapi/ad/get))
+```
+
+`/ad/get`、二维码登录、手机验证码都会中招，**概率性**出现。
+
+#### 两个叠加的坑
+
+**① Rust 侧把真实错误吃掉了**（诊断盲区）
+
+`Transport::send_raw` 里，`recover_body` 返回 `None` 时统一换成
+`Error::Http("请求失败".into())` —— 把 reqwest 的原始错误整个丢了。
+所以 Dart 侧看到的永远只是「网络错误: 请求失败」，看不出是 DNS、TLS 还是被 RST。
+
+同时 `Error::Http(e.to_string())` 只取 reqwest 的**顶层**信息。reqwest 的
+`Display` 只有一句 `error sending request for url (...)`，真正的原因全在
+`source()` 链上。两处都要修：
+
+```rust
+// ① 上抛原错误，不要替换
+Err(e) => match recover_body(e.clone()) {
+    Some((body, status)) => Ok(ApiResponse { status, body, cookies: Vec::new() }),
+    None => Err(e),          // ← 曾经是 Err(Error::Http("请求失败".into()))
+},
+
+// ② 拼出整条 source 链（见 Error::http）
+.map_err(Error::http)?
+```
+
+修完后错误信息变成：
+
+```text
+网络错误: error sending request for url (https://interface3.music.163.com/xeapi/ad/get)
+  ← client error (SendRequest) ← connection error
+  ← 远程主机强迫关闭了一个现有的连接。 (os error 10054)
+```
+
+`10054` = `WSAECONNRESET`，**连接被对端 RST**。
+
+**② 根因：DNS 返回的 IPv6 排在前面，而本机 IPv6 出口是坏的**
+
+`*.music.163.com` 都发 AAAA 记录，且排在 A 前面：
+
+```text
+interface3.music.163.com
+  → 240e:938:a07:6:0:4:0:3      ← IPv6 在前
+    111.124.200.67
+```
+
+hyper-util 默认按 **DNS 返回的第一条**地址决定地址族偏好，于是走 IPv6。
+而手机热点这类网络的 IPv6 出口到该 CDN 是坏的：TCP 看着能连上，紧接着被 RST。
+
+#### 怎么定位的
+
+| 步骤 | 结果 |
+| --- | --- |
+| `cargo run --release --example probe`（交错对照，各 25 次全新连接） | 默认 18/25、**强制 IPv4 25/25** |
+| `curl -4` ×15 | 15/15 |
+| `curl -6` ×15 | 5/15 |
+| 三个域名（interface / interfacepc / interface3）分别测 | 都是约 50%，**不是某一个域名的问题** |
+| 先试过 `.http1_only()` | 没用（第一轮 20/20 是运气，样本大了就露馅） |
+| 对照部署的 Node 服务器（同路由） | 正常 —— 排除了「实现差异」 |
+
+#### 修法
+
+```rust
+// Transport::new —— 见 request.rs 的 http_client()
+b = b.local_address(std::net::IpAddr::V4(std::net::Ipv4Addr::UNSPECIFIED));
+```
+
+hyper-util 的 `SocketAddrs::split_by_preference`：
+
+```rust
+(Some(_), None) => (self.filter(SocketAddr::is_ipv4), SocketAddrs::new(vec![])),
+//                 ↑ IPv6 地址被**整个过滤掉**，连 fallback 都不留
+```
+
+所以这不是「IPv6 试失败了再回落」，而是**根本不去试**。
+
+`0.0.0.0` 不指定具体网卡，只是用它来声明「只连 IPv4」。
+
+#### 顺带加的：连接阶段重试
+
+`Transport::send_retry` 只在 `e.is_connect()` 时重试（最多 3 次）。
+**不重试** `is_request()` / `is_timeout()` —— 那两种情况下服务器可能已经处理了，
+而 `/ad/listening/rights/gain`、`/login/*` 都不是幂等的。宁可报错也不能多领一次。
+
+#### 酷狗那边
+
+实测**是好的**（`gateway.kugou.com` / `login-user.kugou.com` 各 IPv4 15/15、
+IPv6 15/15；完整链路的 `recommend` 15/15）。但仍然加了同样的 `local_address`
+作为防御 —— 两个 crate 跑在同一个 App、同一台设备、同一张网上，
+何况 `gateway.kugou.com` 的 CNAME 就叫 **`kgnopipv6.kugou.com`**。
+
+需要走 IPv6 时：`NETEASE_IPV4_ONLY=0` / `KUGOU_IPV4_ONLY=0`。
+
+#### 复现/验证工具
+
+`rust/netease/examples/probe.rs` —— 交错对照「默认 vs 强制 IPv4」，
+每个变体都新建客户端（保证是全新连接）：
+
+```bash
+cd rust/netease && cargo run --release --example probe
+```
 
 ---
 

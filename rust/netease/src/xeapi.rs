@@ -496,12 +496,12 @@ pub async fn fetch_public_key(
         .body(body)
         .send()
         .await
-        .map_err(|e| Error::Http(e.to_string()))?;
+        .map_err(Error::http)?;
 
     let raw = resp
         .bytes()
         .await
-        .map_err(|e| Error::Http(e.to_string()))?;
+        .map_err(Error::http)?;
     let v: Value = serde_json::from_slice(&raw)
         .map_err(|e| Error::Json(format!("公钥接口响应不是 JSON: {e}")))?;
 

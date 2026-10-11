@@ -177,18 +177,110 @@ pub struct Transport {
     xeapi_key: std::sync::Mutex<Option<crate::xeapi::PublicKeyState>>,
 }
 
+// ============================================================
+//  HTTP 客户端
+// ============================================================
+
+/// 构建全局 HTTP 客户端
+///
+/// ## ⚠️ 默认**只连 IPv4**
+///
+/// 网易云的 CDN（`interface.music.163.com` / `interfacepc.…` / `interface3.…`）
+/// 都发 AAAA 记录，而很多网络的 IPv6 出口到它们是**坏的**：TCP 看着能连上，
+/// 紧接着被对端 RST。表现就是**概率性**失败：
+///
+/// ```text
+/// 网络错误: error sending request for url (https://interface3.music.163.com/xeapi/ad/get)
+///   ← client error (SendRequest) ← connection error
+///   ← 远程主机强迫关闭了一个现有的连接。 (os error 10054)
+/// ```
+///
+/// 实测（手机热点环境，`interface3.music.163.com`，**交错对照**各 25 次全新连接）：
+///
+/// | 地址族偏好 | 成功 |
+/// | --- | :-: |
+/// | 默认（hyper 按 DNS 返回的**第一条**选，本机是 IPv6） | 18/25 |
+/// | 强制 IPv4 | **25/25** |
+///
+/// `curl -4` 15/15、`curl -6` 5/15，同样印证。
+///
+/// ### 为什么是 `local_address` 而不是别的
+///
+/// hyper-util 的 `SocketAddrs::split_by_preference` 里：
+///
+/// ```ignore
+/// (Some(_), None) => (self.filter(SocketAddr::is_ipv4), SocketAddrs::new(vec![])),
+/// //                 ↑ IPv6 地址被**整个过滤掉**，连 fallback 都不留
+/// ```
+///
+/// 也就是说 `local_address` 设成 IPv4 时，连接器**根本不会去尝试 IPv6**，
+/// 而不是「IPv6 试失败了再回落」。这正是我们要的。
+///
+/// 需要走 IPv6 时设环境变量 `NETEASE_IPV4_ONLY=0`。
+pub fn http_client() -> reqwest::Client {
+    let mut b = reqwest::Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(10))
+        .timeout(std::time::Duration::from_secs(30));
+
+    if ipv4_only() {
+        // `0.0.0.0` = 不指定具体网卡，只是用它来声明「只连 IPv4」
+        b = b.local_address(std::net::IpAddr::V4(std::net::Ipv4Addr::UNSPECIFIED));
+    }
+
+    b.build().expect("构建 HTTP 客户端失败")
+}
+
+/// 是否强制 IPv4（默认是；`NETEASE_IPV4_ONLY=0` / `=false` 关闭）
+fn ipv4_only() -> bool {
+    !matches!(
+        std::env::var("NETEASE_IPV4_ONLY").as_deref(),
+        Ok("0") | Ok("false") | Ok("no")
+    )
+}
+
 impl Transport {
     pub fn new(device: DeviceIdentity) -> Self {
-        let http = reqwest::Client::builder()
-            .connect_timeout(std::time::Duration::from_secs(10))
-            .timeout(std::time::Duration::from_secs(30))
-            .build()
-            .expect("构建 HTTP 客户端失败");
-
         Self {
-            http,
+            http: http_client(),
             device,
             xeapi_key: std::sync::Mutex::new(None),
+        }
+    }
+
+    /// 发一次请求，**连接阶段**失败时重试
+    ///
+    /// ## 为什么只重试连接阶段的失败
+    ///
+    /// `is_connect()` 为真 = TCP / TLS 都没建起来，请求**一个字节都没发出去**，
+    /// 重试绝不会造成重复执行。这一点对本项目是硬要求 ——
+    /// `/ad/listening/rights/gain`、`/login/*` 这些 POST 都不是幂等的。
+    ///
+    /// 反过来 **不重试**这两类：
+    ///
+    /// - `is_request()`（请求发到一半被 RST）—— 服务器可能已经收到了
+    /// - `is_timeout()`（读超时）—— 服务器很可能已经处理完了，只是响应丢了
+    ///
+    /// 拿不准就不重试：宁可报错让用户重来，也不能凭空多领一次时长 / 多登一次。
+    ///
+    /// `build` 是个闭包 —— 重试要能重新构造一次 `RequestBuilder`。
+    pub async fn send_retry(
+        &self,
+        build: impl Fn() -> reqwest::RequestBuilder,
+    ) -> Result<reqwest::Response> {
+        /// 总尝试次数（首次 + 2 次重试）
+        const MAX: usize = 3;
+
+        let mut attempt = 1usize;
+        loop {
+            match build().send().await {
+                Ok(r) => return Ok(r),
+                Err(e) if e.is_connect() && attempt < MAX => {
+                    // 递增退避：200ms / 400ms
+                    tokio::time::sleep(std::time::Duration::from_millis(200 * attempt as u64)).await;
+                    attempt += 1;
+                }
+                Err(e) => return Err(Error::http(e)),
+            }
         }
     }
 
@@ -280,33 +372,49 @@ impl Transport {
 
         let url = format!("{XEAPI_DOMAIN}/xeapi/{}", strip_api(uri));
 
-        let mut req = self
-            .http
-            .post(&url)
-            .header("User-Agent", crate::xeapi::XEAPI_UA)
-            .header("X-Client-Enc-State", "ENCRYPTED")
-            .header("x-aeapi", "true")
-            .header("content-type", "application/x-www-form-urlencoded;charset=utf-8")
-            .header("x-deviceid", &device_id)
-            .header("x-os", os)
-            .header("x-osver", &osver)
-            .header("x-appver", &appver)
-            .header("x-sdeviceid", &sdevice_id)
-            .header("x-buildver", &buildver)
-            .header("Cookie", cookie_to_string(&xeapi_cookie))
-            .body(body.to_form());
-
-        if let Some(u) = cookie.get("MUSIC_U").filter(|s| !s.is_empty()) {
-            req = req.header("x-music-u", u);
-        }
-        if check_token {
-            let token = crate::anticheat::token_v3(&self.http).await;
-            if !token.is_empty() {
-                req = req.header("X-antiCheatToken", token);
+        // 这两个头在**每次重试里都一样**，先算好 —— 放进闭包会重复请求反作弊服务
+        let music_u = cookie.get("MUSIC_U").filter(|s| !s.is_empty()).cloned();
+        let anti_cheat = if check_token {
+            let t = crate::anticheat::token_v3(&self.http).await;
+            if t.is_empty() {
+                None
+            } else {
+                Some(t)
             }
-        }
+        } else {
+            None
+        };
 
-        let resp = req.send().await.map_err(|e| Error::Http(e.to_string()))?;
+        let form = body.to_form();
+        let cookie_header = cookie_to_string(&xeapi_cookie);
+
+        let resp = self
+            .send_retry(|| {
+                let mut req = self
+                    .http
+                    .post(&url)
+                    .header("User-Agent", crate::xeapi::XEAPI_UA)
+                    .header("X-Client-Enc-State", "ENCRYPTED")
+                    .header("x-aeapi", "true")
+                    .header("content-type", "application/x-www-form-urlencoded;charset=utf-8")
+                    .header("x-deviceid", &device_id)
+                    .header("x-os", os)
+                    .header("x-osver", &osver)
+                    .header("x-appver", &appver)
+                    .header("x-sdeviceid", &sdevice_id)
+                    .header("x-buildver", &buildver)
+                    .header("Cookie", &cookie_header)
+                    .body(form.clone());
+
+                if let Some(u) = music_u.as_deref() {
+                    req = req.header("x-music-u", u);
+                }
+                if let Some(t) = anti_cheat.as_deref() {
+                    req = req.header("X-antiCheatToken", t);
+                }
+                req
+            })
+            .await?;
 
         let cookies: Vec<String> = resp
             .headers()
@@ -316,7 +424,7 @@ impl Transport {
             .map(clean_set_cookie)
             .collect();
 
-        let raw = resp.bytes().await.map_err(|e| Error::Http(e.to_string()))?;
+        let raw = resp.bytes().await.map_err(Error::http)?;
 
         // ---- 响应是加密的，用 eapiKey 解 ----
         let body = crate::xeapi::res_decrypt(&raw)?;
@@ -403,19 +511,21 @@ impl Transport {
         };
 
         // ④ 发送
-        let mut req = self
-            .http
-            .post(&url)
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .body(body);
-        for (k, v) in &headers {
-            req = req.header(k, v);
-        }
-
-        let resp = req
-            .send()
-            .await
-            .map_err(|e| Error::Http(e.to_string()))?;
+        //
+        // ⚠️ 包成闭包，好让 `send_retry` 能重新构造一次请求
+        let resp = self
+            .send_retry(|| {
+                let mut req = self
+                    .http
+                    .post(&url)
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .body(body.clone());
+                for (k, v) in &headers {
+                    req = req.header(k, v);
+                }
+                req
+            })
+            .await?;
 
         // ⑤ Set-Cookie（剥掉属性，只留 k=v）
         let cookies: Vec<String> = resp
@@ -429,7 +539,7 @@ impl Transport {
         let raw = resp
             .bytes()
             .await
-            .map_err(|e| Error::Http(e.to_string()))?;
+            .map_err(Error::http)?;
 
         let body: Value = serde_json::from_slice(&raw).map_err(|e| {
             Error::Json(format!(
@@ -468,13 +578,21 @@ impl Transport {
     pub async fn send_raw(&self, opt: RequestOptions) -> Result<ApiResponse> {
         match self.send(opt).await {
             Ok(r) => Ok(r),
-            Err(e) => match recover_body(e) {
+            // 业务失败：响应体原样在 `Error::Api.body` 里，解回来当作正常返回
+            Err(e) => match recover_body(e.clone()) {
                 Some((body, status)) => Ok(ApiResponse {
                     status,
                     body,
                     cookies: Vec::new(),
                 }),
-                None => Err(Error::Http("请求失败".into())),
+                // ⚠️ 网络 / 解析 / 加密错误必须**原样上抛**。
+                //
+                //    这里曾经是 `Err(Error::Http("请求失败".into()))` —— 把真正的
+                //    原因整个吃掉了。二维码登录、手机验证码、广告三条链路在 Dart
+                //    侧看到的都只是「网络错误: 请求失败」，完全无法定位。
+                //    （`recover_body` 的文档也写着「非业务错误返回 None」，
+                //     说明本意就是要上抛，那个替换是笔误。）
+                None => Err(e),
             },
         }
     }

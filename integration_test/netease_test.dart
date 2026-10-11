@@ -131,5 +131,41 @@ void main() {
         throwsA(isA<Exception>()),
       );
     }, timeout: const Timeout(Duration(minutes: 2)));
+
+    // ------------------------------------------------------------------
+    //  回归：概率性「连接被重置」
+    //
+    //  修复前的症状（用户报的就是这个）：
+    //
+    //    DioException [unknown]:
+    //      AnyhowException(网络错误: error sending request for url
+    //        (https://interface3.music.163.com/xeapi/ad/get))
+    //
+    //  两个叠加的坑：
+    //
+    //  ① Rust 侧把真实错误吃掉了 —— `send_raw` 里 `recover_body` 返回 None 时
+    //     统一换成 `Error::Http("请求失败")`，reqwest 的 source 链整个丢失。
+    //     二维码登录 / 验证码看到的就是这句毫无信息量的「请求失败」。
+    //
+    //  ② 根因是 **IPv6**。`*.music.163.com` 都发 AAAA 记录且排在 A 前面，
+    //     而本机（手机热点）的 IPv6 出口到该 CDN 是坏的：TCP 看着连上，
+    //     紧接着被 RST（`os error 10054`）。
+    //
+    //     交错对照实测，各 25 次全新连接：
+    //       默认（IPv6 优先） 18/25   ← 失败全在这边
+    //       强制 IPv4         25/25
+    //
+    //     修复：`Transport` 的 reqwest 客户端固定 `local_address = 0.0.0.0`，
+    //     hyper-util 会把 IPv6 地址整个过滤掉。
+    //
+    //  这里只断言「不抛异常」—— 广告有没有、`code` 是多少随账号和时段变，
+    //  不是这条用例要管的事。
+    // ------------------------------------------------------------------
+    test('连续请求不再出现概率性连接重置', () async {
+      for (var i = 0; i < 6; i++) {
+        final r = await Neteasecloud.dio.get('/ad/get');
+        expect(r.statusCode, 200, reason: '第 ${i + 1} 次');
+      }
+    }, timeout: const Timeout(Duration(minutes: 3)));
   });
 }

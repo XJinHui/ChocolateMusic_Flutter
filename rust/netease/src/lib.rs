@@ -163,6 +163,37 @@ pub enum Error {
 }
 
 impl Error {
+    /// 把 [`reqwest::Error`] 连**整条 source 链**一起转成 [`Error::Http`]
+    ///
+    /// ⚠️ 不要写成 `Error::Http(e.to_string())`。
+    ///
+    /// reqwest 的顶层 `Display` 只有一句
+    /// `error sending request for url (https://...)` —— 它**只说明哪次请求挂了**，
+    /// 真正的原因（DNS 解析失败 / TLS 握手失败 / 对端把连接关了 / 读超时）
+    /// 全挂在 `source()` 链上。只取顶层的话，排查时等于什么都没说。
+    ///
+    /// 这里把整条链拼起来，形如：
+    ///
+    /// ```text
+    /// 网络错误: error sending request for url (https://interface3.music.163.com/xeapi/ad/get)
+    ///           ← client error (Connect) ← dns error ← failed to lookup address information
+    /// ```
+    pub fn http(e: reqwest::Error) -> Self {
+        let mut parts = vec![e.to_string()];
+
+        let mut src = std::error::Error::source(&e);
+        while let Some(s) = src {
+            let msg = s.to_string();
+            // hyper/reqwest 会逐层重复同一句话，去个重
+            if !parts.iter().any(|p| p == &msg) {
+                parts.push(msg);
+            }
+            src = s.source();
+        }
+
+        Error::Http(parts.join(" ← "))
+    }
+
     /// 上游给的可读消息（若有）
     pub fn api_message(&self) -> Option<&str> {
         match self {

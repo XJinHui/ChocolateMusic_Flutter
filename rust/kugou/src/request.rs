@@ -278,6 +278,66 @@ impl ApiResponse {
 //  传输层
 // ============================================================
 
+/// 构建 HTTP 客户端
+///
+/// ## 默认**只连 IPv4**
+///
+/// 与 `NetEaseCloud` crate 同一处理，理由如下。
+///
+/// 国内这些 CDN 都会发 AAAA 记录，而不少网络（手机热点、部分移动网络）的
+/// IPv6 出口到它们是**坏的**：TCP 看着能连上，紧接着被对端 RST
+/// （Windows 报 `os error 10054`）。表现是**概率性**失败：
+///
+/// ```text
+/// error sending request for url (...) ← connection error
+///   ← 远程主机强迫关闭了一个现有的连接。 (os error 10054)
+/// ```
+///
+/// hyper-util 默认按 DNS 返回的**第一条**地址决定地址族偏好，而这些域名
+/// 往往把 IPv6 排在前面。
+///
+/// ### ⚠️ 酷狗这边**实测是好的**，这行是**防御性**的
+///
+/// 交错对照实测（本机，手机热点）：
+///
+/// | 域名 | IPv4 | IPv6 |
+/// | --- | :-: | :-: |
+/// | `gateway.kugou.com` | 15/15 | 15/15 |
+/// | `login-user.kugou.com` | 15/15 | 15/15 |
+/// | 走完整链路的 `recommend` ×15 | — | 15/15 |
+///
+/// 也就是说**当前网络下酷狗走 IPv6 没问题**，这个坑是网易云那边实测出来的
+/// （同环境 `interface3.music.163.com` 默认 18/25、强制 IPv4 25/25）。
+///
+/// 之所以还是加上：两个 crate 跑在同一个 App、同一台设备、同一张网上，
+/// 这个失败模式排查起来极其费劲（错误信息只有一句「连接被重置」）。
+/// 何况 `gateway.kugou.com` 的 CNAME 就叫 **`kgnopipv6.kugou.com`** ——
+/// 酷狗自己运维也不打算让流量走 IPv6。而 IPv4 实测 15/15，没有代价。
+///
+/// 需要走 IPv6 时设环境变量 `KUGOU_IPV4_ONLY=0`。
+pub fn http_client() -> reqwest::Client {
+    let mut b = reqwest::Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(10))
+        .timeout(std::time::Duration::from_secs(30));
+
+    if ipv4_only() {
+        // `0.0.0.0` = 不指定具体网卡，只是用它来声明「只连 IPv4」。
+        // hyper-util 的 `split_by_preference` 在 local_address 是 IPv4 时会把
+        // IPv6 地址**整个过滤掉**，不是「试失败了再回落」。
+        b = b.local_address(std::net::IpAddr::V4(std::net::Ipv4Addr::UNSPECIFIED));
+    }
+
+    b.build().expect("构建 HTTP 客户端失败")
+}
+
+/// 是否强制 IPv4（默认是；`KUGOU_IPV4_ONLY=0` / `=false` 关闭）
+fn ipv4_only() -> bool {
+    !matches!(
+        std::env::var("KUGOU_IPV4_ONLY").as_deref(),
+        Ok("0") | Ok("false") | Ok("no")
+    )
+}
+
 /// 持有 reqwest 客户端与设备/账号状态，供 API 模块调用
 pub struct Transport {
     pub http: reqwest::Client,
@@ -288,13 +348,8 @@ pub struct Transport {
 
 impl Transport {
     pub fn new(platform: Platform, device: DeviceIdentity, account: Account) -> Self {
-        let http = reqwest::Client::builder()
-            .connect_timeout(std::time::Duration::from_secs(10))
-            .timeout(std::time::Duration::from_secs(30))
-            .build()
-            .expect("构建 HTTP 客户端失败");
         Self {
-            http,
+            http: http_client(),
             platform,
             device,
             account,
