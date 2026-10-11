@@ -1,0 +1,28 @@
+[package]
+name = "bridge"
+version = "0.1.0"
+edition = "2021"
+description = "flutter_rust_bridge 的桥接 crate：把各 API crate 汇成一个动态库"
+
+[dependencies]
+# ⚠️ 这里只做汇总，不写业务逻辑。
+#    新增 API crate 时：加进下面的依赖 + flutter_rust_bridge.yaml 的 rust_input。
+kugou = { path = "../kugou" }
+netease = { path = "../netease" }
+
+# FFI：版本必须与 flutter_rust_bridge_codegen 完全一致
+flutter_rust_bridge = { version = "=2.13.0", features = ["serde_json"] }
+
+# ⚠️ 生成的 frb_generated.rs 会用到被扫 crate 的类型（如 netease 的
+#    `ServerResponse.body: serde_json::Value`），所以这些依赖必须在这里也有。
+serde_json = { version = "1", features = ["preserve_order"] }
+
+[lib]
+name = "bridge"
+# cdylib/staticlib 供 Flutter 各平台链接
+crate-type = ["cdylib", "staticlib", "rlib"]
+path = "src/lib.rs"
+
+# 继承 workspace 根的 lint 配置（见 ../Cargo.toml）
+[lints]
+workspace = true

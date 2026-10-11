@@ -3,16 +3,14 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
+import '../../frb_generated.dart';
 import 'api/login.dart';
 import 'device.dart';
-import 'frb_generated.dart';
-import 'lib.dart';
 import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'platform.dart';
 import 'request.dart';
 
-// These functions are ignored because they are not marked as `pub`: `load_session`, `resolve_numeric_id`, `with_parts`
 // These functions are ignored because they have generic arguments: `shuffle`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`
 // These functions have error during generation (see debug logs or enable `stop_on_error: true` for more details): `with_identity_file`
@@ -28,6 +26,9 @@ abstract class KuGouClient implements RustOpaqueInterface {
   });
 
   /// 应用一次登录结果
+  ///
+  /// ⚠️ 只在字段**非空**时覆盖 —— 登录失败的响应体里 `data` 可能是个空对象，
+  /// 无条件覆盖会把已有的 token 清掉。
   Future<void> applyLogin({required LoginResult r});
 
   /// 缓存的歌单列表（由 [`Self::get_playlists`] 填充）
@@ -162,7 +163,7 @@ abstract class KuGouClient implements RustOpaqueInterface {
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
   /// 创建客户端（不读写磁盘）
   static Future<KuGouClient> newInstance({required Platform platform}) =>
-      RustLib.instance.api.crateClientKuGouClientNew(platform: platform);
+      RustLib.instance.api.kugouClientKuGouClientNew(platform: platform);
 
   Future<Platform> platform();
 
@@ -268,7 +269,7 @@ class Session {
   });
 
   static Future<Session> default_() =>
-      RustLib.instance.api.crateClientSessionDefault();
+      RustLib.instance.api.kugouClientSessionDefault();
 
   @override
   int get hashCode => device.hashCode ^ account.hashCode ^ platform.hashCode;

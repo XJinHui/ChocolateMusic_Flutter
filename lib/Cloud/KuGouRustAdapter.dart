@@ -3,8 +3,8 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:chocolate_music/src/rust/client.dart';
-import 'package:chocolate_music/src/rust/frb_api.dart';
+import 'package:chocolate_music/src/rust/third_party/kugou/client.dart';
+import 'package:chocolate_music/src/rust/third_party/kugou/frb_api.dart';
 
 /// 把 dio 的请求转给本地 Rust 实现的适配器。
 ///

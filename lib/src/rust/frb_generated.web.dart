@@ -6,18 +6,21 @@
 // Static analysis wrongly picks the IO variant, thus ignore this
 // ignore_for_file: argument_type_not_assignable
 
-import 'api/login.dart';
-import 'client.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'device.dart';
 import 'frb_api.dart';
 import 'frb_generated.dart';
-import 'lib.dart';
-import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
-import 'platform.dart';
-import 'request.dart';
+import 'third_party/kugou/api/login.dart';
+import 'third_party/kugou/client.dart';
+import 'third_party/kugou/device.dart';
+import 'third_party/kugou/frb_api.dart';
+import 'third_party/kugou/models.dart';
+import 'third_party/kugou/platform.dart';
+import 'third_party/kugou/request.dart';
+import 'third_party/netease/api.dart';
+import 'third_party/netease/client.dart';
+import 'third_party/netease/frb_api.dart';
 
 abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   RustLibApiImplPlatform({
@@ -31,9 +34,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   get rust_arc_decrement_strong_count_KuGouClientPtr => wire
       .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient;
 
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_NetEaseClientPtr => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient;
+
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_QrStatusPtr => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus;
+
+  @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw);
+
   @protected
   KuGouClient
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+    dynamic raw,
+  );
+
+  @protected
+  NetEaseClient
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  );
+
+  @protected
+  QrStatus
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
     dynamic raw,
   );
 
@@ -44,8 +70,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  NetEaseClient
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  );
+
+  @protected
   KuGouClient
   dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+    dynamic raw,
+  );
+
+  @protected
+  NetEaseClient
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
     dynamic raw,
   );
 
@@ -57,6 +95,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     dynamic raw,
   );
+
+  @protected
+  NetEaseClient
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  );
+
+  @protected
+  QrStatus
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    dynamic raw,
+  );
+
+  @protected
+  Object? dco_decode_SerdeJsonValue(dynamic raw);
 
   @protected
   String dco_decode_String(dynamic raw);
@@ -71,16 +124,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
-  PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
-
-  @protected
   LoginResult dco_decode_box_autoadd_login_result(dynamic raw);
 
   @protected
   DeviceIdentity dco_decode_device_identity(dynamic raw);
-
-  @protected
-  Error dco_decode_error(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -119,16 +166,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
-  PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
-
-  @protected
   Platform dco_decode_platform(dynamic raw);
 
   @protected
   Playlist dco_decode_playlist(dynamic raw);
-
-  @protected
-  QrStatus dco_decode_qr_status(dynamic raw);
 
   @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
@@ -137,13 +178,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SearchResult dco_decode_search_result(dynamic raw);
 
   @protected
+  ServerResponse dco_decode_server_response(dynamic raw);
+
+  @protected
   Session dco_decode_session(dynamic raw);
 
   @protected
   Singer dco_decode_singer(dynamic raw);
-
-  @protected
-  int dco_decode_u_16(dynamic raw);
 
   @protected
   int dco_decode_u_32(dynamic raw);
@@ -161,8 +202,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt dco_decode_usize(dynamic raw);
 
   @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+
+  @protected
   KuGouClient
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  NetEaseClient
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  QrStatus
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
     SseDeserializer deserializer,
   );
 
@@ -173,8 +229,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  NetEaseClient
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   KuGouClient
   sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  NetEaseClient
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
     SseDeserializer deserializer,
   );
 
@@ -190,6 +258,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  NetEaseClient
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  QrStatus
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  Object? sse_decode_SerdeJsonValue(SseDeserializer deserializer);
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
@@ -202,16 +285,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
-  PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
-
-  @protected
   LoginResult sse_decode_box_autoadd_login_result(SseDeserializer deserializer);
 
   @protected
   DeviceIdentity sse_decode_device_identity(SseDeserializer deserializer);
-
-  @protected
-  Error sse_decode_error(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -252,16 +329,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
-  PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
-
-  @protected
   Platform sse_decode_platform(SseDeserializer deserializer);
 
   @protected
   Playlist sse_decode_playlist(SseDeserializer deserializer);
-
-  @protected
-  QrStatus sse_decode_qr_status(SseDeserializer deserializer);
 
   @protected
   (String, String) sse_decode_record_string_string(
@@ -272,13 +343,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SearchResult sse_decode_search_result(SseDeserializer deserializer);
 
   @protected
+  ServerResponse sse_decode_server_response(SseDeserializer deserializer);
+
+  @protected
   Session sse_decode_session(SseDeserializer deserializer);
 
   @protected
   Singer sse_decode_singer(SseDeserializer deserializer);
-
-  @protected
-  int sse_decode_u_16(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -296,11 +367,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt sse_decode_usize(SseDeserializer deserializer);
 
   @protected
+  String cst_encode_AnyhowException(AnyhowException raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
   JSAny cst_encode_Map_String_String_None(Map<String, String> raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return cst_encode_list_record_string_string(
       raw.entries.map((e) => (e.key, e.value)).toList(),
     );
+  }
+
+  @protected
+  String cst_encode_SerdeJsonValue(Object? raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return cst_encode_String(jsonEncode(raw));
   }
 
   @protected
@@ -335,12 +418,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  JSAny cst_encode_box_autoadd_i_64(PlatformInt64 raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    return cst_encode_i_64(raw);
-  }
-
-  @protected
   JSAny cst_encode_box_autoadd_login_result(LoginResult raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return cst_encode_login_result(raw);
@@ -357,40 +434,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       cst_encode_String(raw.webgl),
       cst_encode_opt_String(raw.dfid),
     ].jsify()!;
-  }
-
-  @protected
-  JSAny cst_encode_error(Error raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    if (raw is Error_Api) {
-      return [
-        0,
-        cst_encode_String(raw.message),
-        cst_encode_opt_box_autoadd_i_64(raw.code),
-        cst_encode_u_16(raw.status),
-        cst_encode_String(raw.body),
-      ].jsify()!;
-    }
-    if (raw is Error_Http) {
-      return [1, cst_encode_String(raw.field0)].jsify()!;
-    }
-    if (raw is Error_Json) {
-      return [2, cst_encode_String(raw.field0)].jsify()!;
-    }
-    if (raw is Error_Crypto) {
-      return [3, cst_encode_String(raw.field0)].jsify()!;
-    }
-    if (raw is Error_Io) {
-      return [4, cst_encode_String(raw.field0)].jsify()!;
-    }
-    if (raw is Error_Invalid) {
-      return [5, cst_encode_String(raw.field0)].jsify()!;
-    }
-    if (raw is Error_NotLoggedIn) {
-      return [6].jsify()!;
-    }
-
-    throw Exception('unreachable');
   }
 
   @protected
@@ -478,12 +521,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  JSAny? cst_encode_opt_box_autoadd_i_64(PlatformInt64? raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    return raw == null ? null : cst_encode_box_autoadd_i_64(raw);
-  }
-
-  @protected
   JSAny cst_encode_playlist(Playlist raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return [
@@ -493,34 +530,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       cst_encode_String(raw.cover),
       cst_encode_String(raw.numericId),
     ].jsify()!;
-  }
-
-  @protected
-  JSAny cst_encode_qr_status(QrStatus raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    if (raw is QrStatus_Expired) {
-      return [0].jsify()!;
-    }
-    if (raw is QrStatus_Waiting) {
-      return [1].jsify()!;
-    }
-    if (raw is QrStatus_Scanned) {
-      return [2].jsify()!;
-    }
-    if (raw is QrStatus_Success) {
-      return [
-        3,
-        cst_encode_String(raw.token),
-        cst_encode_String(raw.userid),
-        cst_encode_String(raw.nickname),
-        cst_encode_String(raw.pic),
-      ].jsify()!;
-    }
-    if (raw is QrStatus_Unknown) {
-      return [4, cst_encode_i_64(raw.field0)].jsify()!;
-    }
-
-    throw Exception('unreachable');
   }
 
   @protected
@@ -536,6 +545,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       cst_encode_list_music(raw.music),
       cst_encode_list_singer(raw.singer),
       cst_encode_list_album(raw.album),
+    ].jsify()!;
+  }
+
+  @protected
+  JSAny cst_encode_server_response(ServerResponse raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return [
+      cst_encode_SerdeJsonValue(raw.body),
+      cst_encode_list_String(raw.cookies),
     ].jsify()!;
   }
 
@@ -581,8 +599,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int
+  cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  );
+
+  @protected
+  int
+  cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus raw,
+  );
+
+  @protected
+  int
   cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient raw,
+  );
+
+  @protected
+  int
+  cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
   );
 
   @protected
@@ -593,8 +629,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int
+  cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  );
+
+  @protected
+  int
   cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient raw,
+  );
+
+  @protected
+  int
+  cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  );
+
+  @protected
+  int
+  cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus raw,
   );
 
   @protected
@@ -607,9 +661,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int cst_encode_platform(Platform raw);
 
   @protected
-  int cst_encode_u_16(int raw);
-
-  @protected
   int cst_encode_u_32(int raw);
 
   @protected
@@ -619,9 +670,29 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void cst_encode_unit(void raw);
 
   @protected
+  void sse_encode_AnyhowException(
+    AnyhowException self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus self,
     SseSerializer serializer,
   );
 
@@ -634,8 +705,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
     SseSerializer serializer,
   );
 
@@ -653,6 +738,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_SerdeJsonValue(Object? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
@@ -665,12 +767,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
-  void sse_encode_box_autoadd_i_64(
-    PlatformInt64 self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_box_autoadd_login_result(
     LoginResult self,
     SseSerializer serializer,
@@ -681,9 +777,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     DeviceIdentity self,
     SseSerializer serializer,
   );
-
-  @protected
-  void sse_encode_error(Error self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -728,19 +821,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
-  void sse_encode_opt_box_autoadd_i_64(
-    PlatformInt64? self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_platform(Platform self, SseSerializer serializer);
 
   @protected
   void sse_encode_playlist(Playlist self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_qr_status(QrStatus self, SseSerializer serializer);
 
   @protected
   void sse_encode_record_string_string(
@@ -752,13 +836,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_search_result(SearchResult self, SseSerializer serializer);
 
   @protected
+  void sse_encode_server_response(
+    ServerResponse self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_session(Session self, SseSerializer serializer);
 
   @protected
   void sse_encode_singer(Singer self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_u_16(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);
@@ -781,331 +868,331 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 class RustLibWire implements BaseWire {
   RustLibWire.fromExternalLibrary(ExternalLibrary lib);
 
-  void wire__crate__client__KuGouClient_add_music_to_playlist(
+  void wire__kugou__client__KuGouClient_add_music_to_playlist(
     NativePortType port_,
     int that,
     String list_id,
     String hash,
-  ) => wasmModule.wire__crate__client__KuGouClient_add_music_to_playlist(
+  ) => wasmModule.wire__kugou__client__KuGouClient_add_music_to_playlist(
     port_,
     that,
     list_id,
     hash,
   );
 
-  void wire__crate__client__KuGouClient_apply_login(
+  void wire__kugou__client__KuGouClient_apply_login(
     NativePortType port_,
     int that,
     JSAny r,
-  ) => wasmModule.wire__crate__client__KuGouClient_apply_login(port_, that, r);
+  ) => wasmModule.wire__kugou__client__KuGouClient_apply_login(port_, that, r);
 
-  void wire__crate__client__KuGouClient_cached_playlists(
+  void wire__kugou__client__KuGouClient_cached_playlists(
     NativePortType port_,
     int that,
   ) =>
-      wasmModule.wire__crate__client__KuGouClient_cached_playlists(port_, that);
+      wasmModule.wire__kugou__client__KuGouClient_cached_playlists(port_, that);
 
-  void wire__crate__client__KuGouClient_choose_music_quality(
+  void wire__kugou__client__KuGouClient_choose_music_quality(
     NativePortType port_,
     int that,
     String hash,
     int quality,
-  ) => wasmModule.wire__crate__client__KuGouClient_choose_music_quality(
+  ) => wasmModule.wire__kugou__client__KuGouClient_choose_music_quality(
     port_,
     that,
     hash,
     quality,
   );
 
-  void wire__crate__client__KuGouClient_claim_ad_vip(
+  void wire__kugou__client__KuGouClient_claim_ad_vip(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_claim_ad_vip(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_claim_ad_vip(port_, that);
 
-  void wire__crate__client__KuGouClient_claim_daily_vip(
+  void wire__kugou__client__KuGouClient_claim_daily_vip(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_claim_daily_vip(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_claim_daily_vip(port_, that);
 
-  void wire__crate__client__KuGouClient_claim_vip_all(
+  void wire__kugou__client__KuGouClient_claim_vip_all(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_claim_vip_all(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_claim_vip_all(port_, that);
 
-  void wire__crate__client__KuGouClient_create_playlist(
+  void wire__kugou__client__KuGouClient_create_playlist(
     NativePortType port_,
     int that,
     String name,
-  ) => wasmModule.wire__crate__client__KuGouClient_create_playlist(
+  ) => wasmModule.wire__kugou__client__KuGouClient_create_playlist(
     port_,
     that,
     name,
   );
 
-  void wire__crate__client__KuGouClient_delete_music_from_playlist(
+  void wire__kugou__client__KuGouClient_delete_music_from_playlist(
     NativePortType port_,
     int that,
     String list_id,
     String hash,
-  ) => wasmModule.wire__crate__client__KuGouClient_delete_music_from_playlist(
+  ) => wasmModule.wire__kugou__client__KuGouClient_delete_music_from_playlist(
     port_,
     that,
     list_id,
     hash,
   );
 
-  void wire__crate__client__KuGouClient_delete_playlist(
+  void wire__kugou__client__KuGouClient_delete_playlist(
     NativePortType port_,
     int that,
     String list_id,
-  ) => wasmModule.wire__crate__client__KuGouClient_delete_playlist(
+  ) => wasmModule.wire__kugou__client__KuGouClient_delete_playlist(
     port_,
     that,
     list_id,
   );
 
-  void wire__crate__client__KuGouClient_device_dev(
+  void wire__kugou__client__KuGouClient_device_dev(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_device_dev(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_device_dev(port_, that);
 
-  void wire__crate__client__KuGouClient_device_dfid(
+  void wire__kugou__client__KuGouClient_device_dfid(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_device_dfid(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_device_dfid(port_, that);
 
-  void wire__crate__client__KuGouClient_device_guid(
+  void wire__kugou__client__KuGouClient_device_guid(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_device_guid(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_device_guid(port_, that);
 
-  void wire__crate__client__KuGouClient_device_mid(
+  void wire__kugou__client__KuGouClient_device_mid(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_device_mid(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_device_mid(port_, that);
 
-  void wire__crate__client__KuGouClient_device_webgl(
+  void wire__kugou__client__KuGouClient_device_webgl(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_device_webgl(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_device_webgl(port_, that);
 
-  void wire__crate__client__KuGouClient_dfid(NativePortType port_, int that) =>
-      wasmModule.wire__crate__client__KuGouClient_dfid(port_, that);
+  void wire__kugou__client__KuGouClient_dfid(NativePortType port_, int that) =>
+      wasmModule.wire__kugou__client__KuGouClient_dfid(port_, that);
 
-  void wire__crate__client__KuGouClient_favorite_hashes(
+  void wire__kugou__client__KuGouClient_favorite_hashes(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_favorite_hashes(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_favorite_hashes(port_, that);
 
-  void wire__crate__client__KuGouClient_favorite_playlist_id(
+  void wire__kugou__client__KuGouClient_favorite_playlist_id(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_favorite_playlist_id(
+  ) => wasmModule.wire__kugou__client__KuGouClient_favorite_playlist_id(
     port_,
     that,
   );
 
-  void wire__crate__client__KuGouClient_get_album_detail(
+  void wire__kugou__client__KuGouClient_get_album_detail(
     NativePortType port_,
     int that,
     String album_id,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_album_detail(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_album_detail(
     port_,
     that,
     album_id,
   );
 
-  void wire__crate__client__KuGouClient_get_album_music(
+  void wire__kugou__client__KuGouClient_get_album_music(
     NativePortType port_,
     int that,
     String album_id,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_album_music(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_album_music(
     port_,
     that,
     album_id,
   );
 
-  void wire__crate__client__KuGouClient_get_collection_hashes(
+  void wire__kugou__client__KuGouClient_get_collection_hashes(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_collection_hashes(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_collection_hashes(
     port_,
     that,
   );
 
-  void wire__crate__client__KuGouClient_get_lyric(
+  void wire__kugou__client__KuGouClient_get_lyric(
     NativePortType port_,
     int that,
     String hash,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_lyric(port_, that, hash);
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_lyric(port_, that, hash);
 
-  void wire__crate__client__KuGouClient_get_lyric_krc(
+  void wire__kugou__client__KuGouClient_get_lyric_krc(
     NativePortType port_,
     int that,
     String hash,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_lyric_krc(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_lyric_krc(
     port_,
     that,
     hash,
   );
 
-  void wire__crate__client__KuGouClient_get_music_url(
+  void wire__kugou__client__KuGouClient_get_music_url(
     NativePortType port_,
     int that,
     String hash,
     String quality,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_music_url(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_music_url(
     port_,
     that,
     hash,
     quality,
   );
 
-  void wire__crate__client__KuGouClient_get_musics_details(
+  void wire__kugou__client__KuGouClient_get_musics_details(
     NativePortType port_,
     int that,
     JSAny hashes,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_musics_details(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_musics_details(
     port_,
     that,
     hashes,
   );
 
-  void wire__crate__client__KuGouClient_get_playlist_detail(
+  void wire__kugou__client__KuGouClient_get_playlist_detail(
     NativePortType port_,
     int that,
     String list_id,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_playlist_detail(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_playlist_detail(
     port_,
     that,
     list_id,
   );
 
-  void wire__crate__client__KuGouClient_get_playlist_music(
+  void wire__kugou__client__KuGouClient_get_playlist_music(
     NativePortType port_,
     int that,
     String list_id,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_playlist_music(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_playlist_music(
     port_,
     that,
     list_id,
   );
 
-  void wire__crate__client__KuGouClient_get_playlists(
+  void wire__kugou__client__KuGouClient_get_playlists(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_playlists(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_playlists(port_, that);
 
-  void wire__crate__client__KuGouClient_get_recommend_musics(
+  void wire__kugou__client__KuGouClient_get_recommend_musics(
     NativePortType port_,
     int that,
     int num,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_recommend_musics(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_recommend_musics(
     port_,
     that,
     num,
   );
 
-  void wire__crate__client__KuGouClient_get_recommend_playlists(
+  void wire__kugou__client__KuGouClient_get_recommend_playlists(
     NativePortType port_,
     int that,
     int num,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_recommend_playlists(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_recommend_playlists(
     port_,
     that,
     num,
   );
 
-  void wire__crate__client__KuGouClient_get_recommend_singers(
+  void wire__kugou__client__KuGouClient_get_recommend_singers(
     NativePortType port_,
     int that,
     int num,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_recommend_singers(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_recommend_singers(
     port_,
     that,
     num,
   );
 
-  void wire__crate__client__KuGouClient_get_singer_albums(
+  void wire__kugou__client__KuGouClient_get_singer_albums(
     NativePortType port_,
     int that,
     String singer_id,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_singer_albums(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_singer_albums(
     port_,
     that,
     singer_id,
   );
 
-  void wire__crate__client__KuGouClient_get_singer_detail(
+  void wire__kugou__client__KuGouClient_get_singer_detail(
     NativePortType port_,
     int that,
     String singer_id,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_singer_detail(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_singer_detail(
     port_,
     that,
     singer_id,
   );
 
-  void wire__crate__client__KuGouClient_get_singer_music(
+  void wire__kugou__client__KuGouClient_get_singer_music(
     NativePortType port_,
     int that,
     String singer_id,
-  ) => wasmModule.wire__crate__client__KuGouClient_get_singer_music(
+  ) => wasmModule.wire__kugou__client__KuGouClient_get_singer_music(
     port_,
     that,
     singer_id,
   );
 
-  void wire__crate__client__KuGouClient_has_dfid(
+  void wire__kugou__client__KuGouClient_has_dfid(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_has_dfid(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_has_dfid(port_, that);
 
-  void wire__crate__client__KuGouClient_is_logged_in(
+  void wire__kugou__client__KuGouClient_is_logged_in(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_is_logged_in(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_is_logged_in(port_, that);
 
-  void wire__crate__client__KuGouClient_login_cellphone(
+  void wire__kugou__client__KuGouClient_login_cellphone(
     NativePortType port_,
     int that,
     String mobile,
     String code,
-  ) => wasmModule.wire__crate__client__KuGouClient_login_cellphone(
+  ) => wasmModule.wire__kugou__client__KuGouClient_login_cellphone(
     port_,
     that,
     mobile,
     code,
   );
 
-  void wire__crate__client__KuGouClient_new(
+  void wire__kugou__client__KuGouClient_new(
     NativePortType port_,
     int platform,
-  ) => wasmModule.wire__crate__client__KuGouClient_new(port_, platform);
+  ) => wasmModule.wire__kugou__client__KuGouClient_new(port_, platform);
 
-  void wire__crate__client__KuGouClient_platform(
+  void wire__kugou__client__KuGouClient_platform(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_platform(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_platform(port_, that);
 
-  void wire__crate__client__KuGouClient_qr_check(
+  void wire__kugou__client__KuGouClient_qr_check(
     NativePortType port_,
     int that,
     String key,
-  ) => wasmModule.wire__crate__client__KuGouClient_qr_check(port_, that, key);
+  ) => wasmModule.wire__kugou__client__KuGouClient_qr_check(port_, that, key);
 
-  void wire__crate__client__KuGouClient_qr_key(
+  void wire__kugou__client__KuGouClient_qr_key(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_qr_key(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_qr_key(port_, that);
 
-  void wire__crate__client__KuGouClient_qr_login_wait(
+  void wire__kugou__client__KuGouClient_qr_login_wait(
     NativePortType port_,
     int that,
     String key,
     JSAny interval_secs,
     int max_attempts,
-  ) => wasmModule.wire__crate__client__KuGouClient_qr_login_wait(
+  ) => wasmModule.wire__kugou__client__KuGouClient_qr_login_wait(
     port_,
     that,
     key,
@@ -1113,141 +1200,552 @@ class RustLibWire implements BaseWire {
     max_attempts,
   );
 
-  void wire__crate__client__KuGouClient_raw_request(
+  void wire__kugou__client__KuGouClient_raw_request(
     NativePortType port_,
     int that,
     String path,
     JSAny query,
-  ) => wasmModule.wire__crate__client__KuGouClient_raw_request(
+  ) => wasmModule.wire__kugou__client__KuGouClient_raw_request(
     port_,
     that,
     path,
     query,
   );
 
-  void wire__crate__client__KuGouClient_refresh_token(
+  void wire__kugou__client__KuGouClient_refresh_token(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_refresh_token(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_refresh_token(port_, that);
 
-  void wire__crate__client__KuGouClient_register_device(
+  void wire__kugou__client__KuGouClient_register_device(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_register_device(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_register_device(port_, that);
 
-  void wire__crate__client__KuGouClient_save_session(
+  void wire__kugou__client__KuGouClient_save_session(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_save_session(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_save_session(port_, that);
 
-  void wire__crate__client__KuGouClient_search(
+  void wire__kugou__client__KuGouClient_search(
     NativePortType port_,
     int that,
     String keyword,
-  ) => wasmModule.wire__crate__client__KuGouClient_search(port_, that, keyword);
+  ) => wasmModule.wire__kugou__client__KuGouClient_search(port_, that, keyword);
 
-  void wire__crate__client__KuGouClient_search_with_details(
+  void wire__kugou__client__KuGouClient_search_with_details(
     NativePortType port_,
     int that,
     String keyword,
-  ) => wasmModule.wire__crate__client__KuGouClient_search_with_details(
+  ) => wasmModule.wire__kugou__client__KuGouClient_search_with_details(
     port_,
     that,
     keyword,
   );
 
-  void wire__crate__client__KuGouClient_send_captcha(
+  void wire__kugou__client__KuGouClient_send_captcha(
     NativePortType port_,
     int that,
     String mobile,
-  ) => wasmModule.wire__crate__client__KuGouClient_send_captcha(
+  ) => wasmModule.wire__kugou__client__KuGouClient_send_captcha(
     port_,
     that,
     mobile,
   );
 
-  void wire__crate__client__KuGouClient_set_login(
+  void wire__kugou__client__KuGouClient_set_login(
     NativePortType port_,
     int that,
     String token,
     String userid,
-  ) => wasmModule.wire__crate__client__KuGouClient_set_login(
+  ) => wasmModule.wire__kugou__client__KuGouClient_set_login(
     port_,
     that,
     token,
     userid,
   );
 
-  void wire__crate__client__KuGouClient_token(NativePortType port_, int that) =>
-      wasmModule.wire__crate__client__KuGouClient_token(port_, that);
+  void wire__kugou__client__KuGouClient_token(NativePortType port_, int that) =>
+      wasmModule.wire__kugou__client__KuGouClient_token(port_, that);
 
-  void wire__crate__client__KuGouClient_token_needs_refresh(
+  void wire__kugou__client__KuGouClient_token_needs_refresh(
     NativePortType port_,
     int that,
     JSAny expire_time,
     JSAny threshold_secs,
-  ) => wasmModule.wire__crate__client__KuGouClient_token_needs_refresh(
+  ) => wasmModule.wire__kugou__client__KuGouClient_token_needs_refresh(
     port_,
     that,
     expire_time,
     threshold_secs,
   );
 
-  void wire__crate__client__KuGouClient_upgrade_vip(
+  void wire__kugou__client__KuGouClient_upgrade_vip(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_upgrade_vip(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_upgrade_vip(port_, that);
 
-  void wire__crate__client__KuGouClient_userid(
+  void wire__kugou__client__KuGouClient_userid(
     NativePortType port_,
     int that,
-  ) => wasmModule.wire__crate__client__KuGouClient_userid(port_, that);
+  ) => wasmModule.wire__kugou__client__KuGouClient_userid(port_, that);
 
-  void wire__crate__frb_api__calculate_mid(NativePortType port_, String guid) =>
-      wasmModule.wire__crate__frb_api__calculate_mid(port_, guid);
+  void wire__netease__client__NetEaseClient_album(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  ) => wasmModule.wire__netease__client__NetEaseClient_album(
+    port_,
+    that,
+    cookie,
+    id,
+  );
 
-  void wire__crate__frb_api__create_client(
+  void wire__netease__client__NetEaseClient_artist_album(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  ) => wasmModule.wire__netease__client__NetEaseClient_artist_album(
+    port_,
+    that,
+    cookie,
+    id,
+  );
+
+  void wire__netease__client__NetEaseClient_artist_detail(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  ) => wasmModule.wire__netease__client__NetEaseClient_artist_detail(
+    port_,
+    that,
+    cookie,
+    id,
+  );
+
+  void wire__netease__client__NetEaseClient_artist_songs(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+    int limit,
+    int offset,
+  ) => wasmModule.wire__netease__client__NetEaseClient_artist_songs(
+    port_,
+    that,
+    cookie,
+    id,
+    limit,
+    offset,
+  );
+
+  void wire__netease__client__NetEaseClient_captcha_sent(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String phone,
+  ) => wasmModule.wire__netease__client__NetEaseClient_captcha_sent(
+    port_,
+    that,
+    cookie,
+    phone,
+  );
+
+  void wire__netease__client__NetEaseClient_default(NativePortType port_) =>
+      wasmModule.wire__netease__client__NetEaseClient_default(port_);
+
+  void wire__netease__client__NetEaseClient_device_id(
+    NativePortType port_,
+    int that,
+  ) => wasmModule.wire__netease__client__NetEaseClient_device_id(port_, that);
+
+  void wire__netease__client__NetEaseClient_has_music_a(
+    NativePortType port_,
+    int that,
+  ) => wasmModule.wire__netease__client__NetEaseClient_has_music_a(port_, that);
+
+  void wire__netease__client__NetEaseClient_login_cellphone(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String phone,
+    String captcha,
+  ) => wasmModule.wire__netease__client__NetEaseClient_login_cellphone(
+    port_,
+    that,
+    cookie,
+    phone,
+    captcha,
+  );
+
+  void wire__netease__client__NetEaseClient_login_refresh(
+    NativePortType port_,
+    int that,
+    String cookie,
+  ) => wasmModule.wire__netease__client__NetEaseClient_login_refresh(
+    port_,
+    that,
+    cookie,
+  );
+
+  void wire__netease__client__NetEaseClient_login_status(
+    NativePortType port_,
+    int that,
+    String cookie,
+  ) => wasmModule.wire__netease__client__NetEaseClient_login_status(
+    port_,
+    that,
+    cookie,
+  );
+
+  void wire__netease__client__NetEaseClient_lyric(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  ) => wasmModule.wire__netease__client__NetEaseClient_lyric(
+    port_,
+    that,
+    cookie,
+    id,
+  );
+
+  void wire__netease__client__NetEaseClient_new(NativePortType port_) =>
+      wasmModule.wire__netease__client__NetEaseClient_new(port_);
+
+  void wire__netease__client__NetEaseClient_playlist_create(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String name,
+  ) => wasmModule.wire__netease__client__NetEaseClient_playlist_create(
+    port_,
+    that,
+    cookie,
+    name,
+  );
+
+  void wire__netease__client__NetEaseClient_playlist_delete(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  ) => wasmModule.wire__netease__client__NetEaseClient_playlist_delete(
+    port_,
+    that,
+    cookie,
+    id,
+  );
+
+  void wire__netease__client__NetEaseClient_playlist_detail(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  ) => wasmModule.wire__netease__client__NetEaseClient_playlist_detail(
+    port_,
+    that,
+    cookie,
+    id,
+  );
+
+  void wire__netease__client__NetEaseClient_playlist_track_all(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  ) => wasmModule.wire__netease__client__NetEaseClient_playlist_track_all(
+    port_,
+    that,
+    cookie,
+    id,
+  );
+
+  void wire__netease__client__NetEaseClient_playlist_tracks(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String op,
+    String pid,
+    JSAny tracks,
+  ) => wasmModule.wire__netease__client__NetEaseClient_playlist_tracks(
+    port_,
+    that,
+    cookie,
+    op,
+    pid,
+    tracks,
+  );
+
+  void wire__netease__client__NetEaseClient_qr_check(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String key,
+  ) => wasmModule.wire__netease__client__NetEaseClient_qr_check(
+    port_,
+    that,
+    cookie,
+    key,
+  );
+
+  void wire__netease__client__NetEaseClient_qr_create(
+    NativePortType port_,
+    int that,
+    String key,
+    String platform,
+    bool want_image,
+  ) => wasmModule.wire__netease__client__NetEaseClient_qr_create(
+    port_,
+    that,
+    key,
+    platform,
+    want_image,
+  );
+
+  void wire__netease__client__NetEaseClient_qr_key(
+    NativePortType port_,
+    int that,
+    String cookie,
+  ) => wasmModule.wire__netease__client__NetEaseClient_qr_key(
+    port_,
+    that,
+    cookie,
+  );
+
+  void wire__netease__client__NetEaseClient_raw_request(
+    NativePortType port_,
+    int that,
+    String path,
+    JSAny query,
+    String cookie,
+  ) => wasmModule.wire__netease__client__NetEaseClient_raw_request(
+    port_,
+    that,
+    path,
+    query,
+    cookie,
+  );
+
+  void wire__netease__client__NetEaseClient_recommend_resource(
+    NativePortType port_,
+    int that,
+    String cookie,
+  ) => wasmModule.wire__netease__client__NetEaseClient_recommend_resource(
+    port_,
+    that,
+    cookie,
+  );
+
+  void wire__netease__client__NetEaseClient_recommend_songs(
+    NativePortType port_,
+    int that,
+    String cookie,
+  ) => wasmModule.wire__netease__client__NetEaseClient_recommend_songs(
+    port_,
+    that,
+    cookie,
+  );
+
+  void wire__netease__client__NetEaseClient_register_anonymous(
+    NativePortType port_,
+    int that,
+    String cookie,
+  ) => wasmModule.wire__netease__client__NetEaseClient_register_anonymous(
+    port_,
+    that,
+    cookie,
+  );
+
+  void wire__netease__client__NetEaseClient_save(
+    NativePortType port_,
+    int that,
+  ) => wasmModule.wire__netease__client__NetEaseClient_save(port_, that);
+
+  void wire__netease__client__NetEaseClient_search(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String keywords,
+    int ty,
+    int limit,
+  ) => wasmModule.wire__netease__client__NetEaseClient_search(
+    port_,
+    that,
+    cookie,
+    keywords,
+    ty,
+    limit,
+  );
+
+  void wire__netease__client__NetEaseClient_song_detail(
+    NativePortType port_,
+    int that,
+    String cookie,
+    JSAny ids,
+  ) => wasmModule.wire__netease__client__NetEaseClient_song_detail(
+    port_,
+    that,
+    cookie,
+    ids,
+  );
+
+  void wire__netease__client__NetEaseClient_song_url(
+    NativePortType port_,
+    int that,
+    String cookie,
+    JSAny ids,
+    int br,
+  ) => wasmModule.wire__netease__client__NetEaseClient_song_url(
+    port_,
+    that,
+    cookie,
+    ids,
+    br,
+  );
+
+  void wire__netease__client__NetEaseClient_song_url_str(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  ) => wasmModule.wire__netease__client__NetEaseClient_song_url_str(
+    port_,
+    that,
+    cookie,
+    id,
+  );
+
+  void wire__netease__client__NetEaseClient_supported_routes(
+    NativePortType port_,
+  ) => wasmModule.wire__netease__client__NetEaseClient_supported_routes(port_);
+
+  void wire__netease__client__NetEaseClient_top_artists(
+    NativePortType port_,
+    int that,
+    String cookie,
+    int limit,
+  ) => wasmModule.wire__netease__client__NetEaseClient_top_artists(
+    port_,
+    that,
+    cookie,
+    limit,
+  );
+
+  void wire__netease__client__NetEaseClient_unsupported_routes(
+    NativePortType port_,
+  ) =>
+      wasmModule.wire__netease__client__NetEaseClient_unsupported_routes(port_);
+
+  void wire__netease__client__NetEaseClient_user_account(
+    NativePortType port_,
+    int that,
+    String cookie,
+  ) => wasmModule.wire__netease__client__NetEaseClient_user_account(
+    port_,
+    that,
+    cookie,
+  );
+
+  void wire__netease__client__NetEaseClient_user_playlist(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String uid,
+    int limit,
+  ) => wasmModule.wire__netease__client__NetEaseClient_user_playlist(
+    port_,
+    that,
+    cookie,
+    uid,
+    limit,
+  );
+
+  void wire__netease__client__NetEaseClient_vip_info(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String uid,
+  ) => wasmModule.wire__netease__client__NetEaseClient_vip_info(
+    port_,
+    that,
+    cookie,
+    uid,
+  );
+
+  void wire__netease__client__NetEaseClient_wnmcid(
+    NativePortType port_,
+    int that,
+  ) => wasmModule.wire__netease__client__NetEaseClient_wnmcid(port_, that);
+
+  void wire__crate__frb_api__bridge_version(NativePortType port_) =>
+      wasmModule.wire__crate__frb_api__bridge_version(port_);
+
+  void wire__kugou__frb_api__calculate_mid(NativePortType port_, String guid) =>
+      wasmModule.wire__kugou__frb_api__calculate_mid(port_, guid);
+
+  void wire__kugou__frb_api__create_client(
     NativePortType port_,
     String platform,
     String identity_path,
-  ) => wasmModule.wire__crate__frb_api__create_client(
+  ) => wasmModule.wire__kugou__frb_api__create_client(
     port_,
     platform,
     identity_path,
   );
 
-  void wire__crate__frb_api__create_ephemeral_client(
+  void wire__netease__frb_api__create_client(
+    NativePortType port_,
+    String identity_path,
+  ) => wasmModule.wire__netease__frb_api__create_client(port_, identity_path);
+
+  void wire__kugou__frb_api__create_ephemeral_client(
     NativePortType port_,
     String platform,
   ) =>
-      wasmModule.wire__crate__frb_api__create_ephemeral_client(port_, platform);
+      wasmModule.wire__kugou__frb_api__create_ephemeral_client(port_, platform);
 
-  void wire__crate__frb_api__get_cover(
+  void wire__netease__frb_api__create_ephemeral_client(NativePortType port_) =>
+      wasmModule.wire__netease__frb_api__create_ephemeral_client(port_);
+
+  void wire__kugou__frb_api__get_cover(
     NativePortType port_,
     String url,
     String size,
-  ) => wasmModule.wire__crate__frb_api__get_cover(port_, url, size);
+  ) => wasmModule.wire__kugou__frb_api__get_cover(port_, url, size);
 
-  void wire__crate__frb_api__is_uuid_v4(NativePortType port_, String s) =>
-      wasmModule.wire__crate__frb_api__is_uuid_v4(port_, s);
+  void wire__kugou__frb_api__is_uuid_v4(NativePortType port_, String s) =>
+      wasmModule.wire__kugou__frb_api__is_uuid_v4(port_, s);
 
-  void wire__crate__frb_api__krc_to_lrc(NativePortType port_, String krc) =>
-      wasmModule.wire__crate__frb_api__krc_to_lrc(port_, krc);
+  void wire__kugou__frb_api__krc_to_lrc(NativePortType port_, String krc) =>
+      wasmModule.wire__kugou__frb_api__krc_to_lrc(port_, krc);
 
-  void wire__crate__frb_api__ms_to_lrc_time(NativePortType port_, JSAny ms) =>
-      wasmModule.wire__crate__frb_api__ms_to_lrc_time(port_, ms);
+  void wire__kugou__frb_api__ms_to_lrc_time(NativePortType port_, JSAny ms) =>
+      wasmModule.wire__kugou__frb_api__ms_to_lrc_time(port_, ms);
 
-  void wire__crate__frb_api__process_lyric(NativePortType port_, String lrc) =>
-      wasmModule.wire__crate__frb_api__process_lyric(port_, lrc);
+  void wire__kugou__frb_api__process_lyric(NativePortType port_, String lrc) =>
+      wasmModule.wire__kugou__frb_api__process_lyric(port_, lrc);
 
-  void wire__crate__client__session_default(NativePortType port_) =>
-      wasmModule.wire__crate__client__session_default(port_);
+  void wire__kugou__client__session_default(NativePortType port_) =>
+      wasmModule.wire__kugou__client__session_default(port_);
 
-  void wire__crate__frb_api__uuid_v4(NativePortType port_) =>
-      wasmModule.wire__crate__frb_api__uuid_v4(port_);
+  void wire__netease__frb_api__supported_routes(NativePortType port_) =>
+      wasmModule.wire__netease__frb_api__supported_routes(port_);
 
-  void wire__crate__frb_api__version(NativePortType port_) =>
-      wasmModule.wire__crate__frb_api__version(port_);
+  void wire__netease__frb_api__unsupported_routes(NativePortType port_) =>
+      wasmModule.wire__netease__frb_api__unsupported_routes(port_);
+
+  void wire__kugou__frb_api__uuid_v4(NativePortType port_) =>
+      wasmModule.wire__kugou__frb_api__uuid_v4(port_);
+
+  void wire__kugou__frb_api__version(NativePortType port_) =>
+      wasmModule.wire__kugou__frb_api__version(port_);
+
+  void wire__netease__frb_api__version(NativePortType port_) =>
+      wasmModule.wire__netease__frb_api__version(port_);
 
   void
   rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
@@ -1264,6 +1762,38 @@ class RustLibWire implements BaseWire {
       .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
         ptr,
       );
+
+  void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    int ptr,
+  ) => wasmModule
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+        ptr,
+      );
+
+  void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    int ptr,
+  ) => wasmModule
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+        ptr,
+      );
+
+  void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    int ptr,
+  ) => wasmModule
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+        ptr,
+      );
+
+  void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    int ptr,
+  ) => wasmModule
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+        ptr,
+      );
 }
 
 @JS('wasm_bindgen')
@@ -1272,239 +1802,239 @@ external RustLibWasmModule get wasmModule;
 @JS()
 @anonymous
 extension type RustLibWasmModule._(JSObject _) implements JSObject {
-  external void wire__crate__client__KuGouClient_add_music_to_playlist(
+  external void wire__kugou__client__KuGouClient_add_music_to_playlist(
     NativePortType port_,
     int that,
     String list_id,
     String hash,
   );
 
-  external void wire__crate__client__KuGouClient_apply_login(
+  external void wire__kugou__client__KuGouClient_apply_login(
     NativePortType port_,
     int that,
     JSAny r,
   );
 
-  external void wire__crate__client__KuGouClient_cached_playlists(
+  external void wire__kugou__client__KuGouClient_cached_playlists(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_choose_music_quality(
+  external void wire__kugou__client__KuGouClient_choose_music_quality(
     NativePortType port_,
     int that,
     String hash,
     int quality,
   );
 
-  external void wire__crate__client__KuGouClient_claim_ad_vip(
+  external void wire__kugou__client__KuGouClient_claim_ad_vip(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_claim_daily_vip(
+  external void wire__kugou__client__KuGouClient_claim_daily_vip(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_claim_vip_all(
+  external void wire__kugou__client__KuGouClient_claim_vip_all(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_create_playlist(
+  external void wire__kugou__client__KuGouClient_create_playlist(
     NativePortType port_,
     int that,
     String name,
   );
 
-  external void wire__crate__client__KuGouClient_delete_music_from_playlist(
+  external void wire__kugou__client__KuGouClient_delete_music_from_playlist(
     NativePortType port_,
     int that,
     String list_id,
     String hash,
   );
 
-  external void wire__crate__client__KuGouClient_delete_playlist(
+  external void wire__kugou__client__KuGouClient_delete_playlist(
     NativePortType port_,
     int that,
     String list_id,
   );
 
-  external void wire__crate__client__KuGouClient_device_dev(
+  external void wire__kugou__client__KuGouClient_device_dev(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_device_dfid(
+  external void wire__kugou__client__KuGouClient_device_dfid(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_device_guid(
+  external void wire__kugou__client__KuGouClient_device_guid(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_device_mid(
+  external void wire__kugou__client__KuGouClient_device_mid(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_device_webgl(
+  external void wire__kugou__client__KuGouClient_device_webgl(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_dfid(
+  external void wire__kugou__client__KuGouClient_dfid(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_favorite_hashes(
+  external void wire__kugou__client__KuGouClient_favorite_hashes(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_favorite_playlist_id(
+  external void wire__kugou__client__KuGouClient_favorite_playlist_id(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_get_album_detail(
-    NativePortType port_,
-    int that,
-    String album_id,
-  );
-
-  external void wire__crate__client__KuGouClient_get_album_music(
+  external void wire__kugou__client__KuGouClient_get_album_detail(
     NativePortType port_,
     int that,
     String album_id,
   );
 
-  external void wire__crate__client__KuGouClient_get_collection_hashes(
+  external void wire__kugou__client__KuGouClient_get_album_music(
+    NativePortType port_,
+    int that,
+    String album_id,
+  );
+
+  external void wire__kugou__client__KuGouClient_get_collection_hashes(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_get_lyric(
+  external void wire__kugou__client__KuGouClient_get_lyric(
     NativePortType port_,
     int that,
     String hash,
   );
 
-  external void wire__crate__client__KuGouClient_get_lyric_krc(
+  external void wire__kugou__client__KuGouClient_get_lyric_krc(
     NativePortType port_,
     int that,
     String hash,
   );
 
-  external void wire__crate__client__KuGouClient_get_music_url(
+  external void wire__kugou__client__KuGouClient_get_music_url(
     NativePortType port_,
     int that,
     String hash,
     String quality,
   );
 
-  external void wire__crate__client__KuGouClient_get_musics_details(
+  external void wire__kugou__client__KuGouClient_get_musics_details(
     NativePortType port_,
     int that,
     JSAny hashes,
   );
 
-  external void wire__crate__client__KuGouClient_get_playlist_detail(
+  external void wire__kugou__client__KuGouClient_get_playlist_detail(
     NativePortType port_,
     int that,
     String list_id,
   );
 
-  external void wire__crate__client__KuGouClient_get_playlist_music(
+  external void wire__kugou__client__KuGouClient_get_playlist_music(
     NativePortType port_,
     int that,
     String list_id,
   );
 
-  external void wire__crate__client__KuGouClient_get_playlists(
+  external void wire__kugou__client__KuGouClient_get_playlists(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_get_recommend_musics(
-    NativePortType port_,
-    int that,
-    int num,
-  );
-
-  external void wire__crate__client__KuGouClient_get_recommend_playlists(
+  external void wire__kugou__client__KuGouClient_get_recommend_musics(
     NativePortType port_,
     int that,
     int num,
   );
 
-  external void wire__crate__client__KuGouClient_get_recommend_singers(
+  external void wire__kugou__client__KuGouClient_get_recommend_playlists(
     NativePortType port_,
     int that,
     int num,
   );
 
-  external void wire__crate__client__KuGouClient_get_singer_albums(
+  external void wire__kugou__client__KuGouClient_get_recommend_singers(
+    NativePortType port_,
+    int that,
+    int num,
+  );
+
+  external void wire__kugou__client__KuGouClient_get_singer_albums(
     NativePortType port_,
     int that,
     String singer_id,
   );
 
-  external void wire__crate__client__KuGouClient_get_singer_detail(
+  external void wire__kugou__client__KuGouClient_get_singer_detail(
     NativePortType port_,
     int that,
     String singer_id,
   );
 
-  external void wire__crate__client__KuGouClient_get_singer_music(
+  external void wire__kugou__client__KuGouClient_get_singer_music(
     NativePortType port_,
     int that,
     String singer_id,
   );
 
-  external void wire__crate__client__KuGouClient_has_dfid(
+  external void wire__kugou__client__KuGouClient_has_dfid(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_is_logged_in(
+  external void wire__kugou__client__KuGouClient_is_logged_in(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_login_cellphone(
+  external void wire__kugou__client__KuGouClient_login_cellphone(
     NativePortType port_,
     int that,
     String mobile,
     String code,
   );
 
-  external void wire__crate__client__KuGouClient_new(
+  external void wire__kugou__client__KuGouClient_new(
     NativePortType port_,
     int platform,
   );
 
-  external void wire__crate__client__KuGouClient_platform(
+  external void wire__kugou__client__KuGouClient_platform(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_qr_check(
+  external void wire__kugou__client__KuGouClient_qr_check(
     NativePortType port_,
     int that,
     String key,
   );
 
-  external void wire__crate__client__KuGouClient_qr_key(
+  external void wire__kugou__client__KuGouClient_qr_key(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_qr_login_wait(
+  external void wire__kugou__client__KuGouClient_qr_login_wait(
     NativePortType port_,
     int that,
     String key,
@@ -1512,122 +2042,382 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
     int max_attempts,
   );
 
-  external void wire__crate__client__KuGouClient_raw_request(
+  external void wire__kugou__client__KuGouClient_raw_request(
     NativePortType port_,
     int that,
     String path,
     JSAny query,
   );
 
-  external void wire__crate__client__KuGouClient_refresh_token(
+  external void wire__kugou__client__KuGouClient_refresh_token(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_register_device(
+  external void wire__kugou__client__KuGouClient_register_device(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_save_session(
+  external void wire__kugou__client__KuGouClient_save_session(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_search(
-    NativePortType port_,
-    int that,
-    String keyword,
-  );
-
-  external void wire__crate__client__KuGouClient_search_with_details(
+  external void wire__kugou__client__KuGouClient_search(
     NativePortType port_,
     int that,
     String keyword,
   );
 
-  external void wire__crate__client__KuGouClient_send_captcha(
+  external void wire__kugou__client__KuGouClient_search_with_details(
+    NativePortType port_,
+    int that,
+    String keyword,
+  );
+
+  external void wire__kugou__client__KuGouClient_send_captcha(
     NativePortType port_,
     int that,
     String mobile,
   );
 
-  external void wire__crate__client__KuGouClient_set_login(
+  external void wire__kugou__client__KuGouClient_set_login(
     NativePortType port_,
     int that,
     String token,
     String userid,
   );
 
-  external void wire__crate__client__KuGouClient_token(
+  external void wire__kugou__client__KuGouClient_token(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_token_needs_refresh(
+  external void wire__kugou__client__KuGouClient_token_needs_refresh(
     NativePortType port_,
     int that,
     JSAny expire_time,
     JSAny threshold_secs,
   );
 
-  external void wire__crate__client__KuGouClient_upgrade_vip(
+  external void wire__kugou__client__KuGouClient_upgrade_vip(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__client__KuGouClient_userid(
+  external void wire__kugou__client__KuGouClient_userid(
     NativePortType port_,
     int that,
   );
 
-  external void wire__crate__frb_api__calculate_mid(
+  external void wire__netease__client__NetEaseClient_album(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  );
+
+  external void wire__netease__client__NetEaseClient_artist_album(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  );
+
+  external void wire__netease__client__NetEaseClient_artist_detail(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  );
+
+  external void wire__netease__client__NetEaseClient_artist_songs(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+    int limit,
+    int offset,
+  );
+
+  external void wire__netease__client__NetEaseClient_captcha_sent(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String phone,
+  );
+
+  external void wire__netease__client__NetEaseClient_default(
+    NativePortType port_,
+  );
+
+  external void wire__netease__client__NetEaseClient_device_id(
+    NativePortType port_,
+    int that,
+  );
+
+  external void wire__netease__client__NetEaseClient_has_music_a(
+    NativePortType port_,
+    int that,
+  );
+
+  external void wire__netease__client__NetEaseClient_login_cellphone(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String phone,
+    String captcha,
+  );
+
+  external void wire__netease__client__NetEaseClient_login_refresh(
+    NativePortType port_,
+    int that,
+    String cookie,
+  );
+
+  external void wire__netease__client__NetEaseClient_login_status(
+    NativePortType port_,
+    int that,
+    String cookie,
+  );
+
+  external void wire__netease__client__NetEaseClient_lyric(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  );
+
+  external void wire__netease__client__NetEaseClient_new(NativePortType port_);
+
+  external void wire__netease__client__NetEaseClient_playlist_create(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String name,
+  );
+
+  external void wire__netease__client__NetEaseClient_playlist_delete(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  );
+
+  external void wire__netease__client__NetEaseClient_playlist_detail(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  );
+
+  external void wire__netease__client__NetEaseClient_playlist_track_all(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  );
+
+  external void wire__netease__client__NetEaseClient_playlist_tracks(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String op,
+    String pid,
+    JSAny tracks,
+  );
+
+  external void wire__netease__client__NetEaseClient_qr_check(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String key,
+  );
+
+  external void wire__netease__client__NetEaseClient_qr_create(
+    NativePortType port_,
+    int that,
+    String key,
+    String platform,
+    bool want_image,
+  );
+
+  external void wire__netease__client__NetEaseClient_qr_key(
+    NativePortType port_,
+    int that,
+    String cookie,
+  );
+
+  external void wire__netease__client__NetEaseClient_raw_request(
+    NativePortType port_,
+    int that,
+    String path,
+    JSAny query,
+    String cookie,
+  );
+
+  external void wire__netease__client__NetEaseClient_recommend_resource(
+    NativePortType port_,
+    int that,
+    String cookie,
+  );
+
+  external void wire__netease__client__NetEaseClient_recommend_songs(
+    NativePortType port_,
+    int that,
+    String cookie,
+  );
+
+  external void wire__netease__client__NetEaseClient_register_anonymous(
+    NativePortType port_,
+    int that,
+    String cookie,
+  );
+
+  external void wire__netease__client__NetEaseClient_save(
+    NativePortType port_,
+    int that,
+  );
+
+  external void wire__netease__client__NetEaseClient_search(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String keywords,
+    int ty,
+    int limit,
+  );
+
+  external void wire__netease__client__NetEaseClient_song_detail(
+    NativePortType port_,
+    int that,
+    String cookie,
+    JSAny ids,
+  );
+
+  external void wire__netease__client__NetEaseClient_song_url(
+    NativePortType port_,
+    int that,
+    String cookie,
+    JSAny ids,
+    int br,
+  );
+
+  external void wire__netease__client__NetEaseClient_song_url_str(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String id,
+  );
+
+  external void wire__netease__client__NetEaseClient_supported_routes(
+    NativePortType port_,
+  );
+
+  external void wire__netease__client__NetEaseClient_top_artists(
+    NativePortType port_,
+    int that,
+    String cookie,
+    int limit,
+  );
+
+  external void wire__netease__client__NetEaseClient_unsupported_routes(
+    NativePortType port_,
+  );
+
+  external void wire__netease__client__NetEaseClient_user_account(
+    NativePortType port_,
+    int that,
+    String cookie,
+  );
+
+  external void wire__netease__client__NetEaseClient_user_playlist(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String uid,
+    int limit,
+  );
+
+  external void wire__netease__client__NetEaseClient_vip_info(
+    NativePortType port_,
+    int that,
+    String cookie,
+    String uid,
+  );
+
+  external void wire__netease__client__NetEaseClient_wnmcid(
+    NativePortType port_,
+    int that,
+  );
+
+  external void wire__crate__frb_api__bridge_version(NativePortType port_);
+
+  external void wire__kugou__frb_api__calculate_mid(
     NativePortType port_,
     String guid,
   );
 
-  external void wire__crate__frb_api__create_client(
+  external void wire__kugou__frb_api__create_client(
     NativePortType port_,
     String platform,
     String identity_path,
   );
 
-  external void wire__crate__frb_api__create_ephemeral_client(
+  external void wire__netease__frb_api__create_client(
+    NativePortType port_,
+    String identity_path,
+  );
+
+  external void wire__kugou__frb_api__create_ephemeral_client(
     NativePortType port_,
     String platform,
   );
 
-  external void wire__crate__frb_api__get_cover(
+  external void wire__netease__frb_api__create_ephemeral_client(
+    NativePortType port_,
+  );
+
+  external void wire__kugou__frb_api__get_cover(
     NativePortType port_,
     String url,
     String size,
   );
 
-  external void wire__crate__frb_api__is_uuid_v4(
+  external void wire__kugou__frb_api__is_uuid_v4(
     NativePortType port_,
     String s,
   );
 
-  external void wire__crate__frb_api__krc_to_lrc(
+  external void wire__kugou__frb_api__krc_to_lrc(
     NativePortType port_,
     String krc,
   );
 
-  external void wire__crate__frb_api__ms_to_lrc_time(
+  external void wire__kugou__frb_api__ms_to_lrc_time(
     NativePortType port_,
     JSAny ms,
   );
 
-  external void wire__crate__frb_api__process_lyric(
+  external void wire__kugou__frb_api__process_lyric(
     NativePortType port_,
     String lrc,
   );
 
-  external void wire__crate__client__session_default(NativePortType port_);
+  external void wire__kugou__client__session_default(NativePortType port_);
 
-  external void wire__crate__frb_api__uuid_v4(NativePortType port_);
+  external void wire__netease__frb_api__supported_routes(NativePortType port_);
 
-  external void wire__crate__frb_api__version(NativePortType port_);
+  external void wire__netease__frb_api__unsupported_routes(
+    NativePortType port_,
+  );
+
+  external void wire__kugou__frb_api__uuid_v4(NativePortType port_);
+
+  external void wire__kugou__frb_api__version(NativePortType port_);
+
+  external void wire__netease__frb_api__version(NativePortType port_);
 
   external void
   rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
@@ -1636,6 +2426,26 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
 
   external void
   rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+    int ptr,
+  );
+
+  external void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    int ptr,
+  );
+
+  external void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    int ptr,
+  );
+
+  external void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    int ptr,
+  );
+
+  external void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
     int ptr,
   );
 }

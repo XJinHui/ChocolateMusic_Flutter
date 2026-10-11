@@ -28,7 +28,7 @@
 #
 # 内部实现（Transport / RequestOptions / crypto 等含 reqwest::Client、
 # serde_json::Value 的类型）不在扫描范围内，因此不会导致生成失败。
-rust_input: crate::frb_api,crate::client
+rust_input: crate::frb_api,kugou::frb_api,kugou::client,netease::frb_api,netease::client
 
 # Rust crate 目录（相对于本文件）
 #
@@ -37,7 +37,7 @@ rust_input: crate::frb_api,crate::client
 #    虚拟 manifest（只有 [workspace]，没有 [package]），cargo 会报错：
 #      "manifest path ... is a virtual manifest, but this command requires
 #       running against an actual package in this workspace"
-rust_root: rust/kugou/
+rust_root: rust/bridge/
 
 # 生成的 Dart 文件输出位置
 dart_output: lib/src/rust

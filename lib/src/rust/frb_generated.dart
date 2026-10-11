@@ -3,20 +3,23 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
-import 'api/login.dart';
-import 'client.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'device.dart';
 import 'frb_api.dart';
 import 'frb_generated.dart';
 import 'frb_generated.io.dart'
     if (dart.library.js_interop) 'frb_generated.web.dart';
-import 'lib.dart';
-import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
-import 'platform.dart';
-import 'request.dart';
+import 'third_party/kugou/api/login.dart';
+import 'third_party/kugou/client.dart';
+import 'third_party/kugou/device.dart';
+import 'third_party/kugou/frb_api.dart';
+import 'third_party/kugou/models.dart';
+import 'third_party/kugou/platform.dart';
+import 'third_party/kugou/request.dart';
+import 'third_party/netease/api.dart';
+import 'third_party/netease/client.dart';
+import 'third_party/netease/frb_api.dart';
 
 /// Main entrypoint of the Rust API
 class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
@@ -71,268 +74,482 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 1491126804;
+  int get rustContentHash => 2052803620;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
-        stem: 'kugou',
-        ioDirectory: 'rust/kugou/target/release/',
+        stem: 'bridge',
+        ioDirectory: 'rust/bridge/target/release/',
         webPrefix: 'pkg/',
         wasmBindgenName: 'wasm_bindgen',
       );
 }
 
 abstract class RustLibApi extends BaseApi {
-  Future<void> crateClientKuGouClientAddMusicToPlaylist({
+  Future<void> kugouClientKuGouClientAddMusicToPlaylist({
     required KuGouClient that,
     required String listId,
     required String hash,
   });
 
-  Future<void> crateClientKuGouClientApplyLogin({
+  Future<void> kugouClientKuGouClientApplyLogin({
     required KuGouClient that,
     required LoginResult r,
   });
 
-  Future<List<Playlist>> crateClientKuGouClientCachedPlaylists({
+  Future<List<Playlist>> kugouClientKuGouClientCachedPlaylists({
     required KuGouClient that,
   });
 
-  Future<String> crateClientKuGouClientChooseMusicQuality({
+  Future<String> kugouClientKuGouClientChooseMusicQuality({
     required KuGouClient that,
     required String hash,
     required int quality,
   });
 
-  Future<int> crateClientKuGouClientClaimAdVip({required KuGouClient that});
+  Future<int> kugouClientKuGouClientClaimAdVip({required KuGouClient that});
 
-  Future<void> crateClientKuGouClientClaimDailyVip({required KuGouClient that});
+  Future<void> kugouClientKuGouClientClaimDailyVip({required KuGouClient that});
 
-  Future<void> crateClientKuGouClientClaimVipAll({required KuGouClient that});
+  Future<void> kugouClientKuGouClientClaimVipAll({required KuGouClient that});
 
-  Future<Playlist> crateClientKuGouClientCreatePlaylist({
+  Future<Playlist> kugouClientKuGouClientCreatePlaylist({
     required KuGouClient that,
     required String name,
   });
 
-  Future<void> crateClientKuGouClientDeleteMusicFromPlaylist({
+  Future<void> kugouClientKuGouClientDeleteMusicFromPlaylist({
     required KuGouClient that,
     required String listId,
     required String hash,
   });
 
-  Future<void> crateClientKuGouClientDeletePlaylist({
+  Future<void> kugouClientKuGouClientDeletePlaylist({
     required KuGouClient that,
     required String listId,
   });
 
-  Future<String> crateClientKuGouClientDeviceDev({required KuGouClient that});
+  Future<String> kugouClientKuGouClientDeviceDev({required KuGouClient that});
 
-  Future<String?> crateClientKuGouClientDeviceDfid({required KuGouClient that});
+  Future<String?> kugouClientKuGouClientDeviceDfid({required KuGouClient that});
 
-  Future<String> crateClientKuGouClientDeviceGuid({required KuGouClient that});
+  Future<String> kugouClientKuGouClientDeviceGuid({required KuGouClient that});
 
-  Future<String> crateClientKuGouClientDeviceMid({required KuGouClient that});
+  Future<String> kugouClientKuGouClientDeviceMid({required KuGouClient that});
 
-  Future<String> crateClientKuGouClientDeviceWebgl({required KuGouClient that});
+  Future<String> kugouClientKuGouClientDeviceWebgl({required KuGouClient that});
 
-  Future<String> crateClientKuGouClientDfid({required KuGouClient that});
+  Future<String> kugouClientKuGouClientDfid({required KuGouClient that});
 
-  Future<List<String>> crateClientKuGouClientFavoriteHashes({
+  Future<List<String>> kugouClientKuGouClientFavoriteHashes({
     required KuGouClient that,
   });
 
-  Future<String> crateClientKuGouClientFavoritePlaylistId({
+  Future<String> kugouClientKuGouClientFavoritePlaylistId({
     required KuGouClient that,
   });
 
-  Future<Album> crateClientKuGouClientGetAlbumDetail({
-    required KuGouClient that,
-    required String albumId,
-  });
-
-  Future<List<Music>> crateClientKuGouClientGetAlbumMusic({
+  Future<Album> kugouClientKuGouClientGetAlbumDetail({
     required KuGouClient that,
     required String albumId,
   });
 
-  Future<List<String>> crateClientKuGouClientGetCollectionHashes({
+  Future<List<Music>> kugouClientKuGouClientGetAlbumMusic({
+    required KuGouClient that,
+    required String albumId,
+  });
+
+  Future<List<String>> kugouClientKuGouClientGetCollectionHashes({
     required KuGouClient that,
   });
 
-  Future<String> crateClientKuGouClientGetLyric({
+  Future<String> kugouClientKuGouClientGetLyric({
     required KuGouClient that,
     required String hash,
   });
 
-  Future<String> crateClientKuGouClientGetLyricKrc({
+  Future<String> kugouClientKuGouClientGetLyricKrc({
     required KuGouClient that,
     required String hash,
   });
 
-  Future<String> crateClientKuGouClientGetMusicUrl({
+  Future<String> kugouClientKuGouClientGetMusicUrl({
     required KuGouClient that,
     required String hash,
     required String quality,
   });
 
-  Future<List<Music>> crateClientKuGouClientGetMusicsDetails({
+  Future<List<Music>> kugouClientKuGouClientGetMusicsDetails({
     required KuGouClient that,
     required List<String> hashes,
   });
 
-  Future<Playlist> crateClientKuGouClientGetPlaylistDetail({
+  Future<Playlist> kugouClientKuGouClientGetPlaylistDetail({
     required KuGouClient that,
     required String listId,
   });
 
-  Future<List<Music>> crateClientKuGouClientGetPlaylistMusic({
+  Future<List<Music>> kugouClientKuGouClientGetPlaylistMusic({
     required KuGouClient that,
     required String listId,
   });
 
-  Future<List<Playlist>> crateClientKuGouClientGetPlaylists({
+  Future<List<Playlist>> kugouClientKuGouClientGetPlaylists({
     required KuGouClient that,
   });
 
-  Future<List<Music>> crateClientKuGouClientGetRecommendMusics({
-    required KuGouClient that,
-    required int num,
-  });
-
-  Future<List<Playlist>> crateClientKuGouClientGetRecommendPlaylists({
+  Future<List<Music>> kugouClientKuGouClientGetRecommendMusics({
     required KuGouClient that,
     required int num,
   });
 
-  Future<List<Singer>> crateClientKuGouClientGetRecommendSingers({
+  Future<List<Playlist>> kugouClientKuGouClientGetRecommendPlaylists({
     required KuGouClient that,
     required int num,
   });
 
-  Future<List<Album>> crateClientKuGouClientGetSingerAlbums({
+  Future<List<Singer>> kugouClientKuGouClientGetRecommendSingers({
+    required KuGouClient that,
+    required int num,
+  });
+
+  Future<List<Album>> kugouClientKuGouClientGetSingerAlbums({
     required KuGouClient that,
     required String singerId,
   });
 
-  Future<Singer> crateClientKuGouClientGetSingerDetail({
+  Future<Singer> kugouClientKuGouClientGetSingerDetail({
     required KuGouClient that,
     required String singerId,
   });
 
-  Future<List<Music>> crateClientKuGouClientGetSingerMusic({
+  Future<List<Music>> kugouClientKuGouClientGetSingerMusic({
     required KuGouClient that,
     required String singerId,
   });
 
-  Future<bool> crateClientKuGouClientHasDfid({required KuGouClient that});
+  Future<bool> kugouClientKuGouClientHasDfid({required KuGouClient that});
 
-  Future<bool> crateClientKuGouClientIsLoggedIn({required KuGouClient that});
+  Future<bool> kugouClientKuGouClientIsLoggedIn({required KuGouClient that});
 
-  Future<LoginResult> crateClientKuGouClientLoginCellphone({
+  Future<LoginResult> kugouClientKuGouClientLoginCellphone({
     required KuGouClient that,
     required String mobile,
     required String code,
   });
 
-  Future<KuGouClient> crateClientKuGouClientNew({required Platform platform});
+  Future<KuGouClient> kugouClientKuGouClientNew({required Platform platform});
 
-  Future<Platform> crateClientKuGouClientPlatform({required KuGouClient that});
+  Future<Platform> kugouClientKuGouClientPlatform({required KuGouClient that});
 
-  Future<QrStatus> crateClientKuGouClientQrCheck({
+  Future<QrStatus> kugouClientKuGouClientQrCheck({
     required KuGouClient that,
     required String key,
   });
 
-  Future<(String, String)> crateClientKuGouClientQrKey({
+  Future<(String, String)> kugouClientKuGouClientQrKey({
     required KuGouClient that,
   });
 
-  Future<LoginResult> crateClientKuGouClientQrLoginWait({
+  Future<LoginResult> kugouClientKuGouClientQrLoginWait({
     required KuGouClient that,
     required String key,
     required BigInt intervalSecs,
     required int maxAttempts,
   });
 
-  Future<String> crateClientKuGouClientRawRequest({
+  Future<String> kugouClientKuGouClientRawRequest({
     required KuGouClient that,
     required String path,
     required Map<String, String> query,
   });
 
-  Future<LoginResult> crateClientKuGouClientRefreshToken({
+  Future<LoginResult> kugouClientKuGouClientRefreshToken({
     required KuGouClient that,
   });
 
-  Future<String> crateClientKuGouClientRegisterDevice({
+  Future<String> kugouClientKuGouClientRegisterDevice({
     required KuGouClient that,
   });
 
-  Future<void> crateClientKuGouClientSaveSession({required KuGouClient that});
+  Future<void> kugouClientKuGouClientSaveSession({required KuGouClient that});
 
-  Future<SearchResult> crateClientKuGouClientSearch({
-    required KuGouClient that,
-    required String keyword,
-  });
-
-  Future<SearchResult> crateClientKuGouClientSearchWithDetails({
+  Future<SearchResult> kugouClientKuGouClientSearch({
     required KuGouClient that,
     required String keyword,
   });
 
-  Future<void> crateClientKuGouClientSendCaptcha({
+  Future<SearchResult> kugouClientKuGouClientSearchWithDetails({
+    required KuGouClient that,
+    required String keyword,
+  });
+
+  Future<void> kugouClientKuGouClientSendCaptcha({
     required KuGouClient that,
     required String mobile,
   });
 
-  Future<void> crateClientKuGouClientSetLogin({
+  Future<void> kugouClientKuGouClientSetLogin({
     required KuGouClient that,
     required String token,
     required String userid,
   });
 
-  Future<String> crateClientKuGouClientToken({required KuGouClient that});
+  Future<String> kugouClientKuGouClientToken({required KuGouClient that});
 
-  Future<bool> crateClientKuGouClientTokenNeedsRefresh({
+  Future<bool> kugouClientKuGouClientTokenNeedsRefresh({
     required KuGouClient that,
     required PlatformInt64 expireTime,
     required PlatformInt64 thresholdSecs,
   });
 
-  Future<void> crateClientKuGouClientUpgradeVip({required KuGouClient that});
+  Future<void> kugouClientKuGouClientUpgradeVip({required KuGouClient that});
 
-  Future<String> crateClientKuGouClientUserid({required KuGouClient that});
+  Future<String> kugouClientKuGouClientUserid({required KuGouClient that});
 
-  Future<String> crateFrbApiCalculateMid({required String guid});
+  Future<ServerResponse> neteaseClientNetEaseClientAlbum({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  });
 
-  Future<KuGouClient> crateFrbApiCreateClient({
+  Future<ServerResponse> neteaseClientNetEaseClientArtistAlbum({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientArtistDetail({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientArtistSongs({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+    required int limit,
+    required int offset,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientCaptchaSent({
+    required NetEaseClient that,
+    required String cookie,
+    required String phone,
+  });
+
+  Future<NetEaseClient> neteaseClientNetEaseClientDefault();
+
+  Future<String> neteaseClientNetEaseClientDeviceId({
+    required NetEaseClient that,
+  });
+
+  Future<bool> neteaseClientNetEaseClientHasMusicA({
+    required NetEaseClient that,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientLoginCellphone({
+    required NetEaseClient that,
+    required String cookie,
+    required String phone,
+    required String captcha,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientLoginRefresh({
+    required NetEaseClient that,
+    required String cookie,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientLoginStatus({
+    required NetEaseClient that,
+    required String cookie,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientLyric({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  });
+
+  Future<NetEaseClient> neteaseClientNetEaseClientNew();
+
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistCreate({
+    required NetEaseClient that,
+    required String cookie,
+    required String name,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistDelete({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistDetail({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistTrackAll({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistTracks({
+    required NetEaseClient that,
+    required String cookie,
+    required String op,
+    required String pid,
+    required List<String> tracks,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientQrCheck({
+    required NetEaseClient that,
+    required String cookie,
+    required String key,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientQrCreate({
+    required NetEaseClient that,
+    required String key,
+    required String platform,
+    required bool wantImage,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientQrKey({
+    required NetEaseClient that,
+    required String cookie,
+  });
+
+  Future<String> neteaseClientNetEaseClientRawRequest({
+    required NetEaseClient that,
+    required String path,
+    required Map<String, String> query,
+    required String cookie,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientRecommendResource({
+    required NetEaseClient that,
+    required String cookie,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientRecommendSongs({
+    required NetEaseClient that,
+    required String cookie,
+  });
+
+  Future<String> neteaseClientNetEaseClientRegisterAnonymous({
+    required NetEaseClient that,
+    required String cookie,
+  });
+
+  Future<void> neteaseClientNetEaseClientSave({required NetEaseClient that});
+
+  Future<ServerResponse> neteaseClientNetEaseClientSearch({
+    required NetEaseClient that,
+    required String cookie,
+    required String keywords,
+    required int ty,
+    required int limit,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientSongDetail({
+    required NetEaseClient that,
+    required String cookie,
+    required List<String> ids,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientSongUrl({
+    required NetEaseClient that,
+    required String cookie,
+    required List<String> ids,
+    required int br,
+  });
+
+  Future<String> neteaseClientNetEaseClientSongUrlStr({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  });
+
+  Future<List<String>> neteaseClientNetEaseClientSupportedRoutes();
+
+  Future<ServerResponse> neteaseClientNetEaseClientTopArtists({
+    required NetEaseClient that,
+    required String cookie,
+    required int limit,
+  });
+
+  Future<List<String>> neteaseClientNetEaseClientUnsupportedRoutes();
+
+  Future<ServerResponse> neteaseClientNetEaseClientUserAccount({
+    required NetEaseClient that,
+    required String cookie,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientUserPlaylist({
+    required NetEaseClient that,
+    required String cookie,
+    required String uid,
+    required int limit,
+  });
+
+  Future<ServerResponse> neteaseClientNetEaseClientVipInfo({
+    required NetEaseClient that,
+    required String cookie,
+    required String uid,
+  });
+
+  Future<String> neteaseClientNetEaseClientWnmcid({
+    required NetEaseClient that,
+  });
+
+  Future<String> crateFrbApiBridgeVersion();
+
+  Future<String> kugouFrbApiCalculateMid({required String guid});
+
+  Future<KuGouClient> kugouFrbApiCreateClient({
     required String platform,
     required String identityPath,
   });
 
-  Future<KuGouClient> crateFrbApiCreateEphemeralClient({
+  Future<NetEaseClient> neteaseFrbApiCreateClient({
+    required String identityPath,
+  });
+
+  Future<KuGouClient> kugouFrbApiCreateEphemeralClient({
     required String platform,
   });
 
-  Future<String> crateFrbApiGetCover({
+  Future<NetEaseClient> neteaseFrbApiCreateEphemeralClient();
+
+  Future<String> kugouFrbApiGetCover({
     required String url,
     required String size,
   });
 
-  Future<bool> crateFrbApiIsUuidV4({required String s});
+  Future<bool> kugouFrbApiIsUuidV4({required String s});
 
-  Future<String> crateFrbApiKrcToLrc({required String krc});
+  Future<String> kugouFrbApiKrcToLrc({required String krc});
 
-  Future<String> crateFrbApiMsToLrcTime({required PlatformInt64 ms});
+  Future<String> kugouFrbApiMsToLrcTime({required PlatformInt64 ms});
 
-  Future<String> crateFrbApiProcessLyric({required String lrc});
+  Future<String> kugouFrbApiProcessLyric({required String lrc});
 
-  Future<Session> crateClientSessionDefault();
+  Future<Session> kugouClientSessionDefault();
 
-  Future<String> crateFrbApiUuidV4();
+  Future<List<String>> neteaseFrbApiSupportedRoutes();
 
-  Future<String> crateFrbApiVersion();
+  Future<List<String>> neteaseFrbApiUnsupportedRoutes();
+
+  Future<String> kugouFrbApiUuidV4();
+
+  Future<String> kugouFrbApiVersion();
+
+  Future<String> neteaseFrbApiVersion();
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_KuGouClient;
@@ -341,6 +558,23 @@ abstract class RustLibApi extends BaseApi {
   get rust_arc_decrement_strong_count_KuGouClient;
 
   CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_KuGouClientPtr;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_NetEaseClient;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_NetEaseClient;
+
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_NetEaseClientPtr;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_QrStatus;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_QrStatus;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_QrStatusPtr;
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -352,7 +586,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Future<void> crateClientKuGouClientAddMusicToPlaylist({
+  Future<void> kugouClientKuGouClientAddMusicToPlaylist({
     required KuGouClient that,
     required String listId,
     required String hash,
@@ -366,7 +600,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               );
           var arg1 = cst_encode_String(listId);
           var arg2 = cst_encode_String(hash);
-          return wire.wire__crate__client__KuGouClient_add_music_to_playlist(
+          return wire.wire__kugou__client__KuGouClient_add_music_to_playlist(
             port_,
             arg0,
             arg1,
@@ -375,23 +609,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_unit,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientAddMusicToPlaylistConstMeta,
+        constMeta: kKugouClientKuGouClientAddMusicToPlaylistConstMeta,
         argValues: [that, listId, hash],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientAddMusicToPlaylistConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientAddMusicToPlaylistConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_add_music_to_playlist",
         argNames: ["that", "listId", "hash"],
       );
 
   @override
-  Future<void> crateClientKuGouClientApplyLogin({
+  Future<void> kugouClientKuGouClientApplyLogin({
     required KuGouClient that,
     required LoginResult r,
   }) {
@@ -403,7 +637,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_box_autoadd_login_result(r);
-          return wire.wire__crate__client__KuGouClient_apply_login(
+          return wire.wire__kugou__client__KuGouClient_apply_login(
             port_,
             arg0,
             arg1,
@@ -413,21 +647,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: dco_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientApplyLoginConstMeta,
+        constMeta: kKugouClientKuGouClientApplyLoginConstMeta,
         argValues: [that, r],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientApplyLoginConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientApplyLoginConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_apply_login",
         argNames: ["that", "r"],
       );
 
   @override
-  Future<List<Playlist>> crateClientKuGouClientCachedPlaylists({
+  Future<List<Playlist>> kugouClientKuGouClientCachedPlaylists({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -437,7 +671,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_cached_playlists(
+          return wire.wire__kugou__client__KuGouClient_cached_playlists(
             port_,
             arg0,
           );
@@ -446,21 +680,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: dco_decode_list_playlist,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientCachedPlaylistsConstMeta,
+        constMeta: kKugouClientKuGouClientCachedPlaylistsConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientCachedPlaylistsConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientCachedPlaylistsConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_cached_playlists",
         argNames: ["that"],
       );
 
   @override
-  Future<String> crateClientKuGouClientChooseMusicQuality({
+  Future<String> kugouClientKuGouClientChooseMusicQuality({
     required KuGouClient that,
     required String hash,
     required int quality,
@@ -474,7 +708,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               );
           var arg1 = cst_encode_String(hash);
           var arg2 = cst_encode_u_32(quality);
-          return wire.wire__crate__client__KuGouClient_choose_music_quality(
+          return wire.wire__kugou__client__KuGouClient_choose_music_quality(
             port_,
             arg0,
             arg1,
@@ -483,23 +717,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientChooseMusicQualityConstMeta,
+        constMeta: kKugouClientKuGouClientChooseMusicQualityConstMeta,
         argValues: [that, hash, quality],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientChooseMusicQualityConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientChooseMusicQualityConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_choose_music_quality",
         argNames: ["that", "hash", "quality"],
       );
 
   @override
-  Future<int> crateClientKuGouClientClaimAdVip({required KuGouClient that}) {
+  Future<int> kugouClientKuGouClientClaimAdVip({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -507,30 +741,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_claim_ad_vip(
+          return wire.wire__kugou__client__KuGouClient_claim_ad_vip(
             port_,
             arg0,
           );
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_u_32,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientClaimAdVipConstMeta,
+        constMeta: kKugouClientKuGouClientClaimAdVipConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientClaimAdVipConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientClaimAdVipConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_claim_ad_vip",
         argNames: ["that"],
       );
 
   @override
-  Future<void> crateClientKuGouClientClaimDailyVip({
+  Future<void> kugouClientKuGouClientClaimDailyVip({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -540,30 +774,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_claim_daily_vip(
+          return wire.wire__kugou__client__KuGouClient_claim_daily_vip(
             port_,
             arg0,
           );
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_unit,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientClaimDailyVipConstMeta,
+        constMeta: kKugouClientKuGouClientClaimDailyVipConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientClaimDailyVipConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientClaimDailyVipConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_claim_daily_vip",
         argNames: ["that"],
       );
 
   @override
-  Future<void> crateClientKuGouClientClaimVipAll({required KuGouClient that}) {
+  Future<void> kugouClientKuGouClientClaimVipAll({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -571,30 +805,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_claim_vip_all(
+          return wire.wire__kugou__client__KuGouClient_claim_vip_all(
             port_,
             arg0,
           );
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_unit,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientClaimVipAllConstMeta,
+        constMeta: kKugouClientKuGouClientClaimVipAllConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientClaimVipAllConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientClaimVipAllConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_claim_vip_all",
         argNames: ["that"],
       );
 
   @override
-  Future<Playlist> crateClientKuGouClientCreatePlaylist({
+  Future<Playlist> kugouClientKuGouClientCreatePlaylist({
     required KuGouClient that,
     required String name,
   }) {
@@ -606,7 +840,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(name);
-          return wire.wire__crate__client__KuGouClient_create_playlist(
+          return wire.wire__kugou__client__KuGouClient_create_playlist(
             port_,
             arg0,
             arg1,
@@ -614,23 +848,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_playlist,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientCreatePlaylistConstMeta,
+        constMeta: kKugouClientKuGouClientCreatePlaylistConstMeta,
         argValues: [that, name],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientCreatePlaylistConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientCreatePlaylistConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_create_playlist",
         argNames: ["that", "name"],
       );
 
   @override
-  Future<void> crateClientKuGouClientDeleteMusicFromPlaylist({
+  Future<void> kugouClientKuGouClientDeleteMusicFromPlaylist({
     required KuGouClient that,
     required String listId,
     required String hash,
@@ -645,7 +879,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           var arg1 = cst_encode_String(listId);
           var arg2 = cst_encode_String(hash);
           return wire
-              .wire__crate__client__KuGouClient_delete_music_from_playlist(
+              .wire__kugou__client__KuGouClient_delete_music_from_playlist(
                 port_,
                 arg0,
                 arg1,
@@ -654,23 +888,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_unit,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientDeleteMusicFromPlaylistConstMeta,
+        constMeta: kKugouClientKuGouClientDeleteMusicFromPlaylistConstMeta,
         argValues: [that, listId, hash],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientDeleteMusicFromPlaylistConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientDeleteMusicFromPlaylistConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_delete_music_from_playlist",
         argNames: ["that", "listId", "hash"],
       );
 
   @override
-  Future<void> crateClientKuGouClientDeletePlaylist({
+  Future<void> kugouClientKuGouClientDeletePlaylist({
     required KuGouClient that,
     required String listId,
   }) {
@@ -682,7 +916,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(listId);
-          return wire.wire__crate__client__KuGouClient_delete_playlist(
+          return wire.wire__kugou__client__KuGouClient_delete_playlist(
             port_,
             arg0,
             arg1,
@@ -690,23 +924,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_unit,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientDeletePlaylistConstMeta,
+        constMeta: kKugouClientKuGouClientDeletePlaylistConstMeta,
         argValues: [that, listId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientDeletePlaylistConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientDeletePlaylistConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_delete_playlist",
         argNames: ["that", "listId"],
       );
 
   @override
-  Future<String> crateClientKuGouClientDeviceDev({required KuGouClient that}) {
+  Future<String> kugouClientKuGouClientDeviceDev({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -714,27 +948,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_device_dev(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_device_dev(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientDeviceDevConstMeta,
+        constMeta: kKugouClientKuGouClientDeviceDevConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientDeviceDevConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientDeviceDevConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_device_dev",
         argNames: ["that"],
       );
 
   @override
-  Future<String?> crateClientKuGouClientDeviceDfid({
+  Future<String?> kugouClientKuGouClientDeviceDfid({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -744,27 +978,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_device_dfid(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_device_dfid(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_opt_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientDeviceDfidConstMeta,
+        constMeta: kKugouClientKuGouClientDeviceDfidConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientDeviceDfidConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientDeviceDfidConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_device_dfid",
         argNames: ["that"],
       );
 
   @override
-  Future<String> crateClientKuGouClientDeviceGuid({required KuGouClient that}) {
+  Future<String> kugouClientKuGouClientDeviceGuid({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -772,27 +1006,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_device_guid(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_device_guid(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientDeviceGuidConstMeta,
+        constMeta: kKugouClientKuGouClientDeviceGuidConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientDeviceGuidConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientDeviceGuidConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_device_guid",
         argNames: ["that"],
       );
 
   @override
-  Future<String> crateClientKuGouClientDeviceMid({required KuGouClient that}) {
+  Future<String> kugouClientKuGouClientDeviceMid({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -800,27 +1034,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_device_mid(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_device_mid(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientDeviceMidConstMeta,
+        constMeta: kKugouClientKuGouClientDeviceMidConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientDeviceMidConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientDeviceMidConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_device_mid",
         argNames: ["that"],
       );
 
   @override
-  Future<String> crateClientKuGouClientDeviceWebgl({
+  Future<String> kugouClientKuGouClientDeviceWebgl({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -830,7 +1064,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_device_webgl(
+          return wire.wire__kugou__client__KuGouClient_device_webgl(
             port_,
             arg0,
           );
@@ -839,21 +1073,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientDeviceWebglConstMeta,
+        constMeta: kKugouClientKuGouClientDeviceWebglConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientDeviceWebglConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientDeviceWebglConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_device_webgl",
         argNames: ["that"],
       );
 
   @override
-  Future<String> crateClientKuGouClientDfid({required KuGouClient that}) {
+  Future<String> kugouClientKuGouClientDfid({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -861,24 +1095,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_dfid(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_dfid(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientDfidConstMeta,
+        constMeta: kKugouClientKuGouClientDfidConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientDfidConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientDfidConstMeta =>
       const TaskConstMeta(debugName: "KuGouClient_dfid", argNames: ["that"]);
 
   @override
-  Future<List<String>> crateClientKuGouClientFavoriteHashes({
+  Future<List<String>> kugouClientKuGouClientFavoriteHashes({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -888,7 +1122,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_favorite_hashes(
+          return wire.wire__kugou__client__KuGouClient_favorite_hashes(
             port_,
             arg0,
           );
@@ -897,21 +1131,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: dco_decode_list_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientFavoriteHashesConstMeta,
+        constMeta: kKugouClientKuGouClientFavoriteHashesConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientFavoriteHashesConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientFavoriteHashesConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_favorite_hashes",
         argNames: ["that"],
       );
 
   @override
-  Future<String> crateClientKuGouClientFavoritePlaylistId({
+  Future<String> kugouClientKuGouClientFavoritePlaylistId({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -921,7 +1155,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_favorite_playlist_id(
+          return wire.wire__kugou__client__KuGouClient_favorite_playlist_id(
             port_,
             arg0,
           );
@@ -930,21 +1164,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientFavoritePlaylistIdConstMeta,
+        constMeta: kKugouClientKuGouClientFavoritePlaylistIdConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientFavoritePlaylistIdConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientFavoritePlaylistIdConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_favorite_playlist_id",
         argNames: ["that"],
       );
 
   @override
-  Future<Album> crateClientKuGouClientGetAlbumDetail({
+  Future<Album> kugouClientKuGouClientGetAlbumDetail({
     required KuGouClient that,
     required String albumId,
   }) {
@@ -956,7 +1190,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(albumId);
-          return wire.wire__crate__client__KuGouClient_get_album_detail(
+          return wire.wire__kugou__client__KuGouClient_get_album_detail(
             port_,
             arg0,
             arg1,
@@ -964,23 +1198,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_album,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetAlbumDetailConstMeta,
+        constMeta: kKugouClientKuGouClientGetAlbumDetailConstMeta,
         argValues: [that, albumId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetAlbumDetailConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetAlbumDetailConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_album_detail",
         argNames: ["that", "albumId"],
       );
 
   @override
-  Future<List<Music>> crateClientKuGouClientGetAlbumMusic({
+  Future<List<Music>> kugouClientKuGouClientGetAlbumMusic({
     required KuGouClient that,
     required String albumId,
   }) {
@@ -992,7 +1226,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(albumId);
-          return wire.wire__crate__client__KuGouClient_get_album_music(
+          return wire.wire__kugou__client__KuGouClient_get_album_music(
             port_,
             arg0,
             arg1,
@@ -1000,23 +1234,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_music,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetAlbumMusicConstMeta,
+        constMeta: kKugouClientKuGouClientGetAlbumMusicConstMeta,
         argValues: [that, albumId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetAlbumMusicConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetAlbumMusicConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_album_music",
         argNames: ["that", "albumId"],
       );
 
   @override
-  Future<List<String>> crateClientKuGouClientGetCollectionHashes({
+  Future<List<String>> kugouClientKuGouClientGetCollectionHashes({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -1026,30 +1260,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_get_collection_hashes(
+          return wire.wire__kugou__client__KuGouClient_get_collection_hashes(
             port_,
             arg0,
           );
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_String,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetCollectionHashesConstMeta,
+        constMeta: kKugouClientKuGouClientGetCollectionHashesConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetCollectionHashesConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetCollectionHashesConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_collection_hashes",
         argNames: ["that"],
       );
 
   @override
-  Future<String> crateClientKuGouClientGetLyric({
+  Future<String> kugouClientKuGouClientGetLyric({
     required KuGouClient that,
     required String hash,
   }) {
@@ -1061,7 +1295,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(hash);
-          return wire.wire__crate__client__KuGouClient_get_lyric(
+          return wire.wire__kugou__client__KuGouClient_get_lyric(
             port_,
             arg0,
             arg1,
@@ -1069,23 +1303,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetLyricConstMeta,
+        constMeta: kKugouClientKuGouClientGetLyricConstMeta,
         argValues: [that, hash],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetLyricConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetLyricConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_lyric",
         argNames: ["that", "hash"],
       );
 
   @override
-  Future<String> crateClientKuGouClientGetLyricKrc({
+  Future<String> kugouClientKuGouClientGetLyricKrc({
     required KuGouClient that,
     required String hash,
   }) {
@@ -1097,7 +1331,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(hash);
-          return wire.wire__crate__client__KuGouClient_get_lyric_krc(
+          return wire.wire__kugou__client__KuGouClient_get_lyric_krc(
             port_,
             arg0,
             arg1,
@@ -1105,23 +1339,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetLyricKrcConstMeta,
+        constMeta: kKugouClientKuGouClientGetLyricKrcConstMeta,
         argValues: [that, hash],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetLyricKrcConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetLyricKrcConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_lyric_krc",
         argNames: ["that", "hash"],
       );
 
   @override
-  Future<String> crateClientKuGouClientGetMusicUrl({
+  Future<String> kugouClientKuGouClientGetMusicUrl({
     required KuGouClient that,
     required String hash,
     required String quality,
@@ -1135,7 +1369,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               );
           var arg1 = cst_encode_String(hash);
           var arg2 = cst_encode_String(quality);
-          return wire.wire__crate__client__KuGouClient_get_music_url(
+          return wire.wire__kugou__client__KuGouClient_get_music_url(
             port_,
             arg0,
             arg1,
@@ -1144,23 +1378,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetMusicUrlConstMeta,
+        constMeta: kKugouClientKuGouClientGetMusicUrlConstMeta,
         argValues: [that, hash, quality],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetMusicUrlConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetMusicUrlConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_music_url",
         argNames: ["that", "hash", "quality"],
       );
 
   @override
-  Future<List<Music>> crateClientKuGouClientGetMusicsDetails({
+  Future<List<Music>> kugouClientKuGouClientGetMusicsDetails({
     required KuGouClient that,
     required List<String> hashes,
   }) {
@@ -1172,7 +1406,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_list_String(hashes);
-          return wire.wire__crate__client__KuGouClient_get_musics_details(
+          return wire.wire__kugou__client__KuGouClient_get_musics_details(
             port_,
             arg0,
             arg1,
@@ -1180,23 +1414,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_music,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetMusicsDetailsConstMeta,
+        constMeta: kKugouClientKuGouClientGetMusicsDetailsConstMeta,
         argValues: [that, hashes],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetMusicsDetailsConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetMusicsDetailsConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_musics_details",
         argNames: ["that", "hashes"],
       );
 
   @override
-  Future<Playlist> crateClientKuGouClientGetPlaylistDetail({
+  Future<Playlist> kugouClientKuGouClientGetPlaylistDetail({
     required KuGouClient that,
     required String listId,
   }) {
@@ -1208,7 +1442,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(listId);
-          return wire.wire__crate__client__KuGouClient_get_playlist_detail(
+          return wire.wire__kugou__client__KuGouClient_get_playlist_detail(
             port_,
             arg0,
             arg1,
@@ -1216,23 +1450,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_playlist,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetPlaylistDetailConstMeta,
+        constMeta: kKugouClientKuGouClientGetPlaylistDetailConstMeta,
         argValues: [that, listId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetPlaylistDetailConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetPlaylistDetailConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_playlist_detail",
         argNames: ["that", "listId"],
       );
 
   @override
-  Future<List<Music>> crateClientKuGouClientGetPlaylistMusic({
+  Future<List<Music>> kugouClientKuGouClientGetPlaylistMusic({
     required KuGouClient that,
     required String listId,
   }) {
@@ -1244,7 +1478,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(listId);
-          return wire.wire__crate__client__KuGouClient_get_playlist_music(
+          return wire.wire__kugou__client__KuGouClient_get_playlist_music(
             port_,
             arg0,
             arg1,
@@ -1252,23 +1486,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_music,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetPlaylistMusicConstMeta,
+        constMeta: kKugouClientKuGouClientGetPlaylistMusicConstMeta,
         argValues: [that, listId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetPlaylistMusicConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetPlaylistMusicConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_playlist_music",
         argNames: ["that", "listId"],
       );
 
   @override
-  Future<List<Playlist>> crateClientKuGouClientGetPlaylists({
+  Future<List<Playlist>> kugouClientKuGouClientGetPlaylists({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -1278,30 +1512,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_get_playlists(
+          return wire.wire__kugou__client__KuGouClient_get_playlists(
             port_,
             arg0,
           );
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_playlist,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetPlaylistsConstMeta,
+        constMeta: kKugouClientKuGouClientGetPlaylistsConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetPlaylistsConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetPlaylistsConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_playlists",
         argNames: ["that"],
       );
 
   @override
-  Future<List<Music>> crateClientKuGouClientGetRecommendMusics({
+  Future<List<Music>> kugouClientKuGouClientGetRecommendMusics({
     required KuGouClient that,
     required int num,
   }) {
@@ -1313,7 +1547,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_u_32(num);
-          return wire.wire__crate__client__KuGouClient_get_recommend_musics(
+          return wire.wire__kugou__client__KuGouClient_get_recommend_musics(
             port_,
             arg0,
             arg1,
@@ -1321,23 +1555,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_music,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetRecommendMusicsConstMeta,
+        constMeta: kKugouClientKuGouClientGetRecommendMusicsConstMeta,
         argValues: [that, num],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetRecommendMusicsConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetRecommendMusicsConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_recommend_musics",
         argNames: ["that", "num"],
       );
 
   @override
-  Future<List<Playlist>> crateClientKuGouClientGetRecommendPlaylists({
+  Future<List<Playlist>> kugouClientKuGouClientGetRecommendPlaylists({
     required KuGouClient that,
     required int num,
   }) {
@@ -1349,7 +1583,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_u_32(num);
-          return wire.wire__crate__client__KuGouClient_get_recommend_playlists(
+          return wire.wire__kugou__client__KuGouClient_get_recommend_playlists(
             port_,
             arg0,
             arg1,
@@ -1357,23 +1591,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_playlist,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetRecommendPlaylistsConstMeta,
+        constMeta: kKugouClientKuGouClientGetRecommendPlaylistsConstMeta,
         argValues: [that, num],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetRecommendPlaylistsConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetRecommendPlaylistsConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_recommend_playlists",
         argNames: ["that", "num"],
       );
 
   @override
-  Future<List<Singer>> crateClientKuGouClientGetRecommendSingers({
+  Future<List<Singer>> kugouClientKuGouClientGetRecommendSingers({
     required KuGouClient that,
     required int num,
   }) {
@@ -1385,7 +1619,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_u_32(num);
-          return wire.wire__crate__client__KuGouClient_get_recommend_singers(
+          return wire.wire__kugou__client__KuGouClient_get_recommend_singers(
             port_,
             arg0,
             arg1,
@@ -1393,23 +1627,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_singer,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetRecommendSingersConstMeta,
+        constMeta: kKugouClientKuGouClientGetRecommendSingersConstMeta,
         argValues: [that, num],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetRecommendSingersConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetRecommendSingersConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_recommend_singers",
         argNames: ["that", "num"],
       );
 
   @override
-  Future<List<Album>> crateClientKuGouClientGetSingerAlbums({
+  Future<List<Album>> kugouClientKuGouClientGetSingerAlbums({
     required KuGouClient that,
     required String singerId,
   }) {
@@ -1421,7 +1655,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(singerId);
-          return wire.wire__crate__client__KuGouClient_get_singer_albums(
+          return wire.wire__kugou__client__KuGouClient_get_singer_albums(
             port_,
             arg0,
             arg1,
@@ -1429,23 +1663,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_album,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetSingerAlbumsConstMeta,
+        constMeta: kKugouClientKuGouClientGetSingerAlbumsConstMeta,
         argValues: [that, singerId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetSingerAlbumsConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetSingerAlbumsConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_singer_albums",
         argNames: ["that", "singerId"],
       );
 
   @override
-  Future<Singer> crateClientKuGouClientGetSingerDetail({
+  Future<Singer> kugouClientKuGouClientGetSingerDetail({
     required KuGouClient that,
     required String singerId,
   }) {
@@ -1457,7 +1691,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(singerId);
-          return wire.wire__crate__client__KuGouClient_get_singer_detail(
+          return wire.wire__kugou__client__KuGouClient_get_singer_detail(
             port_,
             arg0,
             arg1,
@@ -1465,23 +1699,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_singer,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetSingerDetailConstMeta,
+        constMeta: kKugouClientKuGouClientGetSingerDetailConstMeta,
         argValues: [that, singerId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetSingerDetailConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetSingerDetailConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_singer_detail",
         argNames: ["that", "singerId"],
       );
 
   @override
-  Future<List<Music>> crateClientKuGouClientGetSingerMusic({
+  Future<List<Music>> kugouClientKuGouClientGetSingerMusic({
     required KuGouClient that,
     required String singerId,
   }) {
@@ -1493,7 +1727,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(singerId);
-          return wire.wire__crate__client__KuGouClient_get_singer_music(
+          return wire.wire__kugou__client__KuGouClient_get_singer_music(
             port_,
             arg0,
             arg1,
@@ -1501,23 +1735,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_list_music,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientGetSingerMusicConstMeta,
+        constMeta: kKugouClientKuGouClientGetSingerMusicConstMeta,
         argValues: [that, singerId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientGetSingerMusicConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientGetSingerMusicConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_get_singer_music",
         argNames: ["that", "singerId"],
       );
 
   @override
-  Future<bool> crateClientKuGouClientHasDfid({required KuGouClient that}) {
+  Future<bool> kugouClientKuGouClientHasDfid({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -1525,27 +1759,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_has_dfid(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_has_dfid(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_bool,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientHasDfidConstMeta,
+        constMeta: kKugouClientKuGouClientHasDfidConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientHasDfidConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientHasDfidConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_has_dfid",
         argNames: ["that"],
       );
 
   @override
-  Future<bool> crateClientKuGouClientIsLoggedIn({required KuGouClient that}) {
+  Future<bool> kugouClientKuGouClientIsLoggedIn({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -1553,7 +1787,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_is_logged_in(
+          return wire.wire__kugou__client__KuGouClient_is_logged_in(
             port_,
             arg0,
           );
@@ -1562,21 +1796,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: dco_decode_bool,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientIsLoggedInConstMeta,
+        constMeta: kKugouClientKuGouClientIsLoggedInConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientIsLoggedInConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientIsLoggedInConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_is_logged_in",
         argNames: ["that"],
       );
 
   @override
-  Future<LoginResult> crateClientKuGouClientLoginCellphone({
+  Future<LoginResult> kugouClientKuGouClientLoginCellphone({
     required KuGouClient that,
     required String mobile,
     required String code,
@@ -1590,7 +1824,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               );
           var arg1 = cst_encode_String(mobile);
           var arg2 = cst_encode_String(code);
-          return wire.wire__crate__client__KuGouClient_login_cellphone(
+          return wire.wire__kugou__client__KuGouClient_login_cellphone(
             port_,
             arg0,
             arg1,
@@ -1599,46 +1833,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_login_result,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientLoginCellphoneConstMeta,
+        constMeta: kKugouClientKuGouClientLoginCellphoneConstMeta,
         argValues: [that, mobile, code],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientLoginCellphoneConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientLoginCellphoneConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_login_cellphone",
         argNames: ["that", "mobile", "code"],
       );
 
   @override
-  Future<KuGouClient> crateClientKuGouClientNew({required Platform platform}) {
+  Future<KuGouClient> kugouClientKuGouClientNew({required Platform platform}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           var arg0 = cst_encode_platform(platform);
-          return wire.wire__crate__client__KuGouClient_new(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_new(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData:
               dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientNewConstMeta,
+        constMeta: kKugouClientKuGouClientNewConstMeta,
         argValues: [platform],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientNewConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientNewConstMeta =>
       const TaskConstMeta(debugName: "KuGouClient_new", argNames: ["platform"]);
 
   @override
-  Future<Platform> crateClientKuGouClientPlatform({required KuGouClient that}) {
+  Future<Platform> kugouClientKuGouClientPlatform({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -1646,27 +1880,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_platform(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_platform(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_platform,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientPlatformConstMeta,
+        constMeta: kKugouClientKuGouClientPlatformConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientPlatformConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientPlatformConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_platform",
         argNames: ["that"],
       );
 
   @override
-  Future<QrStatus> crateClientKuGouClientQrCheck({
+  Future<QrStatus> kugouClientKuGouClientQrCheck({
     required KuGouClient that,
     required String key,
   }) {
@@ -1678,31 +1912,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(key);
-          return wire.wire__crate__client__KuGouClient_qr_check(
+          return wire.wire__kugou__client__KuGouClient_qr_check(
             port_,
             arg0,
             arg1,
           );
         },
         codec: DcoCodec(
-          decodeSuccessData: dco_decode_qr_status,
-          decodeErrorData: dco_decode_error,
+          decodeSuccessData:
+              dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientQrCheckConstMeta,
+        constMeta: kKugouClientKuGouClientQrCheckConstMeta,
         argValues: [that, key],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientQrCheckConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientQrCheckConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_qr_check",
         argNames: ["that", "key"],
       );
 
   @override
-  Future<(String, String)> crateClientKuGouClientQrKey({
+  Future<(String, String)> kugouClientKuGouClientQrKey({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -1712,24 +1947,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_qr_key(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_qr_key(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_record_string_string,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientQrKeyConstMeta,
+        constMeta: kKugouClientKuGouClientQrKeyConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientQrKeyConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientQrKeyConstMeta =>
       const TaskConstMeta(debugName: "KuGouClient_qr_key", argNames: ["that"]);
 
   @override
-  Future<LoginResult> crateClientKuGouClientQrLoginWait({
+  Future<LoginResult> kugouClientKuGouClientQrLoginWait({
     required KuGouClient that,
     required String key,
     required BigInt intervalSecs,
@@ -1745,7 +1980,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           var arg1 = cst_encode_String(key);
           var arg2 = cst_encode_u_64(intervalSecs);
           var arg3 = cst_encode_u_32(maxAttempts);
-          return wire.wire__crate__client__KuGouClient_qr_login_wait(
+          return wire.wire__kugou__client__KuGouClient_qr_login_wait(
             port_,
             arg0,
             arg1,
@@ -1755,23 +1990,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_login_result,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientQrLoginWaitConstMeta,
+        constMeta: kKugouClientKuGouClientQrLoginWaitConstMeta,
         argValues: [that, key, intervalSecs, maxAttempts],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientQrLoginWaitConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientQrLoginWaitConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_qr_login_wait",
         argNames: ["that", "key", "intervalSecs", "maxAttempts"],
       );
 
   @override
-  Future<String> crateClientKuGouClientRawRequest({
+  Future<String> kugouClientKuGouClientRawRequest({
     required KuGouClient that,
     required String path,
     required Map<String, String> query,
@@ -1785,7 +2020,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               );
           var arg1 = cst_encode_String(path);
           var arg2 = cst_encode_Map_String_String_None(query);
-          return wire.wire__crate__client__KuGouClient_raw_request(
+          return wire.wire__kugou__client__KuGouClient_raw_request(
             port_,
             arg0,
             arg1,
@@ -1794,23 +2029,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientRawRequestConstMeta,
+        constMeta: kKugouClientKuGouClientRawRequestConstMeta,
         argValues: [that, path, query],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientRawRequestConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientRawRequestConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_raw_request",
         argNames: ["that", "path", "query"],
       );
 
   @override
-  Future<LoginResult> crateClientKuGouClientRefreshToken({
+  Future<LoginResult> kugouClientKuGouClientRefreshToken({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -1820,30 +2055,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_refresh_token(
+          return wire.wire__kugou__client__KuGouClient_refresh_token(
             port_,
             arg0,
           );
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_login_result,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientRefreshTokenConstMeta,
+        constMeta: kKugouClientKuGouClientRefreshTokenConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientRefreshTokenConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientRefreshTokenConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_refresh_token",
         argNames: ["that"],
       );
 
   @override
-  Future<String> crateClientKuGouClientRegisterDevice({
+  Future<String> kugouClientKuGouClientRegisterDevice({
     required KuGouClient that,
   }) {
     return handler.executeNormal(
@@ -1853,30 +2088,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_register_device(
+          return wire.wire__kugou__client__KuGouClient_register_device(
             port_,
             arg0,
           );
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientRegisterDeviceConstMeta,
+        constMeta: kKugouClientKuGouClientRegisterDeviceConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientRegisterDeviceConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientRegisterDeviceConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_register_device",
         argNames: ["that"],
       );
 
   @override
-  Future<void> crateClientKuGouClientSaveSession({required KuGouClient that}) {
+  Future<void> kugouClientKuGouClientSaveSession({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -1884,30 +2119,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_save_session(
+          return wire.wire__kugou__client__KuGouClient_save_session(
             port_,
             arg0,
           );
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_unit,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientSaveSessionConstMeta,
+        constMeta: kKugouClientKuGouClientSaveSessionConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientSaveSessionConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientSaveSessionConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_save_session",
         argNames: ["that"],
       );
 
   @override
-  Future<SearchResult> crateClientKuGouClientSearch({
+  Future<SearchResult> kugouClientKuGouClientSearch({
     required KuGouClient that,
     required String keyword,
   }) {
@@ -1919,7 +2154,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(keyword);
-          return wire.wire__crate__client__KuGouClient_search(
+          return wire.wire__kugou__client__KuGouClient_search(
             port_,
             arg0,
             arg1,
@@ -1927,23 +2162,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_search_result,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientSearchConstMeta,
+        constMeta: kKugouClientKuGouClientSearchConstMeta,
         argValues: [that, keyword],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientSearchConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientSearchConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_search",
         argNames: ["that", "keyword"],
       );
 
   @override
-  Future<SearchResult> crateClientKuGouClientSearchWithDetails({
+  Future<SearchResult> kugouClientKuGouClientSearchWithDetails({
     required KuGouClient that,
     required String keyword,
   }) {
@@ -1955,7 +2190,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(keyword);
-          return wire.wire__crate__client__KuGouClient_search_with_details(
+          return wire.wire__kugou__client__KuGouClient_search_with_details(
             port_,
             arg0,
             arg1,
@@ -1963,23 +2198,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_search_result,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientSearchWithDetailsConstMeta,
+        constMeta: kKugouClientKuGouClientSearchWithDetailsConstMeta,
         argValues: [that, keyword],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientSearchWithDetailsConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientSearchWithDetailsConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_search_with_details",
         argNames: ["that", "keyword"],
       );
 
   @override
-  Future<void> crateClientKuGouClientSendCaptcha({
+  Future<void> kugouClientKuGouClientSendCaptcha({
     required KuGouClient that,
     required String mobile,
   }) {
@@ -1991,7 +2226,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
                 that,
               );
           var arg1 = cst_encode_String(mobile);
-          return wire.wire__crate__client__KuGouClient_send_captcha(
+          return wire.wire__kugou__client__KuGouClient_send_captcha(
             port_,
             arg0,
             arg1,
@@ -1999,23 +2234,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_unit,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientSendCaptchaConstMeta,
+        constMeta: kKugouClientKuGouClientSendCaptchaConstMeta,
         argValues: [that, mobile],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientSendCaptchaConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientSendCaptchaConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_send_captcha",
         argNames: ["that", "mobile"],
       );
 
   @override
-  Future<void> crateClientKuGouClientSetLogin({
+  Future<void> kugouClientKuGouClientSetLogin({
     required KuGouClient that,
     required String token,
     required String userid,
@@ -2029,7 +2264,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               );
           var arg1 = cst_encode_String(token);
           var arg2 = cst_encode_String(userid);
-          return wire.wire__crate__client__KuGouClient_set_login(
+          return wire.wire__kugou__client__KuGouClient_set_login(
             port_,
             arg0,
             arg1,
@@ -2040,21 +2275,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: dco_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientSetLoginConstMeta,
+        constMeta: kKugouClientKuGouClientSetLoginConstMeta,
         argValues: [that, token, userid],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientSetLoginConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientSetLoginConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_set_login",
         argNames: ["that", "token", "userid"],
       );
 
   @override
-  Future<String> crateClientKuGouClientToken({required KuGouClient that}) {
+  Future<String> kugouClientKuGouClientToken({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -2062,24 +2297,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_token(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_token(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientTokenConstMeta,
+        constMeta: kKugouClientKuGouClientTokenConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientTokenConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientTokenConstMeta =>
       const TaskConstMeta(debugName: "KuGouClient_token", argNames: ["that"]);
 
   @override
-  Future<bool> crateClientKuGouClientTokenNeedsRefresh({
+  Future<bool> kugouClientKuGouClientTokenNeedsRefresh({
     required KuGouClient that,
     required PlatformInt64 expireTime,
     required PlatformInt64 thresholdSecs,
@@ -2093,7 +2328,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               );
           var arg1 = cst_encode_i_64(expireTime);
           var arg2 = cst_encode_i_64(thresholdSecs);
-          return wire.wire__crate__client__KuGouClient_token_needs_refresh(
+          return wire.wire__kugou__client__KuGouClient_token_needs_refresh(
             port_,
             arg0,
             arg1,
@@ -2104,21 +2339,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: dco_decode_bool,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientTokenNeedsRefreshConstMeta,
+        constMeta: kKugouClientKuGouClientTokenNeedsRefreshConstMeta,
         argValues: [that, expireTime, thresholdSecs],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientTokenNeedsRefreshConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientTokenNeedsRefreshConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_token_needs_refresh",
         argNames: ["that", "expireTime", "thresholdSecs"],
       );
 
   @override
-  Future<void> crateClientKuGouClientUpgradeVip({required KuGouClient that}) {
+  Future<void> kugouClientKuGouClientUpgradeVip({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -2126,27 +2361,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_upgrade_vip(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_upgrade_vip(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_unit,
-          decodeErrorData: dco_decode_error,
+          decodeErrorData: dco_decode_AnyhowException,
         ),
-        constMeta: kCrateClientKuGouClientUpgradeVipConstMeta,
+        constMeta: kKugouClientKuGouClientUpgradeVipConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientUpgradeVipConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientUpgradeVipConstMeta =>
       const TaskConstMeta(
         debugName: "KuGouClient_upgrade_vip",
         argNames: ["that"],
       );
 
   @override
-  Future<String> crateClientKuGouClientUserid({required KuGouClient that}) {
+  Future<String> kugouClientKuGouClientUserid({required KuGouClient that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -2154,46 +2389,1427 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
                 that,
               );
-          return wire.wire__crate__client__KuGouClient_userid(port_, arg0);
+          return wire.wire__kugou__client__KuGouClient_userid(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientKuGouClientUseridConstMeta,
+        constMeta: kKugouClientKuGouClientUseridConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientKuGouClientUseridConstMeta =>
+  TaskConstMeta get kKugouClientKuGouClientUseridConstMeta =>
       const TaskConstMeta(debugName: "KuGouClient_userid", argNames: ["that"]);
 
   @override
-  Future<String> crateFrbApiCalculateMid({required String guid}) {
+  Future<ServerResponse> neteaseClientNetEaseClientAlbum({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
-          var arg0 = cst_encode_String(guid);
-          return wire.wire__crate__frb_api__calculate_mid(port_, arg0);
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(id);
+          return wire.wire__netease__client__NetEaseClient_album(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientAlbumConstMeta,
+        argValues: [that, cookie, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientAlbumConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_album",
+        argNames: ["that", "cookie", "id"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientArtistAlbum({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(id);
+          return wire.wire__netease__client__NetEaseClient_artist_album(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientArtistAlbumConstMeta,
+        argValues: [that, cookie, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientArtistAlbumConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_artist_album",
+        argNames: ["that", "cookie", "id"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientArtistDetail({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(id);
+          return wire.wire__netease__client__NetEaseClient_artist_detail(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientArtistDetailConstMeta,
+        argValues: [that, cookie, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientArtistDetailConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_artist_detail",
+        argNames: ["that", "cookie", "id"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientArtistSongs({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+    required int limit,
+    required int offset,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(id);
+          var arg3 = cst_encode_u_32(limit);
+          var arg4 = cst_encode_u_32(offset);
+          return wire.wire__netease__client__NetEaseClient_artist_songs(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+            arg3,
+            arg4,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientArtistSongsConstMeta,
+        argValues: [that, cookie, id, limit, offset],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientArtistSongsConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_artist_songs",
+        argNames: ["that", "cookie", "id", "limit", "offset"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientCaptchaSent({
+    required NetEaseClient that,
+    required String cookie,
+    required String phone,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(phone);
+          return wire.wire__netease__client__NetEaseClient_captcha_sent(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientCaptchaSentConstMeta,
+        argValues: [that, cookie, phone],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientCaptchaSentConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_captcha_sent",
+        argNames: ["that", "cookie", "phone"],
+      );
+
+  @override
+  Future<NetEaseClient> neteaseClientNetEaseClientDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          return wire.wire__netease__client__NetEaseClient_default(port_);
+        },
+        codec: DcoCodec(
+          decodeSuccessData:
+              dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseClientNetEaseClientDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientDefaultConstMeta =>
+      const TaskConstMeta(debugName: "NetEaseClient_default", argNames: []);
+
+  @override
+  Future<String> neteaseClientNetEaseClientDeviceId({
+    required NetEaseClient that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          return wire.wire__netease__client__NetEaseClient_device_id(
+            port_,
+            arg0,
+          );
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiCalculateMidConstMeta,
+        constMeta: kNeteaseClientNetEaseClientDeviceIdConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientDeviceIdConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_device_id",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<bool> neteaseClientNetEaseClientHasMusicA({
+    required NetEaseClient that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          return wire.wire__netease__client__NetEaseClient_has_music_a(
+            port_,
+            arg0,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_bool,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseClientNetEaseClientHasMusicAConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientHasMusicAConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_has_music_a",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientLoginCellphone({
+    required NetEaseClient that,
+    required String cookie,
+    required String phone,
+    required String captcha,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(phone);
+          var arg3 = cst_encode_String(captcha);
+          return wire.wire__netease__client__NetEaseClient_login_cellphone(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+            arg3,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientLoginCellphoneConstMeta,
+        argValues: [that, cookie, phone, captcha],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientLoginCellphoneConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_login_cellphone",
+        argNames: ["that", "cookie", "phone", "captcha"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientLoginRefresh({
+    required NetEaseClient that,
+    required String cookie,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          return wire.wire__netease__client__NetEaseClient_login_refresh(
+            port_,
+            arg0,
+            arg1,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientLoginRefreshConstMeta,
+        argValues: [that, cookie],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientLoginRefreshConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_login_refresh",
+        argNames: ["that", "cookie"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientLoginStatus({
+    required NetEaseClient that,
+    required String cookie,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          return wire.wire__netease__client__NetEaseClient_login_status(
+            port_,
+            arg0,
+            arg1,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientLoginStatusConstMeta,
+        argValues: [that, cookie],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientLoginStatusConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_login_status",
+        argNames: ["that", "cookie"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientLyric({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(id);
+          return wire.wire__netease__client__NetEaseClient_lyric(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientLyricConstMeta,
+        argValues: [that, cookie, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientLyricConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_lyric",
+        argNames: ["that", "cookie", "id"],
+      );
+
+  @override
+  Future<NetEaseClient> neteaseClientNetEaseClientNew() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          return wire.wire__netease__client__NetEaseClient_new(port_);
+        },
+        codec: DcoCodec(
+          decodeSuccessData:
+              dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseClientNetEaseClientNewConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientNewConstMeta =>
+      const TaskConstMeta(debugName: "NetEaseClient_new", argNames: []);
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistCreate({
+    required NetEaseClient that,
+    required String cookie,
+    required String name,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(name);
+          return wire.wire__netease__client__NetEaseClient_playlist_create(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientPlaylistCreateConstMeta,
+        argValues: [that, cookie, name],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientPlaylistCreateConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_playlist_create",
+        argNames: ["that", "cookie", "name"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistDelete({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(id);
+          return wire.wire__netease__client__NetEaseClient_playlist_delete(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientPlaylistDeleteConstMeta,
+        argValues: [that, cookie, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientPlaylistDeleteConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_playlist_delete",
+        argNames: ["that", "cookie", "id"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistDetail({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(id);
+          return wire.wire__netease__client__NetEaseClient_playlist_detail(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientPlaylistDetailConstMeta,
+        argValues: [that, cookie, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientPlaylistDetailConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_playlist_detail",
+        argNames: ["that", "cookie", "id"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistTrackAll({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(id);
+          return wire.wire__netease__client__NetEaseClient_playlist_track_all(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientPlaylistTrackAllConstMeta,
+        argValues: [that, cookie, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientPlaylistTrackAllConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_playlist_track_all",
+        argNames: ["that", "cookie", "id"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientPlaylistTracks({
+    required NetEaseClient that,
+    required String cookie,
+    required String op,
+    required String pid,
+    required List<String> tracks,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(op);
+          var arg3 = cst_encode_String(pid);
+          var arg4 = cst_encode_list_String(tracks);
+          return wire.wire__netease__client__NetEaseClient_playlist_tracks(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+            arg3,
+            arg4,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientPlaylistTracksConstMeta,
+        argValues: [that, cookie, op, pid, tracks],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientPlaylistTracksConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_playlist_tracks",
+        argNames: ["that", "cookie", "op", "pid", "tracks"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientQrCheck({
+    required NetEaseClient that,
+    required String cookie,
+    required String key,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(key);
+          return wire.wire__netease__client__NetEaseClient_qr_check(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientQrCheckConstMeta,
+        argValues: [that, cookie, key],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientQrCheckConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_qr_check",
+        argNames: ["that", "cookie", "key"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientQrCreate({
+    required NetEaseClient that,
+    required String key,
+    required String platform,
+    required bool wantImage,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(key);
+          var arg2 = cst_encode_String(platform);
+          var arg3 = cst_encode_bool(wantImage);
+          return wire.wire__netease__client__NetEaseClient_qr_create(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+            arg3,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseClientNetEaseClientQrCreateConstMeta,
+        argValues: [that, key, platform, wantImage],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientQrCreateConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_qr_create",
+        argNames: ["that", "key", "platform", "wantImage"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientQrKey({
+    required NetEaseClient that,
+    required String cookie,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          return wire.wire__netease__client__NetEaseClient_qr_key(
+            port_,
+            arg0,
+            arg1,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientQrKeyConstMeta,
+        argValues: [that, cookie],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientQrKeyConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_qr_key",
+        argNames: ["that", "cookie"],
+      );
+
+  @override
+  Future<String> neteaseClientNetEaseClientRawRequest({
+    required NetEaseClient that,
+    required String path,
+    required Map<String, String> query,
+    required String cookie,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(path);
+          var arg2 = cst_encode_Map_String_String_None(query);
+          var arg3 = cst_encode_String(cookie);
+          return wire.wire__netease__client__NetEaseClient_raw_request(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+            arg3,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_String,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientRawRequestConstMeta,
+        argValues: [that, path, query, cookie],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientRawRequestConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_raw_request",
+        argNames: ["that", "path", "query", "cookie"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientRecommendResource({
+    required NetEaseClient that,
+    required String cookie,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          return wire.wire__netease__client__NetEaseClient_recommend_resource(
+            port_,
+            arg0,
+            arg1,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientRecommendResourceConstMeta,
+        argValues: [that, cookie],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientRecommendResourceConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_recommend_resource",
+        argNames: ["that", "cookie"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientRecommendSongs({
+    required NetEaseClient that,
+    required String cookie,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          return wire.wire__netease__client__NetEaseClient_recommend_songs(
+            port_,
+            arg0,
+            arg1,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientRecommendSongsConstMeta,
+        argValues: [that, cookie],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientRecommendSongsConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_recommend_songs",
+        argNames: ["that", "cookie"],
+      );
+
+  @override
+  Future<String> neteaseClientNetEaseClientRegisterAnonymous({
+    required NetEaseClient that,
+    required String cookie,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          return wire.wire__netease__client__NetEaseClient_register_anonymous(
+            port_,
+            arg0,
+            arg1,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_String,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientRegisterAnonymousConstMeta,
+        argValues: [that, cookie],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientRegisterAnonymousConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_register_anonymous",
+        argNames: ["that", "cookie"],
+      );
+
+  @override
+  Future<void> neteaseClientNetEaseClientSave({required NetEaseClient that}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          return wire.wire__netease__client__NetEaseClient_save(port_, arg0);
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_unit,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientSaveConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientSaveConstMeta =>
+      const TaskConstMeta(debugName: "NetEaseClient_save", argNames: ["that"]);
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientSearch({
+    required NetEaseClient that,
+    required String cookie,
+    required String keywords,
+    required int ty,
+    required int limit,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(keywords);
+          var arg3 = cst_encode_u_32(ty);
+          var arg4 = cst_encode_u_32(limit);
+          return wire.wire__netease__client__NetEaseClient_search(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+            arg3,
+            arg4,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientSearchConstMeta,
+        argValues: [that, cookie, keywords, ty, limit],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientSearchConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_search",
+        argNames: ["that", "cookie", "keywords", "ty", "limit"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientSongDetail({
+    required NetEaseClient that,
+    required String cookie,
+    required List<String> ids,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_list_String(ids);
+          return wire.wire__netease__client__NetEaseClient_song_detail(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientSongDetailConstMeta,
+        argValues: [that, cookie, ids],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientSongDetailConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_song_detail",
+        argNames: ["that", "cookie", "ids"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientSongUrl({
+    required NetEaseClient that,
+    required String cookie,
+    required List<String> ids,
+    required int br,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_list_String(ids);
+          var arg3 = cst_encode_u_32(br);
+          return wire.wire__netease__client__NetEaseClient_song_url(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+            arg3,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientSongUrlConstMeta,
+        argValues: [that, cookie, ids, br],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientSongUrlConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_song_url",
+        argNames: ["that", "cookie", "ids", "br"],
+      );
+
+  @override
+  Future<String> neteaseClientNetEaseClientSongUrlStr({
+    required NetEaseClient that,
+    required String cookie,
+    required String id,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(id);
+          return wire.wire__netease__client__NetEaseClient_song_url_str(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_String,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientSongUrlStrConstMeta,
+        argValues: [that, cookie, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientSongUrlStrConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_song_url_str",
+        argNames: ["that", "cookie", "id"],
+      );
+
+  @override
+  Future<List<String>> neteaseClientNetEaseClientSupportedRoutes() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          return wire.wire__netease__client__NetEaseClient_supported_routes(
+            port_,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_list_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseClientNetEaseClientSupportedRoutesConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientSupportedRoutesConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_supported_routes",
+        argNames: [],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientTopArtists({
+    required NetEaseClient that,
+    required String cookie,
+    required int limit,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_u_32(limit);
+          return wire.wire__netease__client__NetEaseClient_top_artists(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientTopArtistsConstMeta,
+        argValues: [that, cookie, limit],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientTopArtistsConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_top_artists",
+        argNames: ["that", "cookie", "limit"],
+      );
+
+  @override
+  Future<List<String>> neteaseClientNetEaseClientUnsupportedRoutes() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          return wire.wire__netease__client__NetEaseClient_unsupported_routes(
+            port_,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_list_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseClientNetEaseClientUnsupportedRoutesConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientUnsupportedRoutesConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_unsupported_routes",
+        argNames: [],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientUserAccount({
+    required NetEaseClient that,
+    required String cookie,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          return wire.wire__netease__client__NetEaseClient_user_account(
+            port_,
+            arg0,
+            arg1,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientUserAccountConstMeta,
+        argValues: [that, cookie],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientUserAccountConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_user_account",
+        argNames: ["that", "cookie"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientUserPlaylist({
+    required NetEaseClient that,
+    required String cookie,
+    required String uid,
+    required int limit,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(uid);
+          var arg3 = cst_encode_u_32(limit);
+          return wire.wire__netease__client__NetEaseClient_user_playlist(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+            arg3,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientUserPlaylistConstMeta,
+        argValues: [that, cookie, uid, limit],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientUserPlaylistConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_user_playlist",
+        argNames: ["that", "cookie", "uid", "limit"],
+      );
+
+  @override
+  Future<ServerResponse> neteaseClientNetEaseClientVipInfo({
+    required NetEaseClient that,
+    required String cookie,
+    required String uid,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          var arg1 = cst_encode_String(cookie);
+          var arg2 = cst_encode_String(uid);
+          return wire.wire__netease__client__NetEaseClient_vip_info(
+            port_,
+            arg0,
+            arg1,
+            arg2,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_server_response,
+          decodeErrorData: dco_decode_AnyhowException,
+        ),
+        constMeta: kNeteaseClientNetEaseClientVipInfoConstMeta,
+        argValues: [that, cookie, uid],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientVipInfoConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_vip_info",
+        argNames: ["that", "cookie", "uid"],
+      );
+
+  @override
+  Future<String> neteaseClientNetEaseClientWnmcid({
+    required NetEaseClient that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          return wire.wire__netease__client__NetEaseClient_wnmcid(port_, arg0);
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseClientNetEaseClientWnmcidConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientWnmcidConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_wnmcid",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<String> crateFrbApiBridgeVersion() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          return wire.wire__crate__frb_api__bridge_version(port_);
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateFrbApiBridgeVersionConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateFrbApiBridgeVersionConstMeta =>
+      const TaskConstMeta(debugName: "bridge_version", argNames: []);
+
+  @override
+  Future<String> kugouFrbApiCalculateMid({required String guid}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 = cst_encode_String(guid);
+          return wire.wire__kugou__frb_api__calculate_mid(port_, arg0);
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kKugouFrbApiCalculateMidConstMeta,
         argValues: [guid],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiCalculateMidConstMeta =>
+  TaskConstMeta get kKugouFrbApiCalculateMidConstMeta =>
       const TaskConstMeta(debugName: "calculate_mid", argNames: ["guid"]);
 
   @override
-  Future<KuGouClient> crateFrbApiCreateClient({
+  Future<KuGouClient> kugouFrbApiCreateClient({
     required String platform,
     required String identityPath,
   }) {
@@ -2202,34 +3818,61 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: (port_) {
           var arg0 = cst_encode_String(platform);
           var arg1 = cst_encode_String(identityPath);
-          return wire.wire__crate__frb_api__create_client(port_, arg0, arg1);
+          return wire.wire__kugou__frb_api__create_client(port_, arg0, arg1);
         },
         codec: DcoCodec(
           decodeSuccessData:
               dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiCreateClientConstMeta,
+        constMeta: kKugouFrbApiCreateClientConstMeta,
         argValues: [platform, identityPath],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiCreateClientConstMeta => const TaskConstMeta(
+  TaskConstMeta get kKugouFrbApiCreateClientConstMeta => const TaskConstMeta(
     debugName: "create_client",
     argNames: ["platform", "identityPath"],
   );
 
   @override
-  Future<KuGouClient> crateFrbApiCreateEphemeralClient({
+  Future<NetEaseClient> neteaseFrbApiCreateClient({
+    required String identityPath,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 = cst_encode_String(identityPath);
+          return wire.wire__netease__frb_api__create_client(port_, arg0);
+        },
+        codec: DcoCodec(
+          decodeSuccessData:
+              dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseFrbApiCreateClientConstMeta,
+        argValues: [identityPath],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseFrbApiCreateClientConstMeta => const TaskConstMeta(
+    debugName: "create_client",
+    argNames: ["identityPath"],
+  );
+
+  @override
+  Future<KuGouClient> kugouFrbApiCreateEphemeralClient({
     required String platform,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           var arg0 = cst_encode_String(platform);
-          return wire.wire__crate__frb_api__create_ephemeral_client(
+          return wire.wire__kugou__frb_api__create_ephemeral_client(
             port_,
             arg0,
           );
@@ -2239,21 +3882,43 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiCreateEphemeralClientConstMeta,
+        constMeta: kKugouFrbApiCreateEphemeralClientConstMeta,
         argValues: [platform],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiCreateEphemeralClientConstMeta =>
+  TaskConstMeta get kKugouFrbApiCreateEphemeralClientConstMeta =>
       const TaskConstMeta(
         debugName: "create_ephemeral_client",
         argNames: ["platform"],
       );
 
   @override
-  Future<String> crateFrbApiGetCover({
+  Future<NetEaseClient> neteaseFrbApiCreateEphemeralClient() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          return wire.wire__netease__frb_api__create_ephemeral_client(port_);
+        },
+        codec: DcoCodec(
+          decodeSuccessData:
+              dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseFrbApiCreateEphemeralClientConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseFrbApiCreateEphemeralClientConstMeta =>
+      const TaskConstMeta(debugName: "create_ephemeral_client", argNames: []);
+
+  @override
+  Future<String> kugouFrbApiGetCover({
     required String url,
     required String size,
   }) {
@@ -2262,171 +3927,234 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: (port_) {
           var arg0 = cst_encode_String(url);
           var arg1 = cst_encode_String(size);
-          return wire.wire__crate__frb_api__get_cover(port_, arg0, arg1);
+          return wire.wire__kugou__frb_api__get_cover(port_, arg0, arg1);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiGetCoverConstMeta,
+        constMeta: kKugouFrbApiGetCoverConstMeta,
         argValues: [url, size],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiGetCoverConstMeta =>
+  TaskConstMeta get kKugouFrbApiGetCoverConstMeta =>
       const TaskConstMeta(debugName: "get_cover", argNames: ["url", "size"]);
 
   @override
-  Future<bool> crateFrbApiIsUuidV4({required String s}) {
+  Future<bool> kugouFrbApiIsUuidV4({required String s}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           var arg0 = cst_encode_String(s);
-          return wire.wire__crate__frb_api__is_uuid_v4(port_, arg0);
+          return wire.wire__kugou__frb_api__is_uuid_v4(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_bool,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiIsUuidV4ConstMeta,
+        constMeta: kKugouFrbApiIsUuidV4ConstMeta,
         argValues: [s],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiIsUuidV4ConstMeta =>
+  TaskConstMeta get kKugouFrbApiIsUuidV4ConstMeta =>
       const TaskConstMeta(debugName: "is_uuid_v4", argNames: ["s"]);
 
   @override
-  Future<String> crateFrbApiKrcToLrc({required String krc}) {
+  Future<String> kugouFrbApiKrcToLrc({required String krc}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           var arg0 = cst_encode_String(krc);
-          return wire.wire__crate__frb_api__krc_to_lrc(port_, arg0);
+          return wire.wire__kugou__frb_api__krc_to_lrc(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiKrcToLrcConstMeta,
+        constMeta: kKugouFrbApiKrcToLrcConstMeta,
         argValues: [krc],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiKrcToLrcConstMeta =>
+  TaskConstMeta get kKugouFrbApiKrcToLrcConstMeta =>
       const TaskConstMeta(debugName: "krc_to_lrc", argNames: ["krc"]);
 
   @override
-  Future<String> crateFrbApiMsToLrcTime({required PlatformInt64 ms}) {
+  Future<String> kugouFrbApiMsToLrcTime({required PlatformInt64 ms}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           var arg0 = cst_encode_i_64(ms);
-          return wire.wire__crate__frb_api__ms_to_lrc_time(port_, arg0);
+          return wire.wire__kugou__frb_api__ms_to_lrc_time(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiMsToLrcTimeConstMeta,
+        constMeta: kKugouFrbApiMsToLrcTimeConstMeta,
         argValues: [ms],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiMsToLrcTimeConstMeta =>
+  TaskConstMeta get kKugouFrbApiMsToLrcTimeConstMeta =>
       const TaskConstMeta(debugName: "ms_to_lrc_time", argNames: ["ms"]);
 
   @override
-  Future<String> crateFrbApiProcessLyric({required String lrc}) {
+  Future<String> kugouFrbApiProcessLyric({required String lrc}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           var arg0 = cst_encode_String(lrc);
-          return wire.wire__crate__frb_api__process_lyric(port_, arg0);
+          return wire.wire__kugou__frb_api__process_lyric(port_, arg0);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiProcessLyricConstMeta,
+        constMeta: kKugouFrbApiProcessLyricConstMeta,
         argValues: [lrc],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiProcessLyricConstMeta =>
+  TaskConstMeta get kKugouFrbApiProcessLyricConstMeta =>
       const TaskConstMeta(debugName: "process_lyric", argNames: ["lrc"]);
 
   @override
-  Future<Session> crateClientSessionDefault() {
+  Future<Session> kugouClientSessionDefault() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
-          return wire.wire__crate__client__session_default(port_);
+          return wire.wire__kugou__client__session_default(port_);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_session,
           decodeErrorData: null,
         ),
-        constMeta: kCrateClientSessionDefaultConstMeta,
+        constMeta: kKugouClientSessionDefaultConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateClientSessionDefaultConstMeta =>
+  TaskConstMeta get kKugouClientSessionDefaultConstMeta =>
       const TaskConstMeta(debugName: "session_default", argNames: []);
 
   @override
-  Future<String> crateFrbApiUuidV4() {
+  Future<List<String>> neteaseFrbApiSupportedRoutes() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
-          return wire.wire__crate__frb_api__uuid_v4(port_);
+          return wire.wire__netease__frb_api__supported_routes(port_);
         },
         codec: DcoCodec(
-          decodeSuccessData: dco_decode_String,
+          decodeSuccessData: dco_decode_list_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiUuidV4ConstMeta,
+        constMeta: kNeteaseFrbApiSupportedRoutesConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiUuidV4ConstMeta =>
+  TaskConstMeta get kNeteaseFrbApiSupportedRoutesConstMeta =>
+      const TaskConstMeta(debugName: "supported_routes", argNames: []);
+
+  @override
+  Future<List<String>> neteaseFrbApiUnsupportedRoutes() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          return wire.wire__netease__frb_api__unsupported_routes(port_);
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_list_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseFrbApiUnsupportedRoutesConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseFrbApiUnsupportedRoutesConstMeta =>
+      const TaskConstMeta(debugName: "unsupported_routes", argNames: []);
+
+  @override
+  Future<String> kugouFrbApiUuidV4() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          return wire.wire__kugou__frb_api__uuid_v4(port_);
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kKugouFrbApiUuidV4ConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kKugouFrbApiUuidV4ConstMeta =>
       const TaskConstMeta(debugName: "uuid_v4", argNames: []);
 
   @override
-  Future<String> crateFrbApiVersion() {
+  Future<String> kugouFrbApiVersion() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
-          return wire.wire__crate__frb_api__version(port_);
+          return wire.wire__kugou__frb_api__version(port_);
         },
         codec: DcoCodec(
           decodeSuccessData: dco_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateFrbApiVersionConstMeta,
+        constMeta: kKugouFrbApiVersionConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateFrbApiVersionConstMeta =>
+  TaskConstMeta get kKugouFrbApiVersionConstMeta =>
+      const TaskConstMeta(debugName: "version", argNames: []);
+
+  @override
+  Future<String> neteaseFrbApiVersion() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          return wire.wire__netease__frb_api__version(port_);
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseFrbApiVersionConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseFrbApiVersionConstMeta =>
       const TaskConstMeta(debugName: "version", argNames: []);
 
   RustArcIncrementStrongCountFnType
@@ -2437,6 +4165,28 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   get rust_arc_decrement_strong_count_KuGouClient => wire
       .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient;
 
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_NetEaseClient => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_NetEaseClient => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_QrStatus => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_QrStatus => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus;
+
+  @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return AnyhowException(raw as String);
+  }
+
   @protected
   KuGouClient
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
@@ -2444,6 +4194,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return KuGouClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  NetEaseClient
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NetEaseClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  QrStatus
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return QrStatusImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -2456,12 +4224,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  NetEaseClient
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NetEaseClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
   KuGouClient
   dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     dynamic raw,
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return KuGouClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  NetEaseClient
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NetEaseClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -2481,6 +4267,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return KuGouClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  NetEaseClient
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NetEaseClientImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  QrStatus
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return QrStatusImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  Object? dco_decode_SerdeJsonValue(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return jsonDecode(raw as String);
   }
 
   @protected
@@ -2527,12 +4337,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return dco_decode_i_64(raw);
-  }
-
-  @protected
   LoginResult dco_decode_box_autoadd_login_result(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_login_result(raw);
@@ -2552,34 +4356,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       webgl: dco_decode_String(arr[4]),
       dfid: dco_decode_opt_String(arr[5]),
     );
-  }
-
-  @protected
-  Error dco_decode_error(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    switch (raw[0]) {
-      case 0:
-        return Error_Api(
-          message: dco_decode_String(raw[1]),
-          code: dco_decode_opt_box_autoadd_i_64(raw[2]),
-          status: dco_decode_u_16(raw[3]),
-          body: dco_decode_String(raw[4]),
-        );
-      case 1:
-        return Error_Http(dco_decode_String(raw[1]));
-      case 2:
-        return Error_Json(dco_decode_String(raw[1]));
-      case 3:
-        return Error_Crypto(dco_decode_String(raw[1]));
-      case 4:
-        return Error_Io(dco_decode_String(raw[1]));
-      case 5:
-        return Error_Invalid(dco_decode_String(raw[1]));
-      case 6:
-        return Error_NotLoggedIn();
-      default:
-        throw Exception("unreachable");
-    }
   }
 
   @protected
@@ -2679,12 +4455,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw == null ? null : dco_decode_box_autoadd_i_64(raw);
-  }
-
-  @protected
   Platform dco_decode_platform(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return Platform.values[raw as int];
@@ -2703,30 +4473,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       cover: dco_decode_String(arr[3]),
       numericId: dco_decode_String(arr[4]),
     );
-  }
-
-  @protected
-  QrStatus dco_decode_qr_status(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    switch (raw[0]) {
-      case 0:
-        return QrStatus_Expired();
-      case 1:
-        return QrStatus_Waiting();
-      case 2:
-        return QrStatus_Scanned();
-      case 3:
-        return QrStatus_Success(
-          token: dco_decode_String(raw[1]),
-          userid: dco_decode_String(raw[2]),
-          nickname: dco_decode_String(raw[3]),
-          pic: dco_decode_String(raw[4]),
-        );
-      case 4:
-        return QrStatus_Unknown(dco_decode_i_64(raw[1]));
-      default:
-        throw Exception("unreachable");
-    }
   }
 
   @protected
@@ -2749,6 +4495,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       music: dco_decode_list_music(arr[0]),
       singer: dco_decode_list_singer(arr[1]),
       album: dco_decode_list_album(arr[2]),
+    );
+  }
+
+  @protected
+  ServerResponse dco_decode_server_response(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return ServerResponse(
+      body: dco_decode_SerdeJsonValue(arr[0]),
+      cookies: dco_decode_list_String(arr[1]),
     );
   }
 
@@ -2778,12 +4536,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       audioCount: dco_decode_i_64(arr[3]),
       albumCount: dco_decode_i_64(arr[4]),
     );
-  }
-
-  @protected
-  int dco_decode_u_16(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as int;
   }
 
   @protected
@@ -2817,12 +4569,43 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_String(deserializer);
+    return AnyhowException(inner);
+  }
+
+  @protected
   KuGouClient
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return KuGouClientImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  NetEaseClient
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return NetEaseClientImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  QrStatus
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return QrStatusImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -2841,12 +4624,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  NetEaseClient
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return NetEaseClientImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
   KuGouClient
   sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return KuGouClientImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  NetEaseClient
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return NetEaseClientImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -2871,6 +4678,37 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
+  }
+
+  @protected
+  NetEaseClient
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return NetEaseClientImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  QrStatus
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return QrStatusImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  Object? sse_decode_SerdeJsonValue(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_String(deserializer);
+    return jsonDecode(inner);
   }
 
   @protected
@@ -2923,12 +4761,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return (sse_decode_i_64(deserializer));
-  }
-
-  @protected
   LoginResult sse_decode_box_autoadd_login_result(
     SseDeserializer deserializer,
   ) {
@@ -2953,45 +4785,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       webgl: var_webgl,
       dfid: var_dfid,
     );
-  }
-
-  @protected
-  Error sse_decode_error(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    var tag_ = sse_decode_i_32(deserializer);
-    switch (tag_) {
-      case 0:
-        var var_message = sse_decode_String(deserializer);
-        var var_code = sse_decode_opt_box_autoadd_i_64(deserializer);
-        var var_status = sse_decode_u_16(deserializer);
-        var var_body = sse_decode_String(deserializer);
-        return Error_Api(
-          message: var_message,
-          code: var_code,
-          status: var_status,
-          body: var_body,
-        );
-      case 1:
-        var var_field0 = sse_decode_String(deserializer);
-        return Error_Http(var_field0);
-      case 2:
-        var var_field0 = sse_decode_String(deserializer);
-        return Error_Json(var_field0);
-      case 3:
-        var var_field0 = sse_decode_String(deserializer);
-        return Error_Crypto(var_field0);
-      case 4:
-        var var_field0 = sse_decode_String(deserializer);
-        return Error_Io(var_field0);
-      case 5:
-        var var_field0 = sse_decode_String(deserializer);
-        return Error_Invalid(var_field0);
-      case 6:
-        return Error_NotLoggedIn();
-      default:
-        throw UnimplementedError('');
-    }
   }
 
   @protected
@@ -3145,17 +4938,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    if (sse_decode_bool(deserializer)) {
-      return (sse_decode_box_autoadd_i_64(deserializer));
-    } else {
-      return null;
-    }
-  }
-
-  @protected
   Platform sse_decode_platform(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
@@ -3180,37 +4962,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  QrStatus sse_decode_qr_status(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    var tag_ = sse_decode_i_32(deserializer);
-    switch (tag_) {
-      case 0:
-        return QrStatus_Expired();
-      case 1:
-        return QrStatus_Waiting();
-      case 2:
-        return QrStatus_Scanned();
-      case 3:
-        var var_token = sse_decode_String(deserializer);
-        var var_userid = sse_decode_String(deserializer);
-        var var_nickname = sse_decode_String(deserializer);
-        var var_pic = sse_decode_String(deserializer);
-        return QrStatus_Success(
-          token: var_token,
-          userid: var_userid,
-          nickname: var_nickname,
-          pic: var_pic,
-        );
-      case 4:
-        var var_field0 = sse_decode_i_64(deserializer);
-        return QrStatus_Unknown(var_field0);
-      default:
-        throw UnimplementedError('');
-    }
-  }
-
-  @protected
   (String, String) sse_decode_record_string_string(
     SseDeserializer deserializer,
   ) {
@@ -3227,6 +4978,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_singer = sse_decode_list_singer(deserializer);
     var var_album = sse_decode_list_album(deserializer);
     return SearchResult(music: var_music, singer: var_singer, album: var_album);
+  }
+
+  @protected
+  ServerResponse sse_decode_server_response(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_body = sse_decode_SerdeJsonValue(deserializer);
+    var var_cookies = sse_decode_list_String(deserializer);
+    return ServerResponse(body: var_body, cookies: var_cookies);
   }
 
   @protected
@@ -3257,12 +5016,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       audioCount: var_audioCount,
       albumCount: var_albumCount,
     );
-  }
-
-  @protected
-  int sse_decode_u_16(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint16();
   }
 
   @protected
@@ -3306,12 +5059,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   int
+  cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  ) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    // ignore: invalid_use_of_internal_member
+    return (raw as NetEaseClientImpl).frbInternalCstEncode(move: true);
+  }
+
+  @protected
+  int
+  cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus raw,
+  ) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    // ignore: invalid_use_of_internal_member
+    return (raw as QrStatusImpl).frbInternalCstEncode(move: true);
+  }
+
+  @protected
+  int
   cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient raw,
   ) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     // ignore: invalid_use_of_internal_member
     return (raw as KuGouClientImpl).frbInternalCstEncode(move: false);
+  }
+
+  @protected
+  int
+  cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  ) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    // ignore: invalid_use_of_internal_member
+    return (raw as NetEaseClientImpl).frbInternalCstEncode(move: false);
   }
 
   @protected
@@ -3326,12 +5109,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   int
+  cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  ) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    // ignore: invalid_use_of_internal_member
+    return (raw as NetEaseClientImpl).frbInternalCstEncode(move: false);
+  }
+
+  @protected
+  int
   cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient raw,
   ) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     // ignore: invalid_use_of_internal_member
     return (raw as KuGouClientImpl).frbInternalCstEncode();
+  }
+
+  @protected
+  int
+  cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  ) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    // ignore: invalid_use_of_internal_member
+    return (raw as NetEaseClientImpl).frbInternalCstEncode();
+  }
+
+  @protected
+  int
+  cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus raw,
+  ) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    // ignore: invalid_use_of_internal_member
+    return (raw as QrStatusImpl).frbInternalCstEncode();
   }
 
   @protected
@@ -3353,12 +5166,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int cst_encode_u_16(int raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    return raw;
-  }
-
-  @protected
   int cst_encode_u_32(int raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return raw;
@@ -3377,6 +5184,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_AnyhowException(
+    AnyhowException self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.message, serializer);
+  }
+
+  @protected
   void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient self,
@@ -3385,6 +5201,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as KuGouClientImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as NetEaseClientImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as QrStatusImpl).frbInternalSseEncode(move: true),
       serializer,
     );
   }
@@ -3404,6 +5246,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as NetEaseClientImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient self,
     SseSerializer serializer,
@@ -3411,6 +5266,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
       (self as KuGouClientImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as NetEaseClientImpl).frbInternalSseEncode(move: false),
       serializer,
     );
   }
@@ -3438,6 +5306,38 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       (self as KuGouClientImpl).frbInternalSseEncode(move: null),
       serializer,
     );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as NetEaseClientImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as QrStatusImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_SerdeJsonValue(Object? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(jsonEncode(self), serializer);
   }
 
   @protected
@@ -3474,15 +5374,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_box_autoadd_i_64(
-    PlatformInt64 self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_64(self, serializer);
-  }
-
-  @protected
   void sse_encode_box_autoadd_login_result(
     LoginResult self,
     SseSerializer serializer,
@@ -3503,41 +5394,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.mac, serializer);
     sse_encode_String(self.webgl, serializer);
     sse_encode_opt_String(self.dfid, serializer);
-  }
-
-  @protected
-  void sse_encode_error(Error self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    switch (self) {
-      case Error_Api(
-        message: final message,
-        code: final code,
-        status: final status,
-        body: final body,
-      ):
-        sse_encode_i_32(0, serializer);
-        sse_encode_String(message, serializer);
-        sse_encode_opt_box_autoadd_i_64(code, serializer);
-        sse_encode_u_16(status, serializer);
-        sse_encode_String(body, serializer);
-      case Error_Http(field0: final field0):
-        sse_encode_i_32(1, serializer);
-        sse_encode_String(field0, serializer);
-      case Error_Json(field0: final field0):
-        sse_encode_i_32(2, serializer);
-        sse_encode_String(field0, serializer);
-      case Error_Crypto(field0: final field0):
-        sse_encode_i_32(3, serializer);
-        sse_encode_String(field0, serializer);
-      case Error_Io(field0: final field0):
-        sse_encode_i_32(4, serializer);
-        sse_encode_String(field0, serializer);
-      case Error_Invalid(field0: final field0):
-        sse_encode_i_32(5, serializer);
-        sse_encode_String(field0, serializer);
-      case Error_NotLoggedIn():
-        sse_encode_i_32(6, serializer);
-    }
   }
 
   @protected
@@ -3656,19 +5512,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_opt_box_autoadd_i_64(
-    PlatformInt64? self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    sse_encode_bool(self != null, serializer);
-    if (self != null) {
-      sse_encode_box_autoadd_i_64(self, serializer);
-    }
-  }
-
-  @protected
   void sse_encode_platform(Platform self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
@@ -3682,33 +5525,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_64(self.audioCount, serializer);
     sse_encode_String(self.cover, serializer);
     sse_encode_String(self.numericId, serializer);
-  }
-
-  @protected
-  void sse_encode_qr_status(QrStatus self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    switch (self) {
-      case QrStatus_Expired():
-        sse_encode_i_32(0, serializer);
-      case QrStatus_Waiting():
-        sse_encode_i_32(1, serializer);
-      case QrStatus_Scanned():
-        sse_encode_i_32(2, serializer);
-      case QrStatus_Success(
-        token: final token,
-        userid: final userid,
-        nickname: final nickname,
-        pic: final pic,
-      ):
-        sse_encode_i_32(3, serializer);
-        sse_encode_String(token, serializer);
-        sse_encode_String(userid, serializer);
-        sse_encode_String(nickname, serializer);
-        sse_encode_String(pic, serializer);
-      case QrStatus_Unknown(field0: final field0):
-        sse_encode_i_32(4, serializer);
-        sse_encode_i_64(field0, serializer);
-    }
   }
 
   @protected
@@ -3730,6 +5546,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_server_response(
+    ServerResponse self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_SerdeJsonValue(self.body, serializer);
+    sse_encode_list_String(self.cookies, serializer);
+  }
+
+  @protected
   void sse_encode_session(Session self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_device_identity(self.device, serializer);
@@ -3745,12 +5571,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.cover, serializer);
     sse_encode_i_64(self.audioCount, serializer);
     sse_encode_i_64(self.albumCount, serializer);
-  }
-
-  @protected
-  void sse_encode_u_16(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint16(self);
   }
 
   @protected
@@ -3808,19 +5628,22 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
   Future<void> addMusicToPlaylist({
     required String listId,
     required String hash,
-  }) => RustLib.instance.api.crateClientKuGouClientAddMusicToPlaylist(
+  }) => RustLib.instance.api.kugouClientKuGouClientAddMusicToPlaylist(
     that: this,
     listId: listId,
     hash: hash,
   );
 
   /// 应用一次登录结果
+  ///
+  /// ⚠️ 只在字段**非空**时覆盖 —— 登录失败的响应体里 `data` 可能是个空对象，
+  /// 无条件覆盖会把已有的 token 清掉。
   Future<void> applyLogin({required LoginResult r}) =>
-      RustLib.instance.api.crateClientKuGouClientApplyLogin(that: this, r: r);
+      RustLib.instance.api.kugouClientKuGouClientApplyLogin(that: this, r: r);
 
   /// 缓存的歌单列表（由 [`Self::get_playlists`] 填充）
   Future<List<Playlist>> cachedPlaylists() =>
-      RustLib.instance.api.crateClientKuGouClientCachedPlaylists(that: this);
+      RustLib.instance.api.kugouClientKuGouClientCachedPlaylists(that: this);
 
   /// 按音质档位取地址（对应 `chooseMusicQuality(musicId, quality:)`）
   ///
@@ -3828,7 +5651,7 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
   Future<String> chooseMusicQuality({
     required String hash,
     required int quality,
-  }) => RustLib.instance.api.crateClientKuGouClientChooseMusicQuality(
+  }) => RustLib.instance.api.kugouClientKuGouClientChooseMusicQuality(
     that: this,
     hash: hash,
     quality: quality,
@@ -3836,21 +5659,21 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
 
   /// 广告换 VIP，连调 8 次（对应 `getVip8()`）
   Future<int> claimAdVip() =>
-      RustLib.instance.api.crateClientKuGouClientClaimAdVip(that: this);
+      RustLib.instance.api.kugouClientKuGouClientClaimAdVip(that: this);
 
   /// 领取每日 VIP（对应 `getVip()` 的第一步）
   Future<void> claimDailyVip() =>
-      RustLib.instance.api.crateClientKuGouClientClaimDailyVip(that: this);
+      RustLib.instance.api.kugouClientKuGouClientClaimDailyVip(that: this);
 
   /// 完整的 VIP 领取流程（对应 `getVip()`）
   Future<void> claimVipAll() =>
-      RustLib.instance.api.crateClientKuGouClientClaimVipAll(that: this);
+      RustLib.instance.api.kugouClientKuGouClientClaimVipAll(that: this);
 
   /// 新建歌单（对应 `createPlaylist(name)`）
   Future<Playlist> createPlaylist({required String name}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientCreatePlaylist(that: this, name: name);
+      .kugouClientKuGouClientCreatePlaylist(that: this, name: name);
 
   /// 从歌单删除歌曲（对应 `deleteMusicFromPlaylist(listId, musicId)`）
   ///
@@ -3858,7 +5681,7 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
   Future<void> deleteMusicFromPlaylist({
     required String listId,
     required String hash,
-  }) => RustLib.instance.api.crateClientKuGouClientDeleteMusicFromPlaylist(
+  }) => RustLib.instance.api.kugouClientKuGouClientDeleteMusicFromPlaylist(
     that: this,
     listId: listId,
     hash: hash,
@@ -3870,68 +5693,68 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
   ///
   /// ⚠️ 收藏歌单不可删除。
   Future<void> deletePlaylist({required String listId}) => RustLib.instance.api
-      .crateClientKuGouClientDeletePlaylist(that: this, listId: listId);
+      .kugouClientKuGouClientDeletePlaylist(that: this, listId: listId);
 
   /// 开发设备标识（10 位大写）
   Future<String> deviceDev() =>
-      RustLib.instance.api.crateClientKuGouClientDeviceDev(that: this);
+      RustLib.instance.api.kugouClientKuGouClientDeviceDev(that: this);
 
   /// 设备指纹 ID（未注册时为 `None`）
   Future<String?> deviceDfid() =>
-      RustLib.instance.api.crateClientKuGouClientDeviceDfid(that: this);
+      RustLib.instance.api.kugouClientKuGouClientDeviceDfid(that: this);
 
   /// 设备 GUID（32 位 hex）
   Future<String> deviceGuid() =>
-      RustLib.instance.api.crateClientKuGouClientDeviceGuid(that: this);
+      RustLib.instance.api.kugouClientKuGouClientDeviceGuid(that: this);
 
   /// 设备 MID（39 位十进制）
   Future<String> deviceMid() =>
-      RustLib.instance.api.crateClientKuGouClientDeviceMid(that: this);
+      RustLib.instance.api.kugouClientKuGouClientDeviceMid(that: this);
 
   /// WebGL 指纹
   Future<String> deviceWebgl() =>
-      RustLib.instance.api.crateClientKuGouClientDeviceWebgl(that: this);
+      RustLib.instance.api.kugouClientKuGouClientDeviceWebgl(that: this);
 
   Future<String> dfid() =>
-      RustLib.instance.api.crateClientKuGouClientDfid(that: this);
+      RustLib.instance.api.kugouClientKuGouClientDfid(that: this);
 
   /// 收藏歌单的歌曲 hash 缓存
   Future<List<String>> favoriteHashes() =>
-      RustLib.instance.api.crateClientKuGouClientFavoriteHashes(that: this);
+      RustLib.instance.api.kugouClientKuGouClientFavoriteHashes(that: this);
 
   /// 收藏歌单（「我喜欢的音乐」）的 `global_collection_id`
   Future<String> favoritePlaylistId() =>
-      RustLib.instance.api.crateClientKuGouClientFavoritePlaylistId(that: this);
+      RustLib.instance.api.kugouClientKuGouClientFavoritePlaylistId(that: this);
 
   /// 专辑详情（对应 `getAlbumDetails(albumId)`）
   Future<Album> getAlbumDetail({required String albumId}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetAlbumDetail(that: this, albumId: albumId);
+      .kugouClientKuGouClientGetAlbumDetail(that: this, albumId: albumId);
 
   /// 专辑歌曲（对应 `getAlbumMusic(albumId)`）
   Future<List<Music>> getAlbumMusic({required String albumId}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetAlbumMusic(that: this, albumId: albumId);
+      .kugouClientKuGouClientGetAlbumMusic(that: this, albumId: albumId);
 
   /// 拉取收藏歌单的全部 hash（对应 `getCollectionList()`）
   Future<List<String>> getCollectionHashes() => RustLib.instance.api
-      .crateClientKuGouClientGetCollectionHashes(that: this);
+      .kugouClientKuGouClientGetCollectionHashes(that: this);
 
   /// 获取歌词（对应 `getLyric(musicId)`）
   ///
   /// `fmt` 传 `"lrc"` 得纯文本，传 `"krc"` 得逐字歌词（自动转 LRC）。
   Future<String> getLyric({required String hash}) => RustLib.instance.api
-      .crateClientKuGouClientGetLyric(that: this, hash: hash);
+      .kugouClientKuGouClientGetLyric(that: this, hash: hash);
 
   /// 获取逐字歌词
   Future<String> getLyricKrc({required String hash}) => RustLib.instance.api
-      .crateClientKuGouClientGetLyricKrc(that: this, hash: hash);
+      .kugouClientKuGouClientGetLyricKrc(that: this, hash: hash);
 
   /// 获取播放地址（对应 `getMusicUrl(musicId, bitrate:)`）
   Future<String> getMusicUrl({required String hash, required String quality}) =>
-      RustLib.instance.api.crateClientKuGouClientGetMusicUrl(
+      RustLib.instance.api.kugouClientKuGouClientGetMusicUrl(
         that: this,
         hash: hash,
         quality: quality,
@@ -3941,7 +5764,7 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
   ///
   /// 内部两步：`/privilege/lite` 取基础信息 → `/krm/audio` 补全歌手/专辑 ID。
   Future<List<Music>> getMusicsDetails({required List<String> hashes}) =>
-      RustLib.instance.api.crateClientKuGouClientGetMusicsDetails(
+      RustLib.instance.api.kugouClientKuGouClientGetMusicsDetails(
         that: this,
         hashes: hashes,
       );
@@ -3950,7 +5773,7 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
   Future<Playlist> getPlaylistDetail({required String listId}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetPlaylistDetail(that: this, listId: listId);
+      .kugouClientKuGouClientGetPlaylistDetail(that: this, listId: listId);
 
   /// 获取歌单内歌曲（对应 `getPlaylistMusic(listId)`）
   ///
@@ -3958,80 +5781,80 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
   Future<List<Music>> getPlaylistMusic({required String listId}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetPlaylistMusic(that: this, listId: listId);
+      .kugouClientKuGouClientGetPlaylistMusic(that: this, listId: listId);
 
   /// 获取歌单列表（对应 `getPlaylist()`）
   ///
   /// 结果同时写入 `self.playlists`。
   /// 「我喜欢的音乐」会被移到首位（对应 Dart 里的交换逻辑，但做了越界保护）。
   Future<List<Playlist>> getPlaylists() =>
-      RustLib.instance.api.crateClientKuGouClientGetPlaylists(that: this);
+      RustLib.instance.api.kugouClientKuGouClientGetPlaylists(that: this);
 
   /// 每日推荐（对应 `getRecommendMusics(num)`）
   Future<List<Music>> getRecommendMusics({required int num}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetRecommendMusics(that: this, num: num);
+      .kugouClientKuGouClientGetRecommendMusics(that: this, num: num);
 
   /// 推荐歌单（对应 `getRecommendPlaylists(num)`）
   Future<List<Playlist>> getRecommendPlaylists({required int num}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetRecommendPlaylists(that: this, num: num);
+      .kugouClientKuGouClientGetRecommendPlaylists(that: this, num: num);
 
   /// 推荐歌手（对应 `getRecommendSingers(num)`）
   Future<List<Singer>> getRecommendSingers({required int num}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetRecommendSingers(that: this, num: num);
+      .kugouClientKuGouClientGetRecommendSingers(that: this, num: num);
 
   /// 歌手专辑（对应 `getSingerAlbum(singerId)`）
   Future<List<Album>> getSingerAlbums({required String singerId}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetSingerAlbums(that: this, singerId: singerId);
+      .kugouClientKuGouClientGetSingerAlbums(that: this, singerId: singerId);
 
   /// 歌手详情（对应 `getSingerDetails(singerId)`）
   Future<Singer> getSingerDetail({required String singerId}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetSingerDetail(that: this, singerId: singerId);
+      .kugouClientKuGouClientGetSingerDetail(that: this, singerId: singerId);
 
   /// 歌手单曲（对应 `getSingerMusic(singerId)`）
   Future<List<Music>> getSingerMusic({required String singerId}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientGetSingerMusic(that: this, singerId: singerId);
+      .kugouClientKuGouClientGetSingerMusic(that: this, singerId: singerId);
 
   /// 是否已注册设备
   Future<bool> hasDfid() =>
-      RustLib.instance.api.crateClientKuGouClientHasDfid(that: this);
+      RustLib.instance.api.kugouClientKuGouClientHasDfid(that: this);
 
   Future<bool> isLoggedIn() =>
-      RustLib.instance.api.crateClientKuGouClientIsLoggedIn(that: this);
+      RustLib.instance.api.kugouClientKuGouClientIsLoggedIn(that: this);
 
   /// 手机验证码登录（对应 `loginByMobile(mobile, _, code)`）
   Future<LoginResult> loginCellphone({
     required String mobile,
     required String code,
-  }) => RustLib.instance.api.crateClientKuGouClientLoginCellphone(
+  }) => RustLib.instance.api.kugouClientKuGouClientLoginCellphone(
     that: this,
     mobile: mobile,
     code: code,
   );
 
   Future<Platform> platform() =>
-      RustLib.instance.api.crateClientKuGouClientPlatform(that: this);
+      RustLib.instance.api.kugouClientKuGouClientPlatform(that: this);
 
   /// 检测扫码状态（对应 `loginByQrCode()` 循环体）
   Future<QrStatus> qrCheck({required String key}) =>
-      RustLib.instance.api.crateClientKuGouClientQrCheck(that: this, key: key);
+      RustLib.instance.api.kugouClientKuGouClientQrCheck(that: this, key: key);
 
   /// 生成二维码 key（对应 `getQrCode()` 的第一步）
   ///
   /// 返回 `(key, qrcode_img)`。
   Future<(String, String)> qrKey() =>
-      RustLib.instance.api.crateClientKuGouClientQrKey(that: this);
+      RustLib.instance.api.kugouClientKuGouClientQrKey(that: this);
 
   /// 轮询直到登录成功或二维码过期
   ///
@@ -4041,7 +5864,7 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
     required String key,
     required BigInt intervalSecs,
     required int maxAttempts,
-  }) => RustLib.instance.api.crateClientKuGouClientQrLoginWait(
+  }) => RustLib.instance.api.kugouClientKuGouClientQrLoginWait(
     that: this,
     key: key,
     intervalSecs: intervalSecs,
@@ -4077,7 +5900,7 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
   Future<String> rawRequest({
     required String path,
     required Map<String, String> query,
-  }) => RustLib.instance.api.crateClientKuGouClientRawRequest(
+  }) => RustLib.instance.api.kugouClientKuGouClientRawRequest(
     that: this,
     path: path,
     query: query,
@@ -4085,22 +5908,22 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
 
   /// 刷新 token（对应 `refreshToken()`）
   Future<LoginResult> refreshToken() =>
-      RustLib.instance.api.crateClientKuGouClientRefreshToken(that: this);
+      RustLib.instance.api.kugouClientKuGouClientRefreshToken(that: this);
 
   /// 获取 `dfid`（对应 `getDfid()`）
   ///
   /// ⚠️ 使用取 URL 等接口前**必须先调用**，否则会提示「本次请求需要验证」。
   /// 成功后写入设备身份并持久化。
   Future<String> registerDevice() =>
-      RustLib.instance.api.crateClientKuGouClientRegisterDevice(that: this);
+      RustLib.instance.api.kugouClientKuGouClientRegisterDevice(that: this);
 
   /// 写入会话文件
   Future<void> saveSession() =>
-      RustLib.instance.api.crateClientKuGouClientSaveSession(that: this);
+      RustLib.instance.api.kugouClientKuGouClientSaveSession(that: this);
 
   /// 综合搜索（对应 `search(keyword)`）
   Future<SearchResult> search({required String keyword}) => RustLib.instance.api
-      .crateClientKuGouClientSearch(that: this, keyword: keyword);
+      .kugouClientKuGouClientSearch(that: this, keyword: keyword);
 
   /// 搜索并补全歌曲详情
   ///
@@ -4108,28 +5931,28 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
   Future<SearchResult> searchWithDetails({required String keyword}) => RustLib
       .instance
       .api
-      .crateClientKuGouClientSearchWithDetails(that: this, keyword: keyword);
+      .kugouClientKuGouClientSearchWithDetails(that: this, keyword: keyword);
 
   /// 发送手机验证码（对应 `getVerificationCode(mobile, _)`）
   Future<void> sendCaptcha({required String mobile}) => RustLib.instance.api
-      .crateClientKuGouClientSendCaptcha(that: this, mobile: mobile);
+      .kugouClientKuGouClientSendCaptcha(that: this, mobile: mobile);
 
   /// 设置登录凭据
   Future<void> setLogin({required String token, required String userid}) =>
-      RustLib.instance.api.crateClientKuGouClientSetLogin(
+      RustLib.instance.api.kugouClientKuGouClientSetLogin(
         that: this,
         token: token,
         userid: userid,
       );
 
   Future<String> token() =>
-      RustLib.instance.api.crateClientKuGouClientToken(that: this);
+      RustLib.instance.api.kugouClientKuGouClientToken(that: this);
 
   /// token 是否临近过期（默认阈值 1 天）
   Future<bool> tokenNeedsRefresh({
     required PlatformInt64 expireTime,
     required PlatformInt64 thresholdSecs,
-  }) => RustLib.instance.api.crateClientKuGouClientTokenNeedsRefresh(
+  }) => RustLib.instance.api.kugouClientKuGouClientTokenNeedsRefresh(
     that: this,
     expireTime: expireTime,
     thresholdSecs: thresholdSecs,
@@ -4137,8 +5960,359 @@ class KuGouClientImpl extends RustOpaque implements KuGouClient {
 
   /// 升级 VIP（对应 `getVip()` 的第二步）
   Future<void> upgradeVip() =>
-      RustLib.instance.api.crateClientKuGouClientUpgradeVip(that: this);
+      RustLib.instance.api.kugouClientKuGouClientUpgradeVip(that: this);
 
   Future<String> userid() =>
-      RustLib.instance.api.crateClientKuGouClientUserid(that: this);
+      RustLib.instance.api.kugouClientKuGouClientUserid(that: this);
+}
+
+@sealed
+class NetEaseClientImpl extends RustOpaque implements NetEaseClient {
+  // Not to be used by end users
+  NetEaseClientImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  NetEaseClientImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_NetEaseClient,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_NetEaseClient,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_NetEaseClientPtr,
+  );
+
+  /// 专辑信息
+  Future<ServerResponse> album({required String cookie, required String id}) =>
+      RustLib.instance.api.neteaseClientNetEaseClientAlbum(
+        that: this,
+        cookie: cookie,
+        id: id,
+      );
+
+  /// 歌手专辑
+  Future<ServerResponse> artistAlbum({
+    required String cookie,
+    required String id,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientArtistAlbum(
+    that: this,
+    cookie: cookie,
+    id: id,
+  );
+
+  /// 歌手详情
+  Future<ServerResponse> artistDetail({
+    required String cookie,
+    required String id,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientArtistDetail(
+    that: this,
+    cookie: cookie,
+    id: id,
+  );
+
+  /// 歌手单曲
+  Future<ServerResponse> artistSongs({
+    required String cookie,
+    required String id,
+    required int limit,
+    required int offset,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientArtistSongs(
+    that: this,
+    cookie: cookie,
+    id: id,
+    limit: limit,
+    offset: offset,
+  );
+
+  /// 发送手机验证码
+  Future<ServerResponse> captchaSent({
+    required String cookie,
+    required String phone,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientCaptchaSent(
+    that: this,
+    cookie: cookie,
+    phone: phone,
+  );
+
+  /// 52 个**大写** hex 字符
+  Future<String> deviceId() =>
+      RustLib.instance.api.neteaseClientNetEaseClientDeviceId(that: this);
+
+  /// 是否已拿到匿名 token
+  Future<bool> hasMusicA() =>
+      RustLib.instance.api.neteaseClientNetEaseClientHasMusicA(that: this);
+
+  /// 手机验证码登录
+  Future<ServerResponse> loginCellphone({
+    required String cookie,
+    required String phone,
+    required String captcha,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientLoginCellphone(
+    that: this,
+    cookie: cookie,
+    phone: phone,
+    captcha: captcha,
+  );
+
+  /// 刷新登录令牌
+  Future<ServerResponse> loginRefresh({required String cookie}) => RustLib
+      .instance
+      .api
+      .neteaseClientNetEaseClientLoginRefresh(that: this, cookie: cookie);
+
+  /// 登录状态（响应被包一层 `data`）
+  Future<ServerResponse> loginStatus({required String cookie}) => RustLib
+      .instance
+      .api
+      .neteaseClientNetEaseClientLoginStatus(that: this, cookie: cookie);
+
+  /// 歌词
+  Future<ServerResponse> lyric({required String cookie, required String id}) =>
+      RustLib.instance.api.neteaseClientNetEaseClientLyric(
+        that: this,
+        cookie: cookie,
+        id: id,
+      );
+
+  /// 新建歌单
+  Future<ServerResponse> playlistCreate({
+    required String cookie,
+    required String name,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientPlaylistCreate(
+    that: this,
+    cookie: cookie,
+    name: name,
+  );
+
+  /// 删除歌单
+  Future<ServerResponse> playlistDelete({
+    required String cookie,
+    required String id,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientPlaylistDelete(
+    that: this,
+    cookie: cookie,
+    id: id,
+  );
+
+  /// 歌单详情
+  Future<ServerResponse> playlistDetail({
+    required String cookie,
+    required String id,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientPlaylistDetail(
+    that: this,
+    cookie: cookie,
+    id: id,
+  );
+
+  /// 歌单全部歌曲（两条请求串联）
+  Future<ServerResponse> playlistTrackAll({
+    required String cookie,
+    required String id,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientPlaylistTrackAll(
+    that: this,
+    cookie: cookie,
+    id: id,
+  );
+
+  /// 歌单加 / 删歌
+  Future<ServerResponse> playlistTracks({
+    required String cookie,
+    required String op,
+    required String pid,
+    required List<String> tracks,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientPlaylistTracks(
+    that: this,
+    cookie: cookie,
+    op: op,
+    pid: pid,
+    tracks: tracks,
+  );
+
+  /// 检测扫码状态
+  Future<ServerResponse> qrCheck({
+    required String cookie,
+    required String key,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientQrCheck(
+    that: this,
+    cookie: cookie,
+    key: key,
+  );
+
+  /// 生成二维码图片（**不发网络请求**）
+  Future<ServerResponse> qrCreate({
+    required String key,
+    required String platform,
+    required bool wantImage,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientQrCreate(
+    that: this,
+    key: key,
+    platform: platform,
+    wantImage: wantImage,
+  );
+
+  /// 生成二维码 key
+  Future<ServerResponse> qrKey({required String cookie}) => RustLib.instance.api
+      .neteaseClientNetEaseClientQrKey(that: this, cookie: cookie);
+
+  /// 按原服务器的路由发一次请求，返回**原服务器会返回的响应体**（JSON 文本）
+  ///
+  /// `path` 是原服务器的路由（如 `/song/url`），`query` 是查询参数，
+  /// `cookie` 是账号 Cookie 串。
+  ///
+  /// ```no_run
+  /// # async fn run() -> Result<(), netease::Error> {
+  /// # let client = netease::NetEaseClient::new();
+  /// let mut q = std::collections::HashMap::new();
+  /// q.insert("id".to_string(), "347230".to_string());
+  /// let json = client.raw_request("/song/url".into(), q, String::new()).await?;
+  /// # Ok(()) }
+  /// ```
+  ///
+  /// ⚠️ `/login/qr/create` **不发任何网易请求**（本地生成二维码）。
+  Future<String> rawRequest({
+    required String path,
+    required Map<String, String> query,
+    required String cookie,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientRawRequest(
+    that: this,
+    path: path,
+    query: query,
+    cookie: cookie,
+  );
+
+  /// 每日推荐歌单
+  Future<ServerResponse> recommendResource({required String cookie}) => RustLib
+      .instance
+      .api
+      .neteaseClientNetEaseClientRecommendResource(that: this, cookie: cookie);
+
+  /// 每日推荐歌曲
+  Future<ServerResponse> recommendSongs({required String cookie}) => RustLib
+      .instance
+      .api
+      .neteaseClientNetEaseClientRecommendSongs(that: this, cookie: cookie);
+
+  /// 匿名注册，拿到 `MUSIC_A` 并写回设备身份
+  ///
+  /// **这是启动流程的关键依赖** —— 没有它，未登录状态下部分接口返回 301。
+  /// 登录后 `MUSIC_U` 会覆盖它，所以登录用户不需要调。
+  ///
+  /// ⚠️ 需要 xeapi 公钥，首次调用会自动拉取（多一次网络往返）。
+  Future<String> registerAnonymous({required String cookie}) => RustLib
+      .instance
+      .api
+      .neteaseClientNetEaseClientRegisterAnonymous(that: this, cookie: cookie);
+
+  /// 写入身份文件
+  Future<void> save() =>
+      RustLib.instance.api.neteaseClientNetEaseClientSave(that: this);
+
+  /// 搜索
+  Future<ServerResponse> search({
+    required String cookie,
+    required String keywords,
+    required int ty,
+    required int limit,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientSearch(
+    that: this,
+    cookie: cookie,
+    keywords: keywords,
+    ty: ty,
+    limit: limit,
+  );
+
+  /// 歌曲详情
+  Future<ServerResponse> songDetail({
+    required String cookie,
+    required List<String> ids,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientSongDetail(
+    that: this,
+    cookie: cookie,
+    ids: ids,
+  );
+
+  /// 播放地址
+  Future<ServerResponse> songUrl({
+    required String cookie,
+    required List<String> ids,
+    required int br,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientSongUrl(
+    that: this,
+    cookie: cookie,
+    ids: ids,
+    br: br,
+  );
+
+  /// 取播放地址（`data[0].url`）
+  Future<String> songUrlStr({required String cookie, required String id}) =>
+      RustLib.instance.api.neteaseClientNetEaseClientSongUrlStr(
+        that: this,
+        cookie: cookie,
+        id: id,
+      );
+
+  /// 热门歌手
+  Future<ServerResponse> topArtists({
+    required String cookie,
+    required int limit,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientTopArtists(
+    that: this,
+    cookie: cookie,
+    limit: limit,
+  );
+
+  /// 用户账号信息
+  Future<ServerResponse> userAccount({required String cookie}) => RustLib
+      .instance
+      .api
+      .neteaseClientNetEaseClientUserAccount(that: this, cookie: cookie);
+
+  /// 用户歌单
+  Future<ServerResponse> userPlaylist({
+    required String cookie,
+    required String uid,
+    required int limit,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientUserPlaylist(
+    that: this,
+    cookie: cookie,
+    uid: uid,
+    limit: limit,
+  );
+
+  /// VIP 信息
+  Future<ServerResponse> vipInfo({
+    required String cookie,
+    required String uid,
+  }) => RustLib.instance.api.neteaseClientNetEaseClientVipInfo(
+    that: this,
+    cookie: cookie,
+    uid: uid,
+  );
+
+  /// `<6 个小写字母>.<毫秒>.01.0`
+  Future<String> wnmcid() =>
+      RustLib.instance.api.neteaseClientNetEaseClientWnmcid(that: this);
+}
+
+@sealed
+class QrStatusImpl extends RustOpaque implements QrStatus {
+  // Not to be used by end users
+  QrStatusImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  QrStatusImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_QrStatus,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_QrStatus,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_QrStatusPtr,
+  );
 }

@@ -51,11 +51,6 @@
 //! | [`models`] | 数据类型 |
 //! | [`lyric`] | 歌词处理 |
 
-// ⚠️ 由 flutter_rust_bridge 生成，勿删。
-// 注意：FRB 会把它注入到第 1 行，那样会插在 `//!` 文档注释之前导致解析失败，
-// 因此每次 generate 后需确认它仍在**模块声明区**而非文件开头。
-mod frb_generated;
-
 pub mod api;
 pub mod client;
 pub mod frb_api;

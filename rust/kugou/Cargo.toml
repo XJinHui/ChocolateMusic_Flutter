@@ -1,5 +1,5 @@
 [package]
-name = "KuGou"
+name = "kugou"
 version = "0.1.0"
 edition = "2021"
 description = "酷狗音乐 API 的本地 Rust 实现（直连上游，含签名与加解密）"

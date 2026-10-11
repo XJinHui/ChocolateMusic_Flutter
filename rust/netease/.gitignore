@@ -1,0 +1,7 @@
+/target
+
+# IDE
+.idea/
+
+# 设备身份与登录凭据（含 cookie/token，切勿提交）
+netease_identity.json

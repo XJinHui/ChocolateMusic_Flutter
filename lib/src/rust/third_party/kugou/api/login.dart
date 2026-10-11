@@ -3,10 +3,11 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
-import '../frb_generated.dart';
+import '../../../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
-import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
-part 'login.freezed.dart';
+
+// Rust type: RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<QrStatus>>
+abstract class QrStatus implements RustOpaqueInterface {}
 
 /// 登录结果
 class LoginResult {
@@ -56,29 +57,4 @@ class LoginResult {
           nickname == other.nickname &&
           pic == other.pic &&
           t1 == other.t1;
-}
-
-@freezed
-sealed class QrStatus with _$QrStatus {
-  const QrStatus._();
-
-  /// 二维码已过期（`0`）
-  const factory QrStatus.expired() = QrStatus_Expired;
-
-  /// 等待扫码（`1`）
-  const factory QrStatus.waiting() = QrStatus_Waiting;
-
-  /// 已扫码，待确认（`2`）
-  const factory QrStatus.scanned() = QrStatus_Scanned;
-
-  /// 授权成功（`4`），携带凭据
-  const factory QrStatus.success({
-    required String token,
-    required String userid,
-    required String nickname,
-    required String pic,
-  }) = QrStatus_Success;
-
-  /// 未知状态码
-  const factory QrStatus.unknown(PlatformInt64 field0) = QrStatus_Unknown;
 }

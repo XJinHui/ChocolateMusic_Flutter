@@ -7,7 +7,7 @@
 
 import 'package:chocolate_music/Cloud/KuGou.dart';
 import 'package:chocolate_music/Cloud/KuGouRustAdapter.dart';
-import 'package:chocolate_music/src/rust/frb_api.dart';
+import 'package:chocolate_music/src/rust/third_party/kugou/frb_api.dart';
 import 'package:chocolate_music/src/rust/frb_generated.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';

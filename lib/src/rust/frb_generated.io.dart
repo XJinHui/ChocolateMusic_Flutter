@@ -3,19 +3,22 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
-import 'api/login.dart';
-import 'client.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
-import 'device.dart';
 import 'frb_api.dart';
 import 'frb_generated.dart';
-import 'lib.dart';
-import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
-import 'platform.dart';
-import 'request.dart';
+import 'third_party/kugou/api/login.dart';
+import 'third_party/kugou/client.dart';
+import 'third_party/kugou/device.dart';
+import 'third_party/kugou/frb_api.dart';
+import 'third_party/kugou/models.dart';
+import 'third_party/kugou/platform.dart';
+import 'third_party/kugou/request.dart';
+import 'third_party/netease/api.dart';
+import 'third_party/netease/client.dart';
+import 'third_party/netease/frb_api.dart';
 
 abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   RustLibApiImplPlatform({
@@ -29,9 +32,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   get rust_arc_decrement_strong_count_KuGouClientPtr => wire
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClientPtr;
 
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_NetEaseClientPtr => wire
+      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClientPtr;
+
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_QrStatusPtr => wire
+      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatusPtr;
+
+  @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw);
+
   @protected
   KuGouClient
   dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+    dynamic raw,
+  );
+
+  @protected
+  NetEaseClient
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  );
+
+  @protected
+  QrStatus
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
     dynamic raw,
   );
 
@@ -42,8 +68,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  NetEaseClient
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  );
+
+  @protected
   KuGouClient
   dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+    dynamic raw,
+  );
+
+  @protected
+  NetEaseClient
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
     dynamic raw,
   );
 
@@ -55,6 +93,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     dynamic raw,
   );
+
+  @protected
+  NetEaseClient
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    dynamic raw,
+  );
+
+  @protected
+  QrStatus
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    dynamic raw,
+  );
+
+  @protected
+  Object? dco_decode_SerdeJsonValue(dynamic raw);
 
   @protected
   String dco_decode_String(dynamic raw);
@@ -69,16 +122,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
-  PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
-
-  @protected
   LoginResult dco_decode_box_autoadd_login_result(dynamic raw);
 
   @protected
   DeviceIdentity dco_decode_device_identity(dynamic raw);
-
-  @protected
-  Error dco_decode_error(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -117,16 +164,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
-  PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
-
-  @protected
   Platform dco_decode_platform(dynamic raw);
 
   @protected
   Playlist dco_decode_playlist(dynamic raw);
-
-  @protected
-  QrStatus dco_decode_qr_status(dynamic raw);
 
   @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
@@ -135,13 +176,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SearchResult dco_decode_search_result(dynamic raw);
 
   @protected
+  ServerResponse dco_decode_server_response(dynamic raw);
+
+  @protected
   Session dco_decode_session(dynamic raw);
 
   @protected
   Singer dco_decode_singer(dynamic raw);
-
-  @protected
-  int dco_decode_u_16(dynamic raw);
 
   @protected
   int dco_decode_u_32(dynamic raw);
@@ -159,8 +200,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt dco_decode_usize(dynamic raw);
 
   @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+
+  @protected
   KuGouClient
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  NetEaseClient
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  QrStatus
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
     SseDeserializer deserializer,
   );
 
@@ -171,8 +227,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  NetEaseClient
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   KuGouClient
   sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  NetEaseClient
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
     SseDeserializer deserializer,
   );
 
@@ -188,6 +256,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  NetEaseClient
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  QrStatus
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  Object? sse_decode_SerdeJsonValue(SseDeserializer deserializer);
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
@@ -200,16 +283,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
-  PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
-
-  @protected
   LoginResult sse_decode_box_autoadd_login_result(SseDeserializer deserializer);
 
   @protected
   DeviceIdentity sse_decode_device_identity(SseDeserializer deserializer);
-
-  @protected
-  Error sse_decode_error(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -250,16 +327,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
-  PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
-
-  @protected
   Platform sse_decode_platform(SseDeserializer deserializer);
 
   @protected
   Playlist sse_decode_playlist(SseDeserializer deserializer);
-
-  @protected
-  QrStatus sse_decode_qr_status(SseDeserializer deserializer);
 
   @protected
   (String, String) sse_decode_record_string_string(
@@ -270,13 +341,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SearchResult sse_decode_search_result(SseDeserializer deserializer);
 
   @protected
+  ServerResponse sse_decode_server_response(SseDeserializer deserializer);
+
+  @protected
   Session sse_decode_session(SseDeserializer deserializer);
 
   @protected
   Singer sse_decode_singer(SseDeserializer deserializer);
-
-  @protected
-  int sse_decode_u_16(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -294,6 +365,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt sse_decode_usize(SseDeserializer deserializer);
 
   @protected
+  ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_AnyhowException(
+    AnyhowException raw,
+  ) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
   ffi.Pointer<wire_cst_list_record_string_string>
   cst_encode_Map_String_String_None(Map<String, String> raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
@@ -303,15 +382,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_String(String raw) {
+  ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_SerdeJsonValue(
+    Object? raw,
+  ) {
     // Codec=Cst (C-struct based), see doc to use other codecs
-    return cst_encode_list_prim_u_8_strict(utf8.encoder.convert(raw));
+    return cst_encode_String(jsonEncode(raw));
   }
 
   @protected
-  ffi.Pointer<ffi.Int64> cst_encode_box_autoadd_i_64(PlatformInt64 raw) {
+  ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_String(String raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
-    return wire.cst_new_box_autoadd_i_64(cst_encode_i_64(raw));
+    return cst_encode_list_prim_u_8_strict(utf8.encoder.convert(raw));
   }
 
   @protected
@@ -412,12 +493,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  ffi.Pointer<ffi.Int64> cst_encode_opt_box_autoadd_i_64(PlatformInt64? raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    return raw == null ? ffi.nullptr : cst_encode_box_autoadd_i_64(raw);
-  }
-
-  @protected
   int cst_encode_u_64(BigInt raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return raw.toSigned(64).toInt();
@@ -470,56 +545,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  void cst_api_fill_to_wire_error(Error apiObj, wire_cst_error wireObj) {
-    if (apiObj is Error_Api) {
-      var pre_message = cst_encode_String(apiObj.message);
-      var pre_code = cst_encode_opt_box_autoadd_i_64(apiObj.code);
-      var pre_status = cst_encode_u_16(apiObj.status);
-      var pre_body = cst_encode_String(apiObj.body);
-      wireObj.tag = 0;
-      wireObj.kind.Api.message = pre_message;
-      wireObj.kind.Api.code = pre_code;
-      wireObj.kind.Api.status = pre_status;
-      wireObj.kind.Api.body = pre_body;
-      return;
-    }
-    if (apiObj is Error_Http) {
-      var pre_field0 = cst_encode_String(apiObj.field0);
-      wireObj.tag = 1;
-      wireObj.kind.Http.field0 = pre_field0;
-      return;
-    }
-    if (apiObj is Error_Json) {
-      var pre_field0 = cst_encode_String(apiObj.field0);
-      wireObj.tag = 2;
-      wireObj.kind.Json.field0 = pre_field0;
-      return;
-    }
-    if (apiObj is Error_Crypto) {
-      var pre_field0 = cst_encode_String(apiObj.field0);
-      wireObj.tag = 3;
-      wireObj.kind.Crypto.field0 = pre_field0;
-      return;
-    }
-    if (apiObj is Error_Io) {
-      var pre_field0 = cst_encode_String(apiObj.field0);
-      wireObj.tag = 4;
-      wireObj.kind.Io.field0 = pre_field0;
-      return;
-    }
-    if (apiObj is Error_Invalid) {
-      var pre_field0 = cst_encode_String(apiObj.field0);
-      wireObj.tag = 5;
-      wireObj.kind.Invalid.field0 = pre_field0;
-      return;
-    }
-    if (apiObj is Error_NotLoggedIn) {
-      wireObj.tag = 6;
-      return;
-    }
-  }
-
-  @protected
   void cst_api_fill_to_wire_login_result(
     LoginResult apiObj,
     wire_cst_login_result wireObj,
@@ -559,43 +584,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  void cst_api_fill_to_wire_qr_status(
-    QrStatus apiObj,
-    wire_cst_qr_status wireObj,
-  ) {
-    if (apiObj is QrStatus_Expired) {
-      wireObj.tag = 0;
-      return;
-    }
-    if (apiObj is QrStatus_Waiting) {
-      wireObj.tag = 1;
-      return;
-    }
-    if (apiObj is QrStatus_Scanned) {
-      wireObj.tag = 2;
-      return;
-    }
-    if (apiObj is QrStatus_Success) {
-      var pre_token = cst_encode_String(apiObj.token);
-      var pre_userid = cst_encode_String(apiObj.userid);
-      var pre_nickname = cst_encode_String(apiObj.nickname);
-      var pre_pic = cst_encode_String(apiObj.pic);
-      wireObj.tag = 3;
-      wireObj.kind.Success.token = pre_token;
-      wireObj.kind.Success.userid = pre_userid;
-      wireObj.kind.Success.nickname = pre_nickname;
-      wireObj.kind.Success.pic = pre_pic;
-      return;
-    }
-    if (apiObj is QrStatus_Unknown) {
-      var pre_field0 = cst_encode_i_64(apiObj.field0);
-      wireObj.tag = 4;
-      wireObj.kind.Unknown.field0 = pre_field0;
-      return;
-    }
-  }
-
-  @protected
   void cst_api_fill_to_wire_record_string_string(
     (String, String) apiObj,
     wire_cst_record_string_string wireObj,
@@ -612,6 +600,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     wireObj.music = cst_encode_list_music(apiObj.music);
     wireObj.singer = cst_encode_list_singer(apiObj.singer);
     wireObj.album = cst_encode_list_album(apiObj.album);
+  }
+
+  @protected
+  void cst_api_fill_to_wire_server_response(
+    ServerResponse apiObj,
+    wire_cst_server_response wireObj,
+  ) {
+    wireObj.body = cst_encode_SerdeJsonValue(apiObj.body);
+    wireObj.cookies = cst_encode_list_String(apiObj.cookies);
   }
 
   @protected
@@ -638,8 +635,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int
+  cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  );
+
+  @protected
+  int
+  cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus raw,
+  );
+
+  @protected
+  int
   cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient raw,
+  );
+
+  @protected
+  int
+  cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
   );
 
   @protected
@@ -650,8 +665,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int
+  cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  );
+
+  @protected
+  int
   cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient raw,
+  );
+
+  @protected
+  int
+  cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient raw,
+  );
+
+  @protected
+  int
+  cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus raw,
   );
 
   @protected
@@ -664,9 +697,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int cst_encode_platform(Platform raw);
 
   @protected
-  int cst_encode_u_16(int raw);
-
-  @protected
   int cst_encode_u_32(int raw);
 
   @protected
@@ -676,9 +706,29 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void cst_encode_unit(void raw);
 
   @protected
+  void sse_encode_AnyhowException(
+    AnyhowException self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus self,
     SseSerializer serializer,
   );
 
@@ -691,8 +741,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     KuGouClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
     SseSerializer serializer,
   );
 
@@ -710,6 +774,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    NetEaseClient self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    QrStatus self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_SerdeJsonValue(Object? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
@@ -722,12 +803,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
-  void sse_encode_box_autoadd_i_64(
-    PlatformInt64 self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_box_autoadd_login_result(
     LoginResult self,
     SseSerializer serializer,
@@ -738,9 +813,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     DeviceIdentity self,
     SseSerializer serializer,
   );
-
-  @protected
-  void sse_encode_error(Error self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -785,19 +857,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
-  void sse_encode_opt_box_autoadd_i_64(
-    PlatformInt64? self,
-    SseSerializer serializer,
-  );
-
-  @protected
   void sse_encode_platform(Platform self, SseSerializer serializer);
 
   @protected
   void sse_encode_playlist(Playlist self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_qr_status(QrStatus self, SseSerializer serializer);
 
   @protected
   void sse_encode_record_string_string(
@@ -809,13 +872,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_search_result(SearchResult self, SseSerializer serializer);
 
   @protected
+  void sse_encode_server_response(
+    ServerResponse self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_session(Session self, SseSerializer serializer);
 
   @protected
   void sse_encode_singer(Singer self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_u_16(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);
@@ -858,17 +924,6 @@ class RustLibWire implements BaseWire {
   RustLibWire.fromLookup(
     ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup,
   ) : _lookup = lookup;
-
-  ffi.Pointer<ffi.Int64> cst_new_box_autoadd_i_64(int value) {
-    return _cst_new_box_autoadd_i_64(value);
-  }
-
-  late final _cst_new_box_autoadd_i_64Ptr =
-      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Int64> Function(ffi.Int64)>>(
-        'frbgen_chocolate_music_cst_new_box_autoadd_i_64',
-      );
-  late final _cst_new_box_autoadd_i_64 = _cst_new_box_autoadd_i_64Ptr
-      .asFunction<ffi.Pointer<ffi.Int64> Function(int)>();
 
   ffi.Pointer<wire_cst_login_result> cst_new_box_autoadd_login_result() {
     return _cst_new_box_autoadd_login_result();
@@ -1004,6 +1059,40 @@ class RustLibWire implements BaseWire {
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClientPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_chocolate_music_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient',
+      );
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClientPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatusPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_chocolate_music_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus',
+      );
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatusPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
   rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClient(
     ffi.Pointer<ffi.Void> ptr,
   ) {
@@ -1020,6 +1109,40 @@ class RustLibWire implements BaseWire {
       _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerKuGouClientPtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
+  void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClientPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_chocolate_music_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient',
+      );
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClientPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatusPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_chocolate_music_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus',
+      );
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatus =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerQrStatusPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
   void store_dart_post_cobject(DartPostCObjectFnType ptr) {
     return _store_dart_post_cobject(ptr);
   }
@@ -1031,13 +1154,24 @@ class RustLibWire implements BaseWire {
   late final _store_dart_post_cobject = _store_dart_post_cobjectPtr
       .asFunction<void Function(DartPostCObjectFnType)>();
 
-  void wire__crate__client__KuGouClient_add_music_to_playlist(
+  void wire__crate__frb_api__bridge_version(int port_) {
+    return _wire__crate__frb_api__bridge_version(port_);
+  }
+
+  late final _wire__crate__frb_api__bridge_versionPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+        'frbgen_chocolate_music_wire__crate__frb_api__bridge_version',
+      );
+  late final _wire__crate__frb_api__bridge_version =
+      _wire__crate__frb_api__bridge_versionPtr.asFunction<void Function(int)>();
+
+  void wire__kugou__client__KuGouClient_add_music_to_playlist(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> list_id,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> hash,
   ) {
-    return _wire__crate__client__KuGouClient_add_music_to_playlist(
+    return _wire__kugou__client__KuGouClient_add_music_to_playlist(
       port_,
       that,
       list_id,
@@ -1045,7 +1179,7 @@ class RustLibWire implements BaseWire {
     );
   }
 
-  late final _wire__crate__client__KuGouClient_add_music_to_playlistPtr =
+  late final _wire__kugou__client__KuGouClient_add_music_to_playlistPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1056,10 +1190,10 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_add_music_to_playlist',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_add_music_to_playlist',
       );
-  late final _wire__crate__client__KuGouClient_add_music_to_playlist =
-      _wire__crate__client__KuGouClient_add_music_to_playlistPtr
+  late final _wire__kugou__client__KuGouClient_add_music_to_playlist =
+      _wire__kugou__client__KuGouClient_add_music_to_playlistPtr
           .asFunction<
             void Function(
               int,
@@ -1069,15 +1203,15 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__client__KuGouClient_apply_login(
+  void wire__kugou__client__KuGouClient_apply_login(
     int port_,
     int that,
     ffi.Pointer<wire_cst_login_result> r,
   ) {
-    return _wire__crate__client__KuGouClient_apply_login(port_, that, r);
+    return _wire__kugou__client__KuGouClient_apply_login(port_, that, r);
   }
 
-  late final _wire__crate__client__KuGouClient_apply_loginPtr =
+  late final _wire__kugou__client__KuGouClient_apply_loginPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1086,32 +1220,32 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_login_result>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__client__KuGouClient_apply_login');
-  late final _wire__crate__client__KuGouClient_apply_login =
-      _wire__crate__client__KuGouClient_apply_loginPtr
+      >('frbgen_chocolate_music_wire__kugou__client__KuGouClient_apply_login');
+  late final _wire__kugou__client__KuGouClient_apply_login =
+      _wire__kugou__client__KuGouClient_apply_loginPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_login_result>)
           >();
 
-  void wire__crate__client__KuGouClient_cached_playlists(int port_, int that) {
-    return _wire__crate__client__KuGouClient_cached_playlists(port_, that);
+  void wire__kugou__client__KuGouClient_cached_playlists(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_cached_playlists(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_cached_playlistsPtr =
+  late final _wire__kugou__client__KuGouClient_cached_playlistsPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_cached_playlists',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_cached_playlists',
       );
-  late final _wire__crate__client__KuGouClient_cached_playlists =
-      _wire__crate__client__KuGouClient_cached_playlistsPtr
+  late final _wire__kugou__client__KuGouClient_cached_playlists =
+      _wire__kugou__client__KuGouClient_cached_playlistsPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_choose_music_quality(
+  void wire__kugou__client__KuGouClient_choose_music_quality(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> hash,
     int quality,
   ) {
-    return _wire__crate__client__KuGouClient_choose_music_quality(
+    return _wire__kugou__client__KuGouClient_choose_music_quality(
       port_,
       that,
       hash,
@@ -1119,7 +1253,7 @@ class RustLibWire implements BaseWire {
     );
   }
 
-  late final _wire__crate__client__KuGouClient_choose_music_qualityPtr =
+  late final _wire__kugou__client__KuGouClient_choose_music_qualityPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1130,10 +1264,10 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_choose_music_quality',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_choose_music_quality',
       );
-  late final _wire__crate__client__KuGouClient_choose_music_quality =
-      _wire__crate__client__KuGouClient_choose_music_qualityPtr
+  late final _wire__kugou__client__KuGouClient_choose_music_quality =
+      _wire__kugou__client__KuGouClient_choose_music_qualityPtr
           .asFunction<
             void Function(
               int,
@@ -1143,51 +1277,51 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__client__KuGouClient_claim_ad_vip(int port_, int that) {
-    return _wire__crate__client__KuGouClient_claim_ad_vip(port_, that);
+  void wire__kugou__client__KuGouClient_claim_ad_vip(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_claim_ad_vip(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_claim_ad_vipPtr =
+  late final _wire__kugou__client__KuGouClient_claim_ad_vipPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_claim_ad_vip',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_claim_ad_vip',
       );
-  late final _wire__crate__client__KuGouClient_claim_ad_vip =
-      _wire__crate__client__KuGouClient_claim_ad_vipPtr
+  late final _wire__kugou__client__KuGouClient_claim_ad_vip =
+      _wire__kugou__client__KuGouClient_claim_ad_vipPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_claim_daily_vip(int port_, int that) {
-    return _wire__crate__client__KuGouClient_claim_daily_vip(port_, that);
+  void wire__kugou__client__KuGouClient_claim_daily_vip(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_claim_daily_vip(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_claim_daily_vipPtr =
+  late final _wire__kugou__client__KuGouClient_claim_daily_vipPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_claim_daily_vip',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_claim_daily_vip',
       );
-  late final _wire__crate__client__KuGouClient_claim_daily_vip =
-      _wire__crate__client__KuGouClient_claim_daily_vipPtr
+  late final _wire__kugou__client__KuGouClient_claim_daily_vip =
+      _wire__kugou__client__KuGouClient_claim_daily_vipPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_claim_vip_all(int port_, int that) {
-    return _wire__crate__client__KuGouClient_claim_vip_all(port_, that);
+  void wire__kugou__client__KuGouClient_claim_vip_all(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_claim_vip_all(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_claim_vip_allPtr =
+  late final _wire__kugou__client__KuGouClient_claim_vip_allPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_claim_vip_all',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_claim_vip_all',
       );
-  late final _wire__crate__client__KuGouClient_claim_vip_all =
-      _wire__crate__client__KuGouClient_claim_vip_allPtr
+  late final _wire__kugou__client__KuGouClient_claim_vip_all =
+      _wire__kugou__client__KuGouClient_claim_vip_allPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_create_playlist(
+  void wire__kugou__client__KuGouClient_create_playlist(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> name,
   ) {
-    return _wire__crate__client__KuGouClient_create_playlist(port_, that, name);
+    return _wire__kugou__client__KuGouClient_create_playlist(port_, that, name);
   }
 
-  late final _wire__crate__client__KuGouClient_create_playlistPtr =
+  late final _wire__kugou__client__KuGouClient_create_playlistPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1197,21 +1331,21 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_create_playlist',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_create_playlist',
       );
-  late final _wire__crate__client__KuGouClient_create_playlist =
-      _wire__crate__client__KuGouClient_create_playlistPtr
+  late final _wire__kugou__client__KuGouClient_create_playlist =
+      _wire__kugou__client__KuGouClient_create_playlistPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_delete_music_from_playlist(
+  void wire__kugou__client__KuGouClient_delete_music_from_playlist(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> list_id,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> hash,
   ) {
-    return _wire__crate__client__KuGouClient_delete_music_from_playlist(
+    return _wire__kugou__client__KuGouClient_delete_music_from_playlist(
       port_,
       that,
       list_id,
@@ -1219,7 +1353,7 @@ class RustLibWire implements BaseWire {
     );
   }
 
-  late final _wire__crate__client__KuGouClient_delete_music_from_playlistPtr =
+  late final _wire__kugou__client__KuGouClient_delete_music_from_playlistPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1230,10 +1364,10 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_delete_music_from_playlist',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_delete_music_from_playlist',
       );
-  late final _wire__crate__client__KuGouClient_delete_music_from_playlist =
-      _wire__crate__client__KuGouClient_delete_music_from_playlistPtr
+  late final _wire__kugou__client__KuGouClient_delete_music_from_playlist =
+      _wire__kugou__client__KuGouClient_delete_music_from_playlistPtr
           .asFunction<
             void Function(
               int,
@@ -1243,19 +1377,19 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__client__KuGouClient_delete_playlist(
+  void wire__kugou__client__KuGouClient_delete_playlist(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> list_id,
   ) {
-    return _wire__crate__client__KuGouClient_delete_playlist(
+    return _wire__kugou__client__KuGouClient_delete_playlist(
       port_,
       that,
       list_id,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_delete_playlistPtr =
+  late final _wire__kugou__client__KuGouClient_delete_playlistPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1265,126 +1399,126 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_delete_playlist',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_delete_playlist',
       );
-  late final _wire__crate__client__KuGouClient_delete_playlist =
-      _wire__crate__client__KuGouClient_delete_playlistPtr
+  late final _wire__kugou__client__KuGouClient_delete_playlist =
+      _wire__kugou__client__KuGouClient_delete_playlistPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_device_dev(int port_, int that) {
-    return _wire__crate__client__KuGouClient_device_dev(port_, that);
+  void wire__kugou__client__KuGouClient_device_dev(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_device_dev(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_device_devPtr =
+  late final _wire__kugou__client__KuGouClient_device_devPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_device_dev',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_device_dev',
       );
-  late final _wire__crate__client__KuGouClient_device_dev =
-      _wire__crate__client__KuGouClient_device_devPtr
+  late final _wire__kugou__client__KuGouClient_device_dev =
+      _wire__kugou__client__KuGouClient_device_devPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_device_dfid(int port_, int that) {
-    return _wire__crate__client__KuGouClient_device_dfid(port_, that);
+  void wire__kugou__client__KuGouClient_device_dfid(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_device_dfid(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_device_dfidPtr =
+  late final _wire__kugou__client__KuGouClient_device_dfidPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_device_dfid',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_device_dfid',
       );
-  late final _wire__crate__client__KuGouClient_device_dfid =
-      _wire__crate__client__KuGouClient_device_dfidPtr
+  late final _wire__kugou__client__KuGouClient_device_dfid =
+      _wire__kugou__client__KuGouClient_device_dfidPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_device_guid(int port_, int that) {
-    return _wire__crate__client__KuGouClient_device_guid(port_, that);
+  void wire__kugou__client__KuGouClient_device_guid(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_device_guid(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_device_guidPtr =
+  late final _wire__kugou__client__KuGouClient_device_guidPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_device_guid',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_device_guid',
       );
-  late final _wire__crate__client__KuGouClient_device_guid =
-      _wire__crate__client__KuGouClient_device_guidPtr
+  late final _wire__kugou__client__KuGouClient_device_guid =
+      _wire__kugou__client__KuGouClient_device_guidPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_device_mid(int port_, int that) {
-    return _wire__crate__client__KuGouClient_device_mid(port_, that);
+  void wire__kugou__client__KuGouClient_device_mid(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_device_mid(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_device_midPtr =
+  late final _wire__kugou__client__KuGouClient_device_midPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_device_mid',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_device_mid',
       );
-  late final _wire__crate__client__KuGouClient_device_mid =
-      _wire__crate__client__KuGouClient_device_midPtr
+  late final _wire__kugou__client__KuGouClient_device_mid =
+      _wire__kugou__client__KuGouClient_device_midPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_device_webgl(int port_, int that) {
-    return _wire__crate__client__KuGouClient_device_webgl(port_, that);
+  void wire__kugou__client__KuGouClient_device_webgl(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_device_webgl(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_device_webglPtr =
+  late final _wire__kugou__client__KuGouClient_device_webglPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_device_webgl',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_device_webgl',
       );
-  late final _wire__crate__client__KuGouClient_device_webgl =
-      _wire__crate__client__KuGouClient_device_webglPtr
+  late final _wire__kugou__client__KuGouClient_device_webgl =
+      _wire__kugou__client__KuGouClient_device_webglPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_dfid(int port_, int that) {
-    return _wire__crate__client__KuGouClient_dfid(port_, that);
+  void wire__kugou__client__KuGouClient_dfid(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_dfid(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_dfidPtr =
+  late final _wire__kugou__client__KuGouClient_dfidPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_dfid',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_dfid',
       );
-  late final _wire__crate__client__KuGouClient_dfid =
-      _wire__crate__client__KuGouClient_dfidPtr
+  late final _wire__kugou__client__KuGouClient_dfid =
+      _wire__kugou__client__KuGouClient_dfidPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_favorite_hashes(int port_, int that) {
-    return _wire__crate__client__KuGouClient_favorite_hashes(port_, that);
+  void wire__kugou__client__KuGouClient_favorite_hashes(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_favorite_hashes(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_favorite_hashesPtr =
+  late final _wire__kugou__client__KuGouClient_favorite_hashesPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_favorite_hashes',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_favorite_hashes',
       );
-  late final _wire__crate__client__KuGouClient_favorite_hashes =
-      _wire__crate__client__KuGouClient_favorite_hashesPtr
+  late final _wire__kugou__client__KuGouClient_favorite_hashes =
+      _wire__kugou__client__KuGouClient_favorite_hashesPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_favorite_playlist_id(
+  void wire__kugou__client__KuGouClient_favorite_playlist_id(
     int port_,
     int that,
   ) {
-    return _wire__crate__client__KuGouClient_favorite_playlist_id(port_, that);
+    return _wire__kugou__client__KuGouClient_favorite_playlist_id(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_favorite_playlist_idPtr =
+  late final _wire__kugou__client__KuGouClient_favorite_playlist_idPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_favorite_playlist_id',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_favorite_playlist_id',
       );
-  late final _wire__crate__client__KuGouClient_favorite_playlist_id =
-      _wire__crate__client__KuGouClient_favorite_playlist_idPtr
+  late final _wire__kugou__client__KuGouClient_favorite_playlist_id =
+      _wire__kugou__client__KuGouClient_favorite_playlist_idPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_get_album_detail(
+  void wire__kugou__client__KuGouClient_get_album_detail(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> album_id,
   ) {
-    return _wire__crate__client__KuGouClient_get_album_detail(
+    return _wire__kugou__client__KuGouClient_get_album_detail(
       port_,
       that,
       album_id,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_album_detailPtr =
+  late final _wire__kugou__client__KuGouClient_get_album_detailPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1394,27 +1528,27 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_album_detail',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_album_detail',
       );
-  late final _wire__crate__client__KuGouClient_get_album_detail =
-      _wire__crate__client__KuGouClient_get_album_detailPtr
+  late final _wire__kugou__client__KuGouClient_get_album_detail =
+      _wire__kugou__client__KuGouClient_get_album_detailPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_get_album_music(
+  void wire__kugou__client__KuGouClient_get_album_music(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> album_id,
   ) {
-    return _wire__crate__client__KuGouClient_get_album_music(
+    return _wire__kugou__client__KuGouClient_get_album_music(
       port_,
       that,
       album_id,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_album_musicPtr =
+  late final _wire__kugou__client__KuGouClient_get_album_musicPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1424,38 +1558,38 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_album_music',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_album_music',
       );
-  late final _wire__crate__client__KuGouClient_get_album_music =
-      _wire__crate__client__KuGouClient_get_album_musicPtr
+  late final _wire__kugou__client__KuGouClient_get_album_music =
+      _wire__kugou__client__KuGouClient_get_album_musicPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_get_collection_hashes(
+  void wire__kugou__client__KuGouClient_get_collection_hashes(
     int port_,
     int that,
   ) {
-    return _wire__crate__client__KuGouClient_get_collection_hashes(port_, that);
+    return _wire__kugou__client__KuGouClient_get_collection_hashes(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_get_collection_hashesPtr =
+  late final _wire__kugou__client__KuGouClient_get_collection_hashesPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_collection_hashes',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_collection_hashes',
       );
-  late final _wire__crate__client__KuGouClient_get_collection_hashes =
-      _wire__crate__client__KuGouClient_get_collection_hashesPtr
+  late final _wire__kugou__client__KuGouClient_get_collection_hashes =
+      _wire__kugou__client__KuGouClient_get_collection_hashesPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_get_lyric(
+  void wire__kugou__client__KuGouClient_get_lyric(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> hash,
   ) {
-    return _wire__crate__client__KuGouClient_get_lyric(port_, that, hash);
+    return _wire__kugou__client__KuGouClient_get_lyric(port_, that, hash);
   }
 
-  late final _wire__crate__client__KuGouClient_get_lyricPtr =
+  late final _wire__kugou__client__KuGouClient_get_lyricPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1464,22 +1598,22 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__client__KuGouClient_get_lyric');
-  late final _wire__crate__client__KuGouClient_get_lyric =
-      _wire__crate__client__KuGouClient_get_lyricPtr
+      >('frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_lyric');
+  late final _wire__kugou__client__KuGouClient_get_lyric =
+      _wire__kugou__client__KuGouClient_get_lyricPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_get_lyric_krc(
+  void wire__kugou__client__KuGouClient_get_lyric_krc(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> hash,
   ) {
-    return _wire__crate__client__KuGouClient_get_lyric_krc(port_, that, hash);
+    return _wire__kugou__client__KuGouClient_get_lyric_krc(port_, that, hash);
   }
 
-  late final _wire__crate__client__KuGouClient_get_lyric_krcPtr =
+  late final _wire__kugou__client__KuGouClient_get_lyric_krcPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1489,21 +1623,21 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_lyric_krc',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_lyric_krc',
       );
-  late final _wire__crate__client__KuGouClient_get_lyric_krc =
-      _wire__crate__client__KuGouClient_get_lyric_krcPtr
+  late final _wire__kugou__client__KuGouClient_get_lyric_krc =
+      _wire__kugou__client__KuGouClient_get_lyric_krcPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_get_music_url(
+  void wire__kugou__client__KuGouClient_get_music_url(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> hash,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> quality,
   ) {
-    return _wire__crate__client__KuGouClient_get_music_url(
+    return _wire__kugou__client__KuGouClient_get_music_url(
       port_,
       that,
       hash,
@@ -1511,7 +1645,7 @@ class RustLibWire implements BaseWire {
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_music_urlPtr =
+  late final _wire__kugou__client__KuGouClient_get_music_urlPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1522,10 +1656,10 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_music_url',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_music_url',
       );
-  late final _wire__crate__client__KuGouClient_get_music_url =
-      _wire__crate__client__KuGouClient_get_music_urlPtr
+  late final _wire__kugou__client__KuGouClient_get_music_url =
+      _wire__kugou__client__KuGouClient_get_music_urlPtr
           .asFunction<
             void Function(
               int,
@@ -1535,19 +1669,19 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__client__KuGouClient_get_musics_details(
+  void wire__kugou__client__KuGouClient_get_musics_details(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_String> hashes,
   ) {
-    return _wire__crate__client__KuGouClient_get_musics_details(
+    return _wire__kugou__client__KuGouClient_get_musics_details(
       port_,
       that,
       hashes,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_musics_detailsPtr =
+  late final _wire__kugou__client__KuGouClient_get_musics_detailsPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1557,27 +1691,27 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_musics_details',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_musics_details',
       );
-  late final _wire__crate__client__KuGouClient_get_musics_details =
-      _wire__crate__client__KuGouClient_get_musics_detailsPtr
+  late final _wire__kugou__client__KuGouClient_get_musics_details =
+      _wire__kugou__client__KuGouClient_get_musics_detailsPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_String>)
           >();
 
-  void wire__crate__client__KuGouClient_get_playlist_detail(
+  void wire__kugou__client__KuGouClient_get_playlist_detail(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> list_id,
   ) {
-    return _wire__crate__client__KuGouClient_get_playlist_detail(
+    return _wire__kugou__client__KuGouClient_get_playlist_detail(
       port_,
       that,
       list_id,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_playlist_detailPtr =
+  late final _wire__kugou__client__KuGouClient_get_playlist_detailPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1587,27 +1721,27 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_playlist_detail',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_playlist_detail',
       );
-  late final _wire__crate__client__KuGouClient_get_playlist_detail =
-      _wire__crate__client__KuGouClient_get_playlist_detailPtr
+  late final _wire__kugou__client__KuGouClient_get_playlist_detail =
+      _wire__kugou__client__KuGouClient_get_playlist_detailPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_get_playlist_music(
+  void wire__kugou__client__KuGouClient_get_playlist_music(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> list_id,
   ) {
-    return _wire__crate__client__KuGouClient_get_playlist_music(
+    return _wire__kugou__client__KuGouClient_get_playlist_music(
       port_,
       that,
       list_id,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_playlist_musicPtr =
+  late final _wire__kugou__client__KuGouClient_get_playlist_musicPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1617,111 +1751,111 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_playlist_music',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_playlist_music',
       );
-  late final _wire__crate__client__KuGouClient_get_playlist_music =
-      _wire__crate__client__KuGouClient_get_playlist_musicPtr
+  late final _wire__kugou__client__KuGouClient_get_playlist_music =
+      _wire__kugou__client__KuGouClient_get_playlist_musicPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_get_playlists(int port_, int that) {
-    return _wire__crate__client__KuGouClient_get_playlists(port_, that);
+  void wire__kugou__client__KuGouClient_get_playlists(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_get_playlists(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_get_playlistsPtr =
+  late final _wire__kugou__client__KuGouClient_get_playlistsPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_playlists',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_playlists',
       );
-  late final _wire__crate__client__KuGouClient_get_playlists =
-      _wire__crate__client__KuGouClient_get_playlistsPtr
+  late final _wire__kugou__client__KuGouClient_get_playlists =
+      _wire__kugou__client__KuGouClient_get_playlistsPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_get_recommend_musics(
+  void wire__kugou__client__KuGouClient_get_recommend_musics(
     int port_,
     int that,
     int num,
   ) {
-    return _wire__crate__client__KuGouClient_get_recommend_musics(
+    return _wire__kugou__client__KuGouClient_get_recommend_musics(
       port_,
       that,
       num,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_recommend_musicsPtr =
+  late final _wire__kugou__client__KuGouClient_get_recommend_musicsPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(ffi.Int64, ffi.UintPtr, ffi.Uint32)
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_recommend_musics',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_recommend_musics',
       );
-  late final _wire__crate__client__KuGouClient_get_recommend_musics =
-      _wire__crate__client__KuGouClient_get_recommend_musicsPtr
+  late final _wire__kugou__client__KuGouClient_get_recommend_musics =
+      _wire__kugou__client__KuGouClient_get_recommend_musicsPtr
           .asFunction<void Function(int, int, int)>();
 
-  void wire__crate__client__KuGouClient_get_recommend_playlists(
+  void wire__kugou__client__KuGouClient_get_recommend_playlists(
     int port_,
     int that,
     int num,
   ) {
-    return _wire__crate__client__KuGouClient_get_recommend_playlists(
+    return _wire__kugou__client__KuGouClient_get_recommend_playlists(
       port_,
       that,
       num,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_recommend_playlistsPtr =
+  late final _wire__kugou__client__KuGouClient_get_recommend_playlistsPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(ffi.Int64, ffi.UintPtr, ffi.Uint32)
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_recommend_playlists',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_recommend_playlists',
       );
-  late final _wire__crate__client__KuGouClient_get_recommend_playlists =
-      _wire__crate__client__KuGouClient_get_recommend_playlistsPtr
+  late final _wire__kugou__client__KuGouClient_get_recommend_playlists =
+      _wire__kugou__client__KuGouClient_get_recommend_playlistsPtr
           .asFunction<void Function(int, int, int)>();
 
-  void wire__crate__client__KuGouClient_get_recommend_singers(
+  void wire__kugou__client__KuGouClient_get_recommend_singers(
     int port_,
     int that,
     int num,
   ) {
-    return _wire__crate__client__KuGouClient_get_recommend_singers(
+    return _wire__kugou__client__KuGouClient_get_recommend_singers(
       port_,
       that,
       num,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_recommend_singersPtr =
+  late final _wire__kugou__client__KuGouClient_get_recommend_singersPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(ffi.Int64, ffi.UintPtr, ffi.Uint32)
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_recommend_singers',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_recommend_singers',
       );
-  late final _wire__crate__client__KuGouClient_get_recommend_singers =
-      _wire__crate__client__KuGouClient_get_recommend_singersPtr
+  late final _wire__kugou__client__KuGouClient_get_recommend_singers =
+      _wire__kugou__client__KuGouClient_get_recommend_singersPtr
           .asFunction<void Function(int, int, int)>();
 
-  void wire__crate__client__KuGouClient_get_singer_albums(
+  void wire__kugou__client__KuGouClient_get_singer_albums(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> singer_id,
   ) {
-    return _wire__crate__client__KuGouClient_get_singer_albums(
+    return _wire__kugou__client__KuGouClient_get_singer_albums(
       port_,
       that,
       singer_id,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_singer_albumsPtr =
+  late final _wire__kugou__client__KuGouClient_get_singer_albumsPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1731,27 +1865,27 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_singer_albums',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_singer_albums',
       );
-  late final _wire__crate__client__KuGouClient_get_singer_albums =
-      _wire__crate__client__KuGouClient_get_singer_albumsPtr
+  late final _wire__kugou__client__KuGouClient_get_singer_albums =
+      _wire__kugou__client__KuGouClient_get_singer_albumsPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_get_singer_detail(
+  void wire__kugou__client__KuGouClient_get_singer_detail(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> singer_id,
   ) {
-    return _wire__crate__client__KuGouClient_get_singer_detail(
+    return _wire__kugou__client__KuGouClient_get_singer_detail(
       port_,
       that,
       singer_id,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_singer_detailPtr =
+  late final _wire__kugou__client__KuGouClient_get_singer_detailPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1761,27 +1895,27 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_singer_detail',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_singer_detail',
       );
-  late final _wire__crate__client__KuGouClient_get_singer_detail =
-      _wire__crate__client__KuGouClient_get_singer_detailPtr
+  late final _wire__kugou__client__KuGouClient_get_singer_detail =
+      _wire__kugou__client__KuGouClient_get_singer_detailPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_get_singer_music(
+  void wire__kugou__client__KuGouClient_get_singer_music(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> singer_id,
   ) {
-    return _wire__crate__client__KuGouClient_get_singer_music(
+    return _wire__kugou__client__KuGouClient_get_singer_music(
       port_,
       that,
       singer_id,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_get_singer_musicPtr =
+  late final _wire__kugou__client__KuGouClient_get_singer_musicPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1791,45 +1925,45 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_get_singer_music',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_get_singer_music',
       );
-  late final _wire__crate__client__KuGouClient_get_singer_music =
-      _wire__crate__client__KuGouClient_get_singer_musicPtr
+  late final _wire__kugou__client__KuGouClient_get_singer_music =
+      _wire__kugou__client__KuGouClient_get_singer_musicPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_has_dfid(int port_, int that) {
-    return _wire__crate__client__KuGouClient_has_dfid(port_, that);
+  void wire__kugou__client__KuGouClient_has_dfid(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_has_dfid(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_has_dfidPtr =
+  late final _wire__kugou__client__KuGouClient_has_dfidPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_has_dfid',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_has_dfid',
       );
-  late final _wire__crate__client__KuGouClient_has_dfid =
-      _wire__crate__client__KuGouClient_has_dfidPtr
+  late final _wire__kugou__client__KuGouClient_has_dfid =
+      _wire__kugou__client__KuGouClient_has_dfidPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_is_logged_in(int port_, int that) {
-    return _wire__crate__client__KuGouClient_is_logged_in(port_, that);
+  void wire__kugou__client__KuGouClient_is_logged_in(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_is_logged_in(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_is_logged_inPtr =
+  late final _wire__kugou__client__KuGouClient_is_logged_inPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_is_logged_in',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_is_logged_in',
       );
-  late final _wire__crate__client__KuGouClient_is_logged_in =
-      _wire__crate__client__KuGouClient_is_logged_inPtr
+  late final _wire__kugou__client__KuGouClient_is_logged_in =
+      _wire__kugou__client__KuGouClient_is_logged_inPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_login_cellphone(
+  void wire__kugou__client__KuGouClient_login_cellphone(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> mobile,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> code,
   ) {
-    return _wire__crate__client__KuGouClient_login_cellphone(
+    return _wire__kugou__client__KuGouClient_login_cellphone(
       port_,
       that,
       mobile,
@@ -1837,7 +1971,7 @@ class RustLibWire implements BaseWire {
     );
   }
 
-  late final _wire__crate__client__KuGouClient_login_cellphonePtr =
+  late final _wire__kugou__client__KuGouClient_login_cellphonePtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1848,10 +1982,10 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_login_cellphone',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_login_cellphone',
       );
-  late final _wire__crate__client__KuGouClient_login_cellphone =
-      _wire__crate__client__KuGouClient_login_cellphonePtr
+  late final _wire__kugou__client__KuGouClient_login_cellphone =
+      _wire__kugou__client__KuGouClient_login_cellphonePtr
           .asFunction<
             void Function(
               int,
@@ -1861,39 +1995,39 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__client__KuGouClient_new(int port_, int platform) {
-    return _wire__crate__client__KuGouClient_new(port_, platform);
+  void wire__kugou__client__KuGouClient_new(int port_, int platform) {
+    return _wire__kugou__client__KuGouClient_new(port_, platform);
   }
 
-  late final _wire__crate__client__KuGouClient_newPtr =
+  late final _wire__kugou__client__KuGouClient_newPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.Int32)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_new',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_new',
       );
-  late final _wire__crate__client__KuGouClient_new =
-      _wire__crate__client__KuGouClient_newPtr
+  late final _wire__kugou__client__KuGouClient_new =
+      _wire__kugou__client__KuGouClient_newPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_platform(int port_, int that) {
-    return _wire__crate__client__KuGouClient_platform(port_, that);
+  void wire__kugou__client__KuGouClient_platform(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_platform(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_platformPtr =
+  late final _wire__kugou__client__KuGouClient_platformPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_platform',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_platform',
       );
-  late final _wire__crate__client__KuGouClient_platform =
-      _wire__crate__client__KuGouClient_platformPtr
+  late final _wire__kugou__client__KuGouClient_platform =
+      _wire__kugou__client__KuGouClient_platformPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_qr_check(
+  void wire__kugou__client__KuGouClient_qr_check(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> key,
   ) {
-    return _wire__crate__client__KuGouClient_qr_check(port_, that, key);
+    return _wire__kugou__client__KuGouClient_qr_check(port_, that, key);
   }
 
-  late final _wire__crate__client__KuGouClient_qr_checkPtr =
+  late final _wire__kugou__client__KuGouClient_qr_checkPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1902,33 +2036,33 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__client__KuGouClient_qr_check');
-  late final _wire__crate__client__KuGouClient_qr_check =
-      _wire__crate__client__KuGouClient_qr_checkPtr
+      >('frbgen_chocolate_music_wire__kugou__client__KuGouClient_qr_check');
+  late final _wire__kugou__client__KuGouClient_qr_check =
+      _wire__kugou__client__KuGouClient_qr_checkPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_qr_key(int port_, int that) {
-    return _wire__crate__client__KuGouClient_qr_key(port_, that);
+  void wire__kugou__client__KuGouClient_qr_key(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_qr_key(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_qr_keyPtr =
+  late final _wire__kugou__client__KuGouClient_qr_keyPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_qr_key',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_qr_key',
       );
-  late final _wire__crate__client__KuGouClient_qr_key =
-      _wire__crate__client__KuGouClient_qr_keyPtr
+  late final _wire__kugou__client__KuGouClient_qr_key =
+      _wire__kugou__client__KuGouClient_qr_keyPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_qr_login_wait(
+  void wire__kugou__client__KuGouClient_qr_login_wait(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> key,
     int interval_secs,
     int max_attempts,
   ) {
-    return _wire__crate__client__KuGouClient_qr_login_wait(
+    return _wire__kugou__client__KuGouClient_qr_login_wait(
       port_,
       that,
       key,
@@ -1937,7 +2071,7 @@ class RustLibWire implements BaseWire {
     );
   }
 
-  late final _wire__crate__client__KuGouClient_qr_login_waitPtr =
+  late final _wire__kugou__client__KuGouClient_qr_login_waitPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1949,10 +2083,10 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_qr_login_wait',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_qr_login_wait',
       );
-  late final _wire__crate__client__KuGouClient_qr_login_wait =
-      _wire__crate__client__KuGouClient_qr_login_waitPtr
+  late final _wire__kugou__client__KuGouClient_qr_login_wait =
+      _wire__kugou__client__KuGouClient_qr_login_waitPtr
           .asFunction<
             void Function(
               int,
@@ -1963,13 +2097,13 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__client__KuGouClient_raw_request(
+  void wire__kugou__client__KuGouClient_raw_request(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> path,
     ffi.Pointer<wire_cst_list_record_string_string> query,
   ) {
-    return _wire__crate__client__KuGouClient_raw_request(
+    return _wire__kugou__client__KuGouClient_raw_request(
       port_,
       that,
       path,
@@ -1977,7 +2111,7 @@ class RustLibWire implements BaseWire {
     );
   }
 
-  late final _wire__crate__client__KuGouClient_raw_requestPtr =
+  late final _wire__kugou__client__KuGouClient_raw_requestPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -1987,9 +2121,9 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_record_string_string>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__client__KuGouClient_raw_request');
-  late final _wire__crate__client__KuGouClient_raw_request =
-      _wire__crate__client__KuGouClient_raw_requestPtr
+      >('frbgen_chocolate_music_wire__kugou__client__KuGouClient_raw_request');
+  late final _wire__kugou__client__KuGouClient_raw_request =
+      _wire__kugou__client__KuGouClient_raw_requestPtr
           .asFunction<
             void Function(
               int,
@@ -1999,51 +2133,51 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__client__KuGouClient_refresh_token(int port_, int that) {
-    return _wire__crate__client__KuGouClient_refresh_token(port_, that);
+  void wire__kugou__client__KuGouClient_refresh_token(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_refresh_token(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_refresh_tokenPtr =
+  late final _wire__kugou__client__KuGouClient_refresh_tokenPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_refresh_token',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_refresh_token',
       );
-  late final _wire__crate__client__KuGouClient_refresh_token =
-      _wire__crate__client__KuGouClient_refresh_tokenPtr
+  late final _wire__kugou__client__KuGouClient_refresh_token =
+      _wire__kugou__client__KuGouClient_refresh_tokenPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_register_device(int port_, int that) {
-    return _wire__crate__client__KuGouClient_register_device(port_, that);
+  void wire__kugou__client__KuGouClient_register_device(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_register_device(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_register_devicePtr =
+  late final _wire__kugou__client__KuGouClient_register_devicePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_register_device',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_register_device',
       );
-  late final _wire__crate__client__KuGouClient_register_device =
-      _wire__crate__client__KuGouClient_register_devicePtr
+  late final _wire__kugou__client__KuGouClient_register_device =
+      _wire__kugou__client__KuGouClient_register_devicePtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_save_session(int port_, int that) {
-    return _wire__crate__client__KuGouClient_save_session(port_, that);
+  void wire__kugou__client__KuGouClient_save_session(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_save_session(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_save_sessionPtr =
+  late final _wire__kugou__client__KuGouClient_save_sessionPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_save_session',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_save_session',
       );
-  late final _wire__crate__client__KuGouClient_save_session =
-      _wire__crate__client__KuGouClient_save_sessionPtr
+  late final _wire__kugou__client__KuGouClient_save_session =
+      _wire__kugou__client__KuGouClient_save_sessionPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_search(
+  void wire__kugou__client__KuGouClient_search(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> keyword,
   ) {
-    return _wire__crate__client__KuGouClient_search(port_, that, keyword);
+    return _wire__kugou__client__KuGouClient_search(port_, that, keyword);
   }
 
-  late final _wire__crate__client__KuGouClient_searchPtr =
+  late final _wire__kugou__client__KuGouClient_searchPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2052,26 +2186,26 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__client__KuGouClient_search');
-  late final _wire__crate__client__KuGouClient_search =
-      _wire__crate__client__KuGouClient_searchPtr
+      >('frbgen_chocolate_music_wire__kugou__client__KuGouClient_search');
+  late final _wire__kugou__client__KuGouClient_search =
+      _wire__kugou__client__KuGouClient_searchPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_search_with_details(
+  void wire__kugou__client__KuGouClient_search_with_details(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> keyword,
   ) {
-    return _wire__crate__client__KuGouClient_search_with_details(
+    return _wire__kugou__client__KuGouClient_search_with_details(
       port_,
       that,
       keyword,
     );
   }
 
-  late final _wire__crate__client__KuGouClient_search_with_detailsPtr =
+  late final _wire__kugou__client__KuGouClient_search_with_detailsPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2081,23 +2215,23 @@ class RustLibWire implements BaseWire {
           )
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_search_with_details',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_search_with_details',
       );
-  late final _wire__crate__client__KuGouClient_search_with_details =
-      _wire__crate__client__KuGouClient_search_with_detailsPtr
+  late final _wire__kugou__client__KuGouClient_search_with_details =
+      _wire__kugou__client__KuGouClient_search_with_detailsPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_send_captcha(
+  void wire__kugou__client__KuGouClient_send_captcha(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> mobile,
   ) {
-    return _wire__crate__client__KuGouClient_send_captcha(port_, that, mobile);
+    return _wire__kugou__client__KuGouClient_send_captcha(port_, that, mobile);
   }
 
-  late final _wire__crate__client__KuGouClient_send_captchaPtr =
+  late final _wire__kugou__client__KuGouClient_send_captchaPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2106,20 +2240,20 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__client__KuGouClient_send_captcha');
-  late final _wire__crate__client__KuGouClient_send_captcha =
-      _wire__crate__client__KuGouClient_send_captchaPtr
+      >('frbgen_chocolate_music_wire__kugou__client__KuGouClient_send_captcha');
+  late final _wire__kugou__client__KuGouClient_send_captcha =
+      _wire__kugou__client__KuGouClient_send_captchaPtr
           .asFunction<
             void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__client__KuGouClient_set_login(
+  void wire__kugou__client__KuGouClient_set_login(
     int port_,
     int that,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> token,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> userid,
   ) {
-    return _wire__crate__client__KuGouClient_set_login(
+    return _wire__kugou__client__KuGouClient_set_login(
       port_,
       that,
       token,
@@ -2127,7 +2261,7 @@ class RustLibWire implements BaseWire {
     );
   }
 
-  late final _wire__crate__client__KuGouClient_set_loginPtr =
+  late final _wire__kugou__client__KuGouClient_set_loginPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2137,9 +2271,9 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__client__KuGouClient_set_login');
-  late final _wire__crate__client__KuGouClient_set_login =
-      _wire__crate__client__KuGouClient_set_loginPtr
+      >('frbgen_chocolate_music_wire__kugou__client__KuGouClient_set_login');
+  late final _wire__kugou__client__KuGouClient_set_login =
+      _wire__kugou__client__KuGouClient_set_loginPtr
           .asFunction<
             void Function(
               int,
@@ -2149,25 +2283,25 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__client__KuGouClient_token(int port_, int that) {
-    return _wire__crate__client__KuGouClient_token(port_, that);
+  void wire__kugou__client__KuGouClient_token(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_token(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_tokenPtr =
+  late final _wire__kugou__client__KuGouClient_tokenPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_token',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_token',
       );
-  late final _wire__crate__client__KuGouClient_token =
-      _wire__crate__client__KuGouClient_tokenPtr
+  late final _wire__kugou__client__KuGouClient_token =
+      _wire__kugou__client__KuGouClient_tokenPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_token_needs_refresh(
+  void wire__kugou__client__KuGouClient_token_needs_refresh(
     int port_,
     int that,
     int expire_time,
     int threshold_secs,
   ) {
-    return _wire__crate__client__KuGouClient_token_needs_refresh(
+    return _wire__kugou__client__KuGouClient_token_needs_refresh(
       port_,
       that,
       expire_time,
@@ -2175,61 +2309,61 @@ class RustLibWire implements BaseWire {
     );
   }
 
-  late final _wire__crate__client__KuGouClient_token_needs_refreshPtr =
+  late final _wire__kugou__client__KuGouClient_token_needs_refreshPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(ffi.Int64, ffi.UintPtr, ffi.Int64, ffi.Int64)
         >
       >(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_token_needs_refresh',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_token_needs_refresh',
       );
-  late final _wire__crate__client__KuGouClient_token_needs_refresh =
-      _wire__crate__client__KuGouClient_token_needs_refreshPtr
+  late final _wire__kugou__client__KuGouClient_token_needs_refresh =
+      _wire__kugou__client__KuGouClient_token_needs_refreshPtr
           .asFunction<void Function(int, int, int, int)>();
 
-  void wire__crate__client__KuGouClient_upgrade_vip(int port_, int that) {
-    return _wire__crate__client__KuGouClient_upgrade_vip(port_, that);
+  void wire__kugou__client__KuGouClient_upgrade_vip(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_upgrade_vip(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_upgrade_vipPtr =
+  late final _wire__kugou__client__KuGouClient_upgrade_vipPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_upgrade_vip',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_upgrade_vip',
       );
-  late final _wire__crate__client__KuGouClient_upgrade_vip =
-      _wire__crate__client__KuGouClient_upgrade_vipPtr
+  late final _wire__kugou__client__KuGouClient_upgrade_vip =
+      _wire__kugou__client__KuGouClient_upgrade_vipPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__KuGouClient_userid(int port_, int that) {
-    return _wire__crate__client__KuGouClient_userid(port_, that);
+  void wire__kugou__client__KuGouClient_userid(int port_, int that) {
+    return _wire__kugou__client__KuGouClient_userid(port_, that);
   }
 
-  late final _wire__crate__client__KuGouClient_useridPtr =
+  late final _wire__kugou__client__KuGouClient_useridPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
-        'frbgen_chocolate_music_wire__crate__client__KuGouClient_userid',
+        'frbgen_chocolate_music_wire__kugou__client__KuGouClient_userid',
       );
-  late final _wire__crate__client__KuGouClient_userid =
-      _wire__crate__client__KuGouClient_useridPtr
+  late final _wire__kugou__client__KuGouClient_userid =
+      _wire__kugou__client__KuGouClient_useridPtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__client__session_default(int port_) {
-    return _wire__crate__client__session_default(port_);
+  void wire__kugou__client__session_default(int port_) {
+    return _wire__kugou__client__session_default(port_);
   }
 
-  late final _wire__crate__client__session_defaultPtr =
+  late final _wire__kugou__client__session_defaultPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-        'frbgen_chocolate_music_wire__crate__client__session_default',
+        'frbgen_chocolate_music_wire__kugou__client__session_default',
       );
-  late final _wire__crate__client__session_default =
-      _wire__crate__client__session_defaultPtr.asFunction<void Function(int)>();
+  late final _wire__kugou__client__session_default =
+      _wire__kugou__client__session_defaultPtr.asFunction<void Function(int)>();
 
-  void wire__crate__frb_api__calculate_mid(
+  void wire__kugou__frb_api__calculate_mid(
     int port_,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> guid,
   ) {
-    return _wire__crate__frb_api__calculate_mid(port_, guid);
+    return _wire__kugou__frb_api__calculate_mid(port_, guid);
   }
 
-  late final _wire__crate__frb_api__calculate_midPtr =
+  late final _wire__kugou__frb_api__calculate_midPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2237,22 +2371,22 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__frb_api__calculate_mid');
-  late final _wire__crate__frb_api__calculate_mid =
-      _wire__crate__frb_api__calculate_midPtr
+      >('frbgen_chocolate_music_wire__kugou__frb_api__calculate_mid');
+  late final _wire__kugou__frb_api__calculate_mid =
+      _wire__kugou__frb_api__calculate_midPtr
           .asFunction<
             void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__frb_api__create_client(
+  void wire__kugou__frb_api__create_client(
     int port_,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> platform,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> identity_path,
   ) {
-    return _wire__crate__frb_api__create_client(port_, platform, identity_path);
+    return _wire__kugou__frb_api__create_client(port_, platform, identity_path);
   }
 
-  late final _wire__crate__frb_api__create_clientPtr =
+  late final _wire__kugou__frb_api__create_clientPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2261,9 +2395,9 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__frb_api__create_client');
-  late final _wire__crate__frb_api__create_client =
-      _wire__crate__frb_api__create_clientPtr
+      >('frbgen_chocolate_music_wire__kugou__frb_api__create_client');
+  late final _wire__kugou__frb_api__create_client =
+      _wire__kugou__frb_api__create_clientPtr
           .asFunction<
             void Function(
               int,
@@ -2272,14 +2406,14 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__frb_api__create_ephemeral_client(
+  void wire__kugou__frb_api__create_ephemeral_client(
     int port_,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> platform,
   ) {
-    return _wire__crate__frb_api__create_ephemeral_client(port_, platform);
+    return _wire__kugou__frb_api__create_ephemeral_client(port_, platform);
   }
 
-  late final _wire__crate__frb_api__create_ephemeral_clientPtr =
+  late final _wire__kugou__frb_api__create_ephemeral_clientPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2287,22 +2421,22 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__frb_api__create_ephemeral_client');
-  late final _wire__crate__frb_api__create_ephemeral_client =
-      _wire__crate__frb_api__create_ephemeral_clientPtr
+      >('frbgen_chocolate_music_wire__kugou__frb_api__create_ephemeral_client');
+  late final _wire__kugou__frb_api__create_ephemeral_client =
+      _wire__kugou__frb_api__create_ephemeral_clientPtr
           .asFunction<
             void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__frb_api__get_cover(
+  void wire__kugou__frb_api__get_cover(
     int port_,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> url,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> size,
   ) {
-    return _wire__crate__frb_api__get_cover(port_, url, size);
+    return _wire__kugou__frb_api__get_cover(port_, url, size);
   }
 
-  late final _wire__crate__frb_api__get_coverPtr =
+  late final _wire__kugou__frb_api__get_coverPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2311,9 +2445,9 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__frb_api__get_cover');
-  late final _wire__crate__frb_api__get_cover =
-      _wire__crate__frb_api__get_coverPtr
+      >('frbgen_chocolate_music_wire__kugou__frb_api__get_cover');
+  late final _wire__kugou__frb_api__get_cover =
+      _wire__kugou__frb_api__get_coverPtr
           .asFunction<
             void Function(
               int,
@@ -2322,14 +2456,14 @@ class RustLibWire implements BaseWire {
             )
           >();
 
-  void wire__crate__frb_api__is_uuid_v4(
+  void wire__kugou__frb_api__is_uuid_v4(
     int port_,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> s,
   ) {
-    return _wire__crate__frb_api__is_uuid_v4(port_, s);
+    return _wire__kugou__frb_api__is_uuid_v4(port_, s);
   }
 
-  late final _wire__crate__frb_api__is_uuid_v4Ptr =
+  late final _wire__kugou__frb_api__is_uuid_v4Ptr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2337,21 +2471,21 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__frb_api__is_uuid_v4');
-  late final _wire__crate__frb_api__is_uuid_v4 =
-      _wire__crate__frb_api__is_uuid_v4Ptr
+      >('frbgen_chocolate_music_wire__kugou__frb_api__is_uuid_v4');
+  late final _wire__kugou__frb_api__is_uuid_v4 =
+      _wire__kugou__frb_api__is_uuid_v4Ptr
           .asFunction<
             void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__frb_api__krc_to_lrc(
+  void wire__kugou__frb_api__krc_to_lrc(
     int port_,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> krc,
   ) {
-    return _wire__crate__frb_api__krc_to_lrc(port_, krc);
+    return _wire__kugou__frb_api__krc_to_lrc(port_, krc);
   }
 
-  late final _wire__crate__frb_api__krc_to_lrcPtr =
+  late final _wire__kugou__frb_api__krc_to_lrcPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2359,33 +2493,33 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__frb_api__krc_to_lrc');
-  late final _wire__crate__frb_api__krc_to_lrc =
-      _wire__crate__frb_api__krc_to_lrcPtr
+      >('frbgen_chocolate_music_wire__kugou__frb_api__krc_to_lrc');
+  late final _wire__kugou__frb_api__krc_to_lrc =
+      _wire__kugou__frb_api__krc_to_lrcPtr
           .asFunction<
             void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__frb_api__ms_to_lrc_time(int port_, int ms) {
-    return _wire__crate__frb_api__ms_to_lrc_time(port_, ms);
+  void wire__kugou__frb_api__ms_to_lrc_time(int port_, int ms) {
+    return _wire__kugou__frb_api__ms_to_lrc_time(port_, ms);
   }
 
-  late final _wire__crate__frb_api__ms_to_lrc_timePtr =
+  late final _wire__kugou__frb_api__ms_to_lrc_timePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.Int64)>>(
-        'frbgen_chocolate_music_wire__crate__frb_api__ms_to_lrc_time',
+        'frbgen_chocolate_music_wire__kugou__frb_api__ms_to_lrc_time',
       );
-  late final _wire__crate__frb_api__ms_to_lrc_time =
-      _wire__crate__frb_api__ms_to_lrc_timePtr
+  late final _wire__kugou__frb_api__ms_to_lrc_time =
+      _wire__kugou__frb_api__ms_to_lrc_timePtr
           .asFunction<void Function(int, int)>();
 
-  void wire__crate__frb_api__process_lyric(
+  void wire__kugou__frb_api__process_lyric(
     int port_,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> lrc,
   ) {
-    return _wire__crate__frb_api__process_lyric(port_, lrc);
+    return _wire__kugou__frb_api__process_lyric(port_, lrc);
   }
 
-  late final _wire__crate__frb_api__process_lyricPtr =
+  late final _wire__kugou__frb_api__process_lyricPtr =
       _lookup<
         ffi.NativeFunction<
           ffi.Void Function(
@@ -2393,34 +2527,1261 @@ class RustLibWire implements BaseWire {
             ffi.Pointer<wire_cst_list_prim_u_8_strict>,
           )
         >
-      >('frbgen_chocolate_music_wire__crate__frb_api__process_lyric');
-  late final _wire__crate__frb_api__process_lyric =
-      _wire__crate__frb_api__process_lyricPtr
+      >('frbgen_chocolate_music_wire__kugou__frb_api__process_lyric');
+  late final _wire__kugou__frb_api__process_lyric =
+      _wire__kugou__frb_api__process_lyricPtr
           .asFunction<
             void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
-  void wire__crate__frb_api__uuid_v4(int port_) {
-    return _wire__crate__frb_api__uuid_v4(port_);
+  void wire__kugou__frb_api__uuid_v4(int port_) {
+    return _wire__kugou__frb_api__uuid_v4(port_);
   }
 
-  late final _wire__crate__frb_api__uuid_v4Ptr =
+  late final _wire__kugou__frb_api__uuid_v4Ptr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-        'frbgen_chocolate_music_wire__crate__frb_api__uuid_v4',
+        'frbgen_chocolate_music_wire__kugou__frb_api__uuid_v4',
       );
-  late final _wire__crate__frb_api__uuid_v4 = _wire__crate__frb_api__uuid_v4Ptr
+  late final _wire__kugou__frb_api__uuid_v4 = _wire__kugou__frb_api__uuid_v4Ptr
       .asFunction<void Function(int)>();
 
-  void wire__crate__frb_api__version(int port_) {
-    return _wire__crate__frb_api__version(port_);
+  void wire__kugou__frb_api__version(int port_) {
+    return _wire__kugou__frb_api__version(port_);
   }
 
-  late final _wire__crate__frb_api__versionPtr =
+  late final _wire__kugou__frb_api__versionPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-        'frbgen_chocolate_music_wire__crate__frb_api__version',
+        'frbgen_chocolate_music_wire__kugou__frb_api__version',
       );
-  late final _wire__crate__frb_api__version = _wire__crate__frb_api__versionPtr
+  late final _wire__kugou__frb_api__version = _wire__kugou__frb_api__versionPtr
       .asFunction<void Function(int)>();
+
+  void wire__netease__client__NetEaseClient_album(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> id,
+  ) {
+    return _wire__netease__client__NetEaseClient_album(port_, that, cookie, id);
+  }
+
+  late final _wire__netease__client__NetEaseClient_albumPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >('frbgen_chocolate_music_wire__netease__client__NetEaseClient_album');
+  late final _wire__netease__client__NetEaseClient_album =
+      _wire__netease__client__NetEaseClient_albumPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_artist_album(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> id,
+  ) {
+    return _wire__netease__client__NetEaseClient_artist_album(
+      port_,
+      that,
+      cookie,
+      id,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_artist_albumPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_artist_album',
+      );
+  late final _wire__netease__client__NetEaseClient_artist_album =
+      _wire__netease__client__NetEaseClient_artist_albumPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_artist_detail(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> id,
+  ) {
+    return _wire__netease__client__NetEaseClient_artist_detail(
+      port_,
+      that,
+      cookie,
+      id,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_artist_detailPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_artist_detail',
+      );
+  late final _wire__netease__client__NetEaseClient_artist_detail =
+      _wire__netease__client__NetEaseClient_artist_detailPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_artist_songs(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> id,
+    int limit,
+    int offset,
+  ) {
+    return _wire__netease__client__NetEaseClient_artist_songs(
+      port_,
+      that,
+      cookie,
+      id,
+      limit,
+      offset,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_artist_songsPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Uint32,
+            ffi.Uint32,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_artist_songs',
+      );
+  late final _wire__netease__client__NetEaseClient_artist_songs =
+      _wire__netease__client__NetEaseClient_artist_songsPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              int,
+              int,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_captcha_sent(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> phone,
+  ) {
+    return _wire__netease__client__NetEaseClient_captcha_sent(
+      port_,
+      that,
+      cookie,
+      phone,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_captcha_sentPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_captcha_sent',
+      );
+  late final _wire__netease__client__NetEaseClient_captcha_sent =
+      _wire__netease__client__NetEaseClient_captcha_sentPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_default(int port_) {
+    return _wire__netease__client__NetEaseClient_default(port_);
+  }
+
+  late final _wire__netease__client__NetEaseClient_defaultPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_default',
+      );
+  late final _wire__netease__client__NetEaseClient_default =
+      _wire__netease__client__NetEaseClient_defaultPtr
+          .asFunction<void Function(int)>();
+
+  void wire__netease__client__NetEaseClient_device_id(int port_, int that) {
+    return _wire__netease__client__NetEaseClient_device_id(port_, that);
+  }
+
+  late final _wire__netease__client__NetEaseClient_device_idPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_device_id',
+      );
+  late final _wire__netease__client__NetEaseClient_device_id =
+      _wire__netease__client__NetEaseClient_device_idPtr
+          .asFunction<void Function(int, int)>();
+
+  void wire__netease__client__NetEaseClient_has_music_a(int port_, int that) {
+    return _wire__netease__client__NetEaseClient_has_music_a(port_, that);
+  }
+
+  late final _wire__netease__client__NetEaseClient_has_music_aPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_has_music_a',
+      );
+  late final _wire__netease__client__NetEaseClient_has_music_a =
+      _wire__netease__client__NetEaseClient_has_music_aPtr
+          .asFunction<void Function(int, int)>();
+
+  void wire__netease__client__NetEaseClient_login_cellphone(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> phone,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> captcha,
+  ) {
+    return _wire__netease__client__NetEaseClient_login_cellphone(
+      port_,
+      that,
+      cookie,
+      phone,
+      captcha,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_login_cellphonePtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_login_cellphone',
+      );
+  late final _wire__netease__client__NetEaseClient_login_cellphone =
+      _wire__netease__client__NetEaseClient_login_cellphonePtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_login_refresh(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+  ) {
+    return _wire__netease__client__NetEaseClient_login_refresh(
+      port_,
+      that,
+      cookie,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_login_refreshPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_login_refresh',
+      );
+  late final _wire__netease__client__NetEaseClient_login_refresh =
+      _wire__netease__client__NetEaseClient_login_refreshPtr
+          .asFunction<
+            void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
+          >();
+
+  void wire__netease__client__NetEaseClient_login_status(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+  ) {
+    return _wire__netease__client__NetEaseClient_login_status(
+      port_,
+      that,
+      cookie,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_login_statusPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_login_status',
+      );
+  late final _wire__netease__client__NetEaseClient_login_status =
+      _wire__netease__client__NetEaseClient_login_statusPtr
+          .asFunction<
+            void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
+          >();
+
+  void wire__netease__client__NetEaseClient_lyric(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> id,
+  ) {
+    return _wire__netease__client__NetEaseClient_lyric(port_, that, cookie, id);
+  }
+
+  late final _wire__netease__client__NetEaseClient_lyricPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >('frbgen_chocolate_music_wire__netease__client__NetEaseClient_lyric');
+  late final _wire__netease__client__NetEaseClient_lyric =
+      _wire__netease__client__NetEaseClient_lyricPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_new(int port_) {
+    return _wire__netease__client__NetEaseClient_new(port_);
+  }
+
+  late final _wire__netease__client__NetEaseClient_newPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_new',
+      );
+  late final _wire__netease__client__NetEaseClient_new =
+      _wire__netease__client__NetEaseClient_newPtr
+          .asFunction<void Function(int)>();
+
+  void wire__netease__client__NetEaseClient_playlist_create(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> name,
+  ) {
+    return _wire__netease__client__NetEaseClient_playlist_create(
+      port_,
+      that,
+      cookie,
+      name,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_playlist_createPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_playlist_create',
+      );
+  late final _wire__netease__client__NetEaseClient_playlist_create =
+      _wire__netease__client__NetEaseClient_playlist_createPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_playlist_delete(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> id,
+  ) {
+    return _wire__netease__client__NetEaseClient_playlist_delete(
+      port_,
+      that,
+      cookie,
+      id,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_playlist_deletePtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_playlist_delete',
+      );
+  late final _wire__netease__client__NetEaseClient_playlist_delete =
+      _wire__netease__client__NetEaseClient_playlist_deletePtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_playlist_detail(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> id,
+  ) {
+    return _wire__netease__client__NetEaseClient_playlist_detail(
+      port_,
+      that,
+      cookie,
+      id,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_playlist_detailPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_playlist_detail',
+      );
+  late final _wire__netease__client__NetEaseClient_playlist_detail =
+      _wire__netease__client__NetEaseClient_playlist_detailPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_playlist_track_all(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> id,
+  ) {
+    return _wire__netease__client__NetEaseClient_playlist_track_all(
+      port_,
+      that,
+      cookie,
+      id,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_playlist_track_allPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_playlist_track_all',
+      );
+  late final _wire__netease__client__NetEaseClient_playlist_track_all =
+      _wire__netease__client__NetEaseClient_playlist_track_allPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_playlist_tracks(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> op,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> pid,
+    ffi.Pointer<wire_cst_list_String> tracks,
+  ) {
+    return _wire__netease__client__NetEaseClient_playlist_tracks(
+      port_,
+      that,
+      cookie,
+      op,
+      pid,
+      tracks,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_playlist_tracksPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_String>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_playlist_tracks',
+      );
+  late final _wire__netease__client__NetEaseClient_playlist_tracks =
+      _wire__netease__client__NetEaseClient_playlist_tracksPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_String>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_qr_check(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> key,
+  ) {
+    return _wire__netease__client__NetEaseClient_qr_check(
+      port_,
+      that,
+      cookie,
+      key,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_qr_checkPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >('frbgen_chocolate_music_wire__netease__client__NetEaseClient_qr_check');
+  late final _wire__netease__client__NetEaseClient_qr_check =
+      _wire__netease__client__NetEaseClient_qr_checkPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_qr_create(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> key,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> platform,
+    bool want_image,
+  ) {
+    return _wire__netease__client__NetEaseClient_qr_create(
+      port_,
+      that,
+      key,
+      platform,
+      want_image,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_qr_createPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Bool,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_qr_create',
+      );
+  late final _wire__netease__client__NetEaseClient_qr_create =
+      _wire__netease__client__NetEaseClient_qr_createPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              bool,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_qr_key(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+  ) {
+    return _wire__netease__client__NetEaseClient_qr_key(port_, that, cookie);
+  }
+
+  late final _wire__netease__client__NetEaseClient_qr_keyPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >('frbgen_chocolate_music_wire__netease__client__NetEaseClient_qr_key');
+  late final _wire__netease__client__NetEaseClient_qr_key =
+      _wire__netease__client__NetEaseClient_qr_keyPtr
+          .asFunction<
+            void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
+          >();
+
+  void wire__netease__client__NetEaseClient_raw_request(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> path,
+    ffi.Pointer<wire_cst_list_record_string_string> query,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+  ) {
+    return _wire__netease__client__NetEaseClient_raw_request(
+      port_,
+      that,
+      path,
+      query,
+      cookie,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_raw_requestPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_record_string_string>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_raw_request',
+      );
+  late final _wire__netease__client__NetEaseClient_raw_request =
+      _wire__netease__client__NetEaseClient_raw_requestPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_record_string_string>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_recommend_resource(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+  ) {
+    return _wire__netease__client__NetEaseClient_recommend_resource(
+      port_,
+      that,
+      cookie,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_recommend_resourcePtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_recommend_resource',
+      );
+  late final _wire__netease__client__NetEaseClient_recommend_resource =
+      _wire__netease__client__NetEaseClient_recommend_resourcePtr
+          .asFunction<
+            void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
+          >();
+
+  void wire__netease__client__NetEaseClient_recommend_songs(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+  ) {
+    return _wire__netease__client__NetEaseClient_recommend_songs(
+      port_,
+      that,
+      cookie,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_recommend_songsPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_recommend_songs',
+      );
+  late final _wire__netease__client__NetEaseClient_recommend_songs =
+      _wire__netease__client__NetEaseClient_recommend_songsPtr
+          .asFunction<
+            void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
+          >();
+
+  void wire__netease__client__NetEaseClient_register_anonymous(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+  ) {
+    return _wire__netease__client__NetEaseClient_register_anonymous(
+      port_,
+      that,
+      cookie,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_register_anonymousPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_register_anonymous',
+      );
+  late final _wire__netease__client__NetEaseClient_register_anonymous =
+      _wire__netease__client__NetEaseClient_register_anonymousPtr
+          .asFunction<
+            void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
+          >();
+
+  void wire__netease__client__NetEaseClient_save(int port_, int that) {
+    return _wire__netease__client__NetEaseClient_save(port_, that);
+  }
+
+  late final _wire__netease__client__NetEaseClient_savePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_save',
+      );
+  late final _wire__netease__client__NetEaseClient_save =
+      _wire__netease__client__NetEaseClient_savePtr
+          .asFunction<void Function(int, int)>();
+
+  void wire__netease__client__NetEaseClient_search(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> keywords,
+    int ty,
+    int limit,
+  ) {
+    return _wire__netease__client__NetEaseClient_search(
+      port_,
+      that,
+      cookie,
+      keywords,
+      ty,
+      limit,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_searchPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Uint32,
+            ffi.Uint32,
+          )
+        >
+      >('frbgen_chocolate_music_wire__netease__client__NetEaseClient_search');
+  late final _wire__netease__client__NetEaseClient_search =
+      _wire__netease__client__NetEaseClient_searchPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              int,
+              int,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_song_detail(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_String> ids,
+  ) {
+    return _wire__netease__client__NetEaseClient_song_detail(
+      port_,
+      that,
+      cookie,
+      ids,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_song_detailPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_String>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_song_detail',
+      );
+  late final _wire__netease__client__NetEaseClient_song_detail =
+      _wire__netease__client__NetEaseClient_song_detailPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_String>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_song_url(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_String> ids,
+    int br,
+  ) {
+    return _wire__netease__client__NetEaseClient_song_url(
+      port_,
+      that,
+      cookie,
+      ids,
+      br,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_song_urlPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_String>,
+            ffi.Uint32,
+          )
+        >
+      >('frbgen_chocolate_music_wire__netease__client__NetEaseClient_song_url');
+  late final _wire__netease__client__NetEaseClient_song_url =
+      _wire__netease__client__NetEaseClient_song_urlPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_String>,
+              int,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_song_url_str(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> id,
+  ) {
+    return _wire__netease__client__NetEaseClient_song_url_str(
+      port_,
+      that,
+      cookie,
+      id,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_song_url_strPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_song_url_str',
+      );
+  late final _wire__netease__client__NetEaseClient_song_url_str =
+      _wire__netease__client__NetEaseClient_song_url_strPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_supported_routes(int port_) {
+    return _wire__netease__client__NetEaseClient_supported_routes(port_);
+  }
+
+  late final _wire__netease__client__NetEaseClient_supported_routesPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_supported_routes',
+      );
+  late final _wire__netease__client__NetEaseClient_supported_routes =
+      _wire__netease__client__NetEaseClient_supported_routesPtr
+          .asFunction<void Function(int)>();
+
+  void wire__netease__client__NetEaseClient_top_artists(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    int limit,
+  ) {
+    return _wire__netease__client__NetEaseClient_top_artists(
+      port_,
+      that,
+      cookie,
+      limit,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_top_artistsPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Uint32,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_top_artists',
+      );
+  late final _wire__netease__client__NetEaseClient_top_artists =
+      _wire__netease__client__NetEaseClient_top_artistsPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              int,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_unsupported_routes(int port_) {
+    return _wire__netease__client__NetEaseClient_unsupported_routes(port_);
+  }
+
+  late final _wire__netease__client__NetEaseClient_unsupported_routesPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_unsupported_routes',
+      );
+  late final _wire__netease__client__NetEaseClient_unsupported_routes =
+      _wire__netease__client__NetEaseClient_unsupported_routesPtr
+          .asFunction<void Function(int)>();
+
+  void wire__netease__client__NetEaseClient_user_account(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+  ) {
+    return _wire__netease__client__NetEaseClient_user_account(
+      port_,
+      that,
+      cookie,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_user_accountPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_user_account',
+      );
+  late final _wire__netease__client__NetEaseClient_user_account =
+      _wire__netease__client__NetEaseClient_user_accountPtr
+          .asFunction<
+            void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
+          >();
+
+  void wire__netease__client__NetEaseClient_user_playlist(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> uid,
+    int limit,
+  ) {
+    return _wire__netease__client__NetEaseClient_user_playlist(
+      port_,
+      that,
+      cookie,
+      uid,
+      limit,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_user_playlistPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Uint32,
+          )
+        >
+      >(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_user_playlist',
+      );
+  late final _wire__netease__client__NetEaseClient_user_playlist =
+      _wire__netease__client__NetEaseClient_user_playlistPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              int,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_vip_info(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> cookie,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> uid,
+  ) {
+    return _wire__netease__client__NetEaseClient_vip_info(
+      port_,
+      that,
+      cookie,
+      uid,
+    );
+  }
+
+  late final _wire__netease__client__NetEaseClient_vip_infoPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >('frbgen_chocolate_music_wire__netease__client__NetEaseClient_vip_info');
+  late final _wire__netease__client__NetEaseClient_vip_info =
+      _wire__netease__client__NetEaseClient_vip_infoPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
+  void wire__netease__client__NetEaseClient_wnmcid(int port_, int that) {
+    return _wire__netease__client__NetEaseClient_wnmcid(port_, that);
+  }
+
+  late final _wire__netease__client__NetEaseClient_wnmcidPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_wnmcid',
+      );
+  late final _wire__netease__client__NetEaseClient_wnmcid =
+      _wire__netease__client__NetEaseClient_wnmcidPtr
+          .asFunction<void Function(int, int)>();
+
+  void wire__netease__frb_api__create_client(
+    int port_,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> identity_path,
+  ) {
+    return _wire__netease__frb_api__create_client(port_, identity_path);
+  }
+
+  late final _wire__netease__frb_api__create_clientPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >('frbgen_chocolate_music_wire__netease__frb_api__create_client');
+  late final _wire__netease__frb_api__create_client =
+      _wire__netease__frb_api__create_clientPtr
+          .asFunction<
+            void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
+          >();
+
+  void wire__netease__frb_api__create_ephemeral_client(int port_) {
+    return _wire__netease__frb_api__create_ephemeral_client(port_);
+  }
+
+  late final _wire__netease__frb_api__create_ephemeral_clientPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+        'frbgen_chocolate_music_wire__netease__frb_api__create_ephemeral_client',
+      );
+  late final _wire__netease__frb_api__create_ephemeral_client =
+      _wire__netease__frb_api__create_ephemeral_clientPtr
+          .asFunction<void Function(int)>();
+
+  void wire__netease__frb_api__supported_routes(int port_) {
+    return _wire__netease__frb_api__supported_routes(port_);
+  }
+
+  late final _wire__netease__frb_api__supported_routesPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+        'frbgen_chocolate_music_wire__netease__frb_api__supported_routes',
+      );
+  late final _wire__netease__frb_api__supported_routes =
+      _wire__netease__frb_api__supported_routesPtr
+          .asFunction<void Function(int)>();
+
+  void wire__netease__frb_api__unsupported_routes(int port_) {
+    return _wire__netease__frb_api__unsupported_routes(port_);
+  }
+
+  late final _wire__netease__frb_api__unsupported_routesPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+        'frbgen_chocolate_music_wire__netease__frb_api__unsupported_routes',
+      );
+  late final _wire__netease__frb_api__unsupported_routes =
+      _wire__netease__frb_api__unsupported_routesPtr
+          .asFunction<void Function(int)>();
+
+  void wire__netease__frb_api__version(int port_) {
+    return _wire__netease__frb_api__version(port_);
+  }
+
+  late final _wire__netease__frb_api__versionPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+        'frbgen_chocolate_music_wire__netease__frb_api__version',
+      );
+  late final _wire__netease__frb_api__version =
+      _wire__netease__frb_api__versionPtr.asFunction<void Function(int)>();
 }
 
 typedef DartPort = ffi.Int64;
@@ -2431,126 +3792,6 @@ typedef DartPostCObjectFnTypeFunction =
     ffi.Bool Function(DartPort port_id, ffi.Pointer<ffi.Void> message);
 typedef DartDartPostCObjectFnTypeFunction =
     bool Function(DartDartPort port_id, ffi.Pointer<ffi.Void> message);
-
-final class ErrorKind extends ffi.Union {
-  external wire_cst_Error_Api Api;
-
-  external wire_cst_Error_Http Http;
-
-  external wire_cst_Error_Json Json;
-
-  external wire_cst_Error_Crypto Crypto;
-
-  external wire_cst_Error_Io Io;
-
-  external wire_cst_Error_Invalid Invalid;
-}
-
-final class QrStatusKind extends ffi.Union {
-  external wire_cst_QrStatus_Success Success;
-
-  external wire_cst_QrStatus_Unknown Unknown;
-}
-
-final class wire_cst_Error_Api extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> message;
-
-  external ffi.Pointer<ffi.Int64> code;
-
-  @ffi.Uint16()
-  external int status;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> body;
-
-  static ffi.Pointer<wire_cst_Error_Api> $allocate(
-    ffi.Allocator $allocator, {
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> message,
-    required ffi.Pointer<ffi.Int64> code,
-    required int status,
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> body,
-  }) => $allocator<wire_cst_Error_Api>()
-    ..ref.message = message
-    ..ref.code = code
-    ..ref.status = status
-    ..ref.body = body;
-}
-
-final class wire_cst_Error_Crypto extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> field0;
-
-  static ffi.Pointer<wire_cst_Error_Crypto> $allocate(
-    ffi.Allocator $allocator, {
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> field0,
-  }) => $allocator<wire_cst_Error_Crypto>()..ref.field0 = field0;
-}
-
-final class wire_cst_Error_Http extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> field0;
-
-  static ffi.Pointer<wire_cst_Error_Http> $allocate(
-    ffi.Allocator $allocator, {
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> field0,
-  }) => $allocator<wire_cst_Error_Http>()..ref.field0 = field0;
-}
-
-final class wire_cst_Error_Invalid extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> field0;
-
-  static ffi.Pointer<wire_cst_Error_Invalid> $allocate(
-    ffi.Allocator $allocator, {
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> field0,
-  }) => $allocator<wire_cst_Error_Invalid>()..ref.field0 = field0;
-}
-
-final class wire_cst_Error_Io extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> field0;
-
-  static ffi.Pointer<wire_cst_Error_Io> $allocate(
-    ffi.Allocator $allocator, {
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> field0,
-  }) => $allocator<wire_cst_Error_Io>()..ref.field0 = field0;
-}
-
-final class wire_cst_Error_Json extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> field0;
-
-  static ffi.Pointer<wire_cst_Error_Json> $allocate(
-    ffi.Allocator $allocator, {
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> field0,
-  }) => $allocator<wire_cst_Error_Json>()..ref.field0 = field0;
-}
-
-final class wire_cst_QrStatus_Success extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> token;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> userid;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> nickname;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> pic;
-
-  static ffi.Pointer<wire_cst_QrStatus_Success> $allocate(
-    ffi.Allocator $allocator, {
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> token,
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> userid,
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> nickname,
-    required ffi.Pointer<wire_cst_list_prim_u_8_strict> pic,
-  }) => $allocator<wire_cst_QrStatus_Success>()
-    ..ref.token = token
-    ..ref.userid = userid
-    ..ref.nickname = nickname
-    ..ref.pic = pic;
-}
-
-final class wire_cst_QrStatus_Unknown extends ffi.Struct {
-  @ffi.Int64()
-  external int field0;
-
-  static ffi.Pointer<wire_cst_QrStatus_Unknown> $allocate(
-    ffi.Allocator $allocator, {
-    required int field0,
-  }) => $allocator<wire_cst_QrStatus_Unknown>()..ref.field0 = field0;
-}
 
 final class wire_cst_account extends ffi.Struct {
   external ffi.Pointer<wire_cst_list_prim_u_8_strict> token;
@@ -2638,13 +3879,6 @@ final class wire_cst_device_identity extends ffi.Struct {
     ..ref.mac = mac
     ..ref.webgl = webgl
     ..ref.dfid = dfid;
-}
-
-final class wire_cst_error extends ffi.Struct {
-  @ffi.Int32()
-  external int tag;
-
-  external ErrorKind kind;
 }
 
 final class wire_cst_list_String extends ffi.Struct {
@@ -2858,13 +4092,6 @@ final class wire_cst_playlist extends ffi.Struct {
     ..ref.numeric_id = numeric_id;
 }
 
-final class wire_cst_qr_status extends ffi.Struct {
-  @ffi.Int32()
-  external int tag;
-
-  external QrStatusKind kind;
-}
-
 final class wire_cst_record_string_string extends ffi.Struct {
   external ffi.Pointer<wire_cst_list_prim_u_8_strict> field0;
 
@@ -2895,6 +4122,20 @@ final class wire_cst_search_result extends ffi.Struct {
     ..ref.music = music
     ..ref.singer = singer
     ..ref.album = album;
+}
+
+final class wire_cst_server_response extends ffi.Struct {
+  external ffi.Pointer<wire_cst_list_prim_u_8_strict> body;
+
+  external ffi.Pointer<wire_cst_list_String> cookies;
+
+  static ffi.Pointer<wire_cst_server_response> $allocate(
+    ffi.Allocator $allocator, {
+    required ffi.Pointer<wire_cst_list_prim_u_8_strict> body,
+    required ffi.Pointer<wire_cst_list_String> cookies,
+  }) => $allocator<wire_cst_server_response>()
+    ..ref.body = body
+    ..ref.cookies = cookies;
 }
 
 final class wire_cst_session extends ffi.Struct {

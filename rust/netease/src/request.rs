@@ -1,0 +1,618 @@
+//! 请求层
+//!
+//! 对应 `util/request.js` 的 `createRequest`。负责：
+//!
+//! ```text
+//! ① 解析 cookie（字符串 → 有序表）
+//! ② processCookieObject：补齐设备身份
+//! ③ 按 crypto 分支组装 Header + Cookie + 加密体
+//! ④ POST 发送
+//! ⑤ 解析响应 + 收集 Set-Cookie
+//! ⑥ body.code → status 映射
+//! ```
+//!
+//! ## 精简版砍掉的
+//!
+//! 代理（`tunnel` / `PacProxyAgent`）、随机中国 IP、响应缓存、`e_r` 响应加密、
+//! `linuxapi` / `api` 两种 crypto、`ua`/`headers`/`domain`/`timeout` 覆盖参数 ——
+//! 客户端都不需要。详见 `docs/rewrite/10-client-subset.md` §3.7。
+
+use serde_json::{json, Value};
+
+use crate::cookie::{cookie_to_json, cookie_to_string, eapi_header_cookie, process_cookie};
+use crate::device::DeviceIdentity;
+use crate::protocol::{self, eapi_body, weapi_body};
+use crate::{now_ms, Crypto, Error, Result};
+
+// ============================================================
+//  域名
+// ============================================================
+
+/// weapi 的域名（也用于 `/api/...` 直连路由）
+pub const DOMAIN: &str = "https://music.163.com";
+
+/// 未加密 `api` 的域名（精简版无路由使用，保留备查）
+pub const API_DOMAIN: &str = "https://interface.music.163.com";
+
+/// eapi 的域名
+pub const EAPI_DOMAIN: &str = "https://interfacepc.music.163.com";
+
+/// xeapi 的域名
+pub const XEAPI_DOMAIN: &str = "https://interface3.music.163.com";
+
+// ============================================================
+//  User-Agent
+// ============================================================
+
+const UA_WEAPI: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 \
+(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0";
+
+const UA_API_IPHONE: &str = "NeteaseMusic 9.0.90/5038 (iPhone; iOS 16.2; zh_CN)";
+
+const UA_API_OSX: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 \
+(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+/// 选 User-Agent（对应 `chooseUserAgent`）
+///
+/// ⚠️ eapi 分支：`cookie.os === 'osx'` 时用 macOS 浏览器 UA，否则用 iPhone 客户端 UA。
+pub fn choose_user_agent(crypto: Crypto, os: &str) -> &'static str {
+    match crypto {
+        Crypto::Weapi => UA_WEAPI,
+        Crypto::Eapi | Crypto::Xeapi => {
+            if os == "osx" {
+                UA_API_OSX
+            } else {
+                UA_API_IPHONE
+            }
+        }
+    }
+}
+
+// ============================================================
+//  响应
+// ============================================================
+
+/// 统一响应
+#[derive(Debug, Clone)]
+pub struct ApiResponse {
+    /// 归一化后的状态码：`200` 成功，`502` 业务失败
+    pub status: u16,
+    /// 解析后的响应体
+    pub body: Value,
+    /// `Set-Cookie` 原始串（已剥掉 `Domain=` 属性）
+    pub cookies: Vec<String>,
+}
+
+impl ApiResponse {
+    pub fn ok(&self) -> bool {
+        self.status == 200
+    }
+
+    /// 上游 `code`
+    pub fn code(&self) -> Option<i64> {
+        self.body.get("code").and_then(|v| v.as_i64())
+    }
+
+    /// 取 `data` 字段
+    pub fn data(&self) -> &Value {
+        self.body.get("data").unwrap_or(&Value::Null)
+    }
+
+    /// 按路径取字符串
+    pub fn str_at(&self, path: &[&str]) -> Option<String> {
+        let mut cur = &self.body;
+        for p in path {
+            cur = cur.get(*p)?;
+        }
+        match cur {
+            Value::String(s) => Some(s.clone()),
+            Value::Number(n) => Some(n.to_string()),
+            _ => None,
+        }
+    }
+
+    /// `Set-Cookie` 合并成一个 Cookie 串（`; ` 连接各条的 `k=v` 部分）
+    ///
+    /// 对应 `result.cookie.join(';')` —— ⚠️ 原版是把**整条** Set-Cookie
+    /// （含 `Path=/` 等属性）拼起来，客户端再自己 `extractCookieString` 清洗。
+    pub fn cookie_joined(&self) -> String {
+        self.cookies.join(";")
+    }
+}
+
+// ============================================================
+//  请求配置
+// ============================================================
+
+/// 一次请求的配置
+#[derive(Debug, Clone)]
+pub struct RequestOptions {
+    /// 上游路径，必须以 `/api/` 开头（如 `/api/song/lyric`）
+    pub uri: String,
+    /// 加密方案
+    pub crypto: Crypto,
+    /// 请求体（明文，会被加密）
+    pub data: Value,
+    /// 账号 Cookie 串（来自调用方，未登录时传空串）
+    pub cookie: String,
+    /// 是否需要 `X-antiCheatToken`
+    pub check_token: bool,
+}
+
+impl RequestOptions {
+    pub fn new(uri: impl Into<String>, crypto: Crypto, data: Value) -> Self {
+        Self {
+            uri: uri.into(),
+            crypto,
+            data,
+            cookie: String::new(),
+            check_token: false,
+        }
+    }
+
+    pub fn cookie(mut self, c: impl Into<String>) -> Self {
+        self.cookie = c.into();
+        self
+    }
+
+    pub fn check_token(mut self, yes: bool) -> Self {
+        self.check_token = yes;
+        self
+    }
+}
+
+// ============================================================
+//  传输层
+// ============================================================
+
+/// 持有 HTTP 客户端与设备身份
+pub struct Transport {
+    pub http: reqwest::Client,
+    pub device: DeviceIdentity,
+
+    /// xeapi 公钥（懒加载 + 进程内缓存）
+    ///
+    /// 原实现把它存在 `os.tmpdir()/xeapi_public_key`；这里只放内存 ——
+    /// 反正每次启动都会重新拉一次，省一个文件。
+    xeapi_key: std::sync::Mutex<Option<crate::xeapi::PublicKeyState>>,
+}
+
+impl Transport {
+    pub fn new(device: DeviceIdentity) -> Self {
+        let http = reqwest::Client::builder()
+            .connect_timeout(std::time::Duration::from_secs(10))
+            .timeout(std::time::Duration::from_secs(30))
+            .build()
+            .expect("构建 HTTP 客户端失败");
+
+        Self {
+            http,
+            device,
+            xeapi_key: std::sync::Mutex::new(None),
+        }
+    }
+
+    /// 取（必要时拉取）xeapi 公钥
+    ///
+    /// ⚠️ 锁只在读写时短暂持有，**不跨 await**。
+    pub async fn xeapi_key(&self) -> Result<crate::xeapi::PublicKeyState> {
+        // ① 命中缓存直接返回
+        {
+            let guard = self.xeapi_key.lock().unwrap();
+            if let Some(k) = guard.as_ref() {
+                if k.is_ready() {
+                    return Ok(k.clone());
+                }
+            }
+        }
+
+        // ② 未命中：带上旧 version 去拉
+        let old_version = {
+            let guard = self.xeapi_key.lock().unwrap();
+            guard.as_ref().map(|k| k.version.clone()).unwrap_or_default()
+        };
+
+        let state =
+            crate::xeapi::fetch_public_key(&self.http, &self.device.device_id, &old_version).await?;
+
+        *self.xeapi_key.lock().unwrap() = Some(state.clone());
+        Ok(state)
+    }
+
+    /// 清掉缓存的公钥（拉取失败时调用，下次重新拉）
+    pub fn clear_xeapi_key(&self) {
+        *self.xeapi_key.lock().unwrap() = None;
+    }
+
+    /// 发一次 **xeapi** 请求（广告族 + 匿名注册）
+    ///
+    /// xeapi 与 weapi/eapi 差别很大，单独走一条路径：
+    ///
+    /// - 请求体是 `B=..&S=..&R=..`（三层加密）
+    /// - **响应也是加密的**，要用 `eapiKey` 解（不是 `staticKey`）
+    /// - 需要 `X-Client-Enc-State: ENCRYPTED` 等一批专属头
+    /// - Cookie 在完整表基础上覆盖 6 个字段
+    pub async fn send_xeapi(
+        &self,
+        uri: &str,
+        data: Value,
+        cookie_str: &str,
+        check_token: bool,
+    ) -> Result<ApiResponse> {
+        let state = self.xeapi_key().await?;
+
+        let raw_cookie = cookie_to_json(cookie_str);
+        let cookie = process_cookie(raw_cookie, Crypto::Xeapi, &self.device);
+
+        // ---- 这几个字段既进请求头，也覆盖进 Cookie ----
+        let os = match cookie.get("os").map(String::as_str) {
+            Some("android") => "android",
+            _ => "android",
+        };
+        let appver = match (cookie.get("os").map(String::as_str), cookie.get("appver")) {
+            (Some("android"), Some(v)) if !v.is_empty() => v.clone(),
+            _ => "9.1.65".to_string(),
+        };
+        let osver = match (cookie.get("os").map(String::as_str), cookie.get("osver")) {
+            (Some("android"), Some(v)) if !v.is_empty() => v.clone(),
+            _ => "16".to_string(),
+        };
+        let buildver = match cookie.get("buildver") {
+            Some(v) if !v.is_empty() => v.clone(),
+            _ => now_ms().to_string()[..10].to_string(),
+        };
+        let device_id = cookie.get("deviceId").cloned().unwrap_or_default();
+        let sdevice_id = match cookie.get("sDeviceId") {
+            Some(v) if !v.is_empty() => v.clone(),
+            _ => device_id.clone(),
+        };
+
+        let mut xeapi_cookie = cookie.clone();
+        xeapi_cookie.insert("os".into(), os.to_string());
+        xeapi_cookie.insert("osver".into(), osver.clone());
+        xeapi_cookie.insert("appver".into(), appver.clone());
+        xeapi_cookie.insert("buildver".into(), buildver.clone());
+        xeapi_cookie.insert("deviceId".into(), device_id.clone());
+        xeapi_cookie.insert("sDeviceId".into(), sdevice_id.clone());
+
+        // ---- 加密 ----
+        let body = crate::xeapi::xeapi(uri, &data, &state, &crate::xeapi::PlaintextOptions::default())?;
+
+        let url = format!("{XEAPI_DOMAIN}/xeapi/{}", strip_api(uri));
+
+        let mut req = self
+            .http
+            .post(&url)
+            .header("User-Agent", crate::xeapi::XEAPI_UA)
+            .header("X-Client-Enc-State", "ENCRYPTED")
+            .header("x-aeapi", "true")
+            .header("content-type", "application/x-www-form-urlencoded;charset=utf-8")
+            .header("x-deviceid", &device_id)
+            .header("x-os", os)
+            .header("x-osver", &osver)
+            .header("x-appver", &appver)
+            .header("x-sdeviceid", &sdevice_id)
+            .header("x-buildver", &buildver)
+            .header("Cookie", cookie_to_string(&xeapi_cookie))
+            .body(body.to_form());
+
+        if let Some(u) = cookie.get("MUSIC_U").filter(|s| !s.is_empty()) {
+            req = req.header("x-music-u", u);
+        }
+        if check_token {
+            let token = crate::anticheat::token_v3(&self.http).await;
+            if !token.is_empty() {
+                req = req.header("X-antiCheatToken", token);
+            }
+        }
+
+        let resp = req.send().await.map_err(|e| Error::Http(e.to_string()))?;
+
+        let cookies: Vec<String> = resp
+            .headers()
+            .get_all(reqwest::header::SET_COOKIE)
+            .iter()
+            .filter_map(|v| v.to_str().ok())
+            .map(clean_set_cookie)
+            .collect();
+
+        let raw = resp.bytes().await.map_err(|e| Error::Http(e.to_string()))?;
+
+        // ---- 响应是加密的，用 eapiKey 解 ----
+        let body = crate::xeapi::res_decrypt(&raw)?;
+        let status = map_status(&body);
+
+        Ok(ApiResponse {
+            status,
+            body,
+            cookies,
+        })
+    }
+
+    /// 发一次请求
+    pub async fn send(&self, opt: RequestOptions) -> Result<ApiResponse> {
+        // ① 解析 + 注入设备身份
+        let raw_cookie = cookie_to_json(&opt.cookie);
+        let cookie = process_cookie(raw_cookie, opt.crypto, &self.device);
+
+        // ② 反作弊 token（xeapi / 部分 weapi 需要）
+        let anti_cheat = if opt.check_token {
+            crate::anticheat::token_v3(&self.http).await
+        } else {
+            String::new()
+        };
+        let anti_cheat_opt = (!anti_cheat.is_empty()).then_some(anti_cheat.as_str());
+
+        // ③ 按 crypto 组装
+        let (url, headers, body) = match opt.crypto {
+            Crypto::Weapi => {
+                // ⚠️ weapi 用完整的 processCookieObject 结果
+                let mut data = opt.data.clone();
+                data["csrf_token"] = json!(cookie.get("__csrf").cloned().unwrap_or_default());
+                data["e_r"] = json!(false);
+
+                let p = protocol::weapi(&data)?;
+                let mut h = vec![
+                    ("Cookie".to_string(), cookie_to_string(&cookie)),
+                    ("Referer".to_string(), DOMAIN.to_string()),
+                    (
+                        "User-Agent".to_string(),
+                        choose_user_agent(Crypto::Weapi, "").to_string(),
+                    ),
+                ];
+                if let Some(t) = anti_cheat_opt {
+                    // ⚠️ weapi 下反作弊 token 在 **Header**
+                    h.push(("X-antiCheatToken".to_string(), t.to_string()));
+                }
+                (format!("{DOMAIN}/weapi/{}", strip_api(&opt.uri)), h, weapi_body(&p))
+            }
+
+            Crypto::Eapi => {
+                // ⚠️ eapi 用**独立的 13 键**表，且该表同时进 Cookie 与请求体
+                let header = eapi_header_cookie(&cookie, &self.device, anti_cheat_opt);
+
+                let mut data = opt.data.clone();
+                data["header"] = serde_json::to_value(&header)
+                    .map_err(|e| Error::Json(e.to_string()))?;
+                data["e_r"] = json!(false);
+
+                let params = protocol::eapi(&opt.uri, &data)?;
+                let h = vec![
+                    ("Cookie".to_string(), cookie_to_string(&header)),
+                    (
+                        "User-Agent".to_string(),
+                        choose_user_agent(
+                            Crypto::Eapi,
+                            cookie.get("os").map(String::as_str).unwrap_or(""),
+                        )
+                        .to_string(),
+                    ),
+                ];
+                (
+                    format!("{EAPI_DOMAIN}/eapi/{}", strip_api(&opt.uri)),
+                    h,
+                    eapi_body(&params),
+                )
+            }
+
+            Crypto::Xeapi => {
+                return Err(Error::Invalid(
+                    "xeapi 请用 api::ad 里的专用实现（需要公钥与会话）".into(),
+                ));
+            }
+        };
+
+        // ④ 发送
+        let mut req = self
+            .http
+            .post(&url)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(body);
+        for (k, v) in &headers {
+            req = req.header(k, v);
+        }
+
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| Error::Http(e.to_string()))?;
+
+        // ⑤ Set-Cookie（剥掉属性，只留 k=v）
+        let cookies: Vec<String> = resp
+            .headers()
+            .get_all(reqwest::header::SET_COOKIE)
+            .iter()
+            .filter_map(|v| v.to_str().ok())
+            .map(clean_set_cookie)
+            .collect();
+
+        let raw = resp
+            .bytes()
+            .await
+            .map_err(|e| Error::Http(e.to_string()))?;
+
+        let body: Value = serde_json::from_slice(&raw).map_err(|e| {
+            Error::Json(format!(
+                "响应不是 JSON: {e}; 原文前 200 字节: {}",
+                String::from_utf8_lossy(&raw[..raw.len().min(200)])
+            ))
+        })?;
+
+        // ⑥ 状态映射
+        let status = map_status(&body);
+        let resp = ApiResponse {
+            status,
+            body,
+            cookies,
+        };
+
+        if resp.status == 200 {
+            Ok(resp)
+        } else {
+            Err(Error::Api {
+                message: api_message(&resp.body),
+                code: resp.code(),
+                status: resp.status,
+                body: resp.body.to_string(),
+            })
+        }
+    }
+
+    /// 发一次请求并返回**原始响应**，不做业务状态判定
+    ///
+    /// 与原服务器一致：业务失败（`code != 200`）也照常把响应体返回，由调用方判断。
+    /// 只有网络 / 解析错误才返回 `Err`。
+    ///
+    /// 供 [`crate::api`] 与 [`crate::raw`] 使用 —— 它们要复刻服务器的行为，
+    /// 而服务器是「无论业务成败都回 200 + body」。
+    pub async fn send_raw(&self, opt: RequestOptions) -> Result<ApiResponse> {
+        match self.send(opt).await {
+            Ok(r) => Ok(r),
+            Err(e) => match recover_body(e) {
+                Some((body, status)) => Ok(ApiResponse {
+                    status,
+                    body,
+                    cookies: Vec::new(),
+                }),
+                None => Err(Error::Http("请求失败".into())),
+            },
+        }
+    }
+}
+
+/// 从 [`Error::Api`] 里取回响应体
+///
+/// 业务失败在 [`Transport::send`] 里被转成了 `Err`，但响应体原样保存在
+/// `Error::Api.body` 中，这里解回来。非业务错误返回 `None`。
+pub fn recover_body(e: Error) -> Option<(Value, u16)> {
+    match e {
+        Error::Api { body, status, .. } => {
+            let v = serde_json::from_str(&body).unwrap_or_else(|_| json!({ "code": status }));
+            Some((v, status))
+        }
+        _ => None,
+    }
+}
+
+/// 从响应体里挑一句可读的错误描述
+fn api_message(body: &Value) -> String {
+    for k in ["msg", "message", "error", "errmsg"] {
+        if let Some(s) = body.get(k).and_then(|v| v.as_str()) {
+            if !s.is_empty() {
+                return s.to_string();
+            }
+        }
+    }
+    match body.get("code").and_then(|v| v.as_i64()) {
+        Some(c) => format!("code={c}"),
+        None => "未知错误".to_string(),
+    }
+}
+
+/// `/api/song/lyric` → `song/lyric`
+///
+/// 对应 `uri.substr(5)` —— 去掉 `/api/` 这 5 个字符。
+fn strip_api(uri: &str) -> &str {
+    uri.strip_prefix("/api/").unwrap_or(uri)
+}
+
+/// 剥掉 `Set-Cookie` 的属性，只留 `k=v`
+///
+/// 对应 `request.js` 里的 `Domain=` 清理；顺带去掉 `Path` / `Expires` 等，
+/// 因为客户端会拿这个串直接当 Cookie 头用。
+fn clean_set_cookie(raw: &str) -> String {
+    raw.split(';')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .to_string()
+}
+
+/// `body.code` → 归一化状态码
+///
+/// 必须逐字复刻 `request.js` 的逻辑：
+///
+/// ```text
+/// SPECIAL_STATUS_CODES = {201, 302, 400, 502, 800, 801, 802, 803}
+/// status = Number(body.code or http_status)
+/// if body.code in SPECIAL: status = 200
+/// if not (100 < status < 600): status = 400
+/// ```
+///
+/// ⚠️ `code: 301`（需要登录）**不在**这张表里 → 失败。
+pub fn map_status(body: &Value) -> u16 {
+    const SPECIAL: [i64; 8] = [201, 302, 400, 502, 800, 801, 802, 803];
+
+    let code = body
+        .get("code")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(200);
+
+    if SPECIAL.contains(&code) {
+        return 200;
+    }
+    if code > 100 && code < 600 {
+        code as u16
+    } else {
+        400
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn strips_api_prefix() {
+        assert_eq!(strip_api("/api/song/lyric"), "song/lyric");
+        assert_eq!(strip_api("/api/v3/song/detail"), "v3/song/detail");
+        assert_eq!(strip_api("no-prefix"), "no-prefix");
+    }
+
+    #[test]
+    fn status_mapping_follows_special_table() {
+        // 正常成功
+        assert_eq!(map_status(&json!({"code": 200})), 200);
+        // 特殊码一律当 200 —— 二维码轮询的 800/801/802/803 靠 body.code 表达
+        for c in [201, 302, 400, 502, 800, 801, 802, 803] {
+            assert_eq!(map_status(&json!({"code": c})), 200, "code={c}");
+        }
+        // ⚠️ 301（需要登录）不在表里 → 失败
+        assert_eq!(map_status(&json!({"code": 301})), 301);
+        // 其他正常码原样
+        assert_eq!(map_status(&json!({"code": 404})), 404);
+        // 超出 100..600 → 400
+        assert_eq!(map_status(&json!({"code": 999})), 400);
+        assert_eq!(map_status(&json!({"code": 0})), 400);
+        // 无 code → 默认 200
+        assert_eq!(map_status(&json!({})), 200);
+    }
+
+    #[test]
+    fn set_cookie_is_cleaned() {
+        assert_eq!(
+            clean_set_cookie("MUSIC_U=abc; Path=/; Domain=.music.163.com; HttpOnly"),
+            "MUSIC_U=abc"
+        );
+        assert_eq!(clean_set_cookie("__csrf=xyz"), "__csrf=xyz");
+    }
+
+    #[test]
+    fn user_agent_by_crypto() {
+        assert!(choose_user_agent(Crypto::Weapi, "").contains("Chrome/124"));
+        assert!(choose_user_agent(Crypto::Eapi, "pc").starts_with("NeteaseMusic"));
+        // ⚠️ osx 走 macOS 浏览器 UA
+        assert!(choose_user_agent(Crypto::Eapi, "osx").contains("Macintosh"));
+    }
+
+    #[test]
+    fn response_cookie_joined() {
+        let r = ApiResponse {
+            status: 200,
+            body: json!({}),
+            cookies: vec!["a=1".into(), "b=2".into()],
+        };
+        assert_eq!(r.cookie_joined(), "a=1;b=2");
+        assert!(r.ok());
+    }
+}
