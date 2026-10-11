@@ -6,6 +6,7 @@
 // 只测**纯函数**与**免登录接口**，不会修改任何账号数据。
 
 import 'package:chocolate_music/Cloud/KuGou.dart';
+import 'package:chocolate_music/Cloud/KuGouRustAdapter.dart';
 import 'package:chocolate_music/src/rust/frb_api.dart';
 import 'package:chocolate_music/src/rust/frb_generated.dart';
 import 'package:dio/dio.dart';
@@ -146,6 +147,24 @@ void main() {
         KuGou.dio.get('/not/a/route'),
         throwsA(isA<DioException>()),
       );
+    }, timeout: const Timeout(Duration(minutes: 2)));
+
+    test('baseUrl 指向的服务器不会被访问', () async {
+      // 把 baseUrl 指到 `.invalid`（RFC 2606 保留 TLD，永远解析不了）。
+      // 如果 adapter 真去请求它，这里必然 DNS 失败 —— 能跑通就证明
+      // 请求全部走的是本地 Rust 实现，`kugou.xjinhui.asia` 只是 URI 拼接用的摆设。
+      final ghost = Dio(
+        BaseOptions(baseUrl: 'https://kugou-must-not-be-contacted.invalid/'),
+      );
+      ghost.options.validateStatus = (status) => true;
+      ghost.httpClientAdapter = KuGouRustAdapter(
+        identityFileName: 'kugou_test_identity.json',
+      );
+
+      final resp = await ghost.get('/everyday/recommend');
+      expect(resp.statusCode, 200);
+      expect(resp.data['status'], 1, reason: '${resp.data}');
+      expect(resp.data['data']['song_list'], isNotEmpty);
     }, timeout: const Timeout(Duration(minutes: 2)));
   });
 }
