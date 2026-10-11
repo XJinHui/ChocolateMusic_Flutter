@@ -1,0 +1,49 @@
+# flutter_rust_bridge 代码生成配置
+#
+# ⚠️ 本文件位于 **Flutter 项目根目录**（chocolate_music/），不是 rust/ 里。
+#    因为下面的 `rust_root` 是相对于**本文件所在目录**解析的。
+#
+# 目录布局：
+#   chocolate_music/
+#   ├── flutter_rust_bridge.yaml   ← 本文件
+#   ├── lib/src/rust/              ← 生成物输出到这里
+#   ├── rust_builder/              ← integrate 生成的构建插件
+#   └── rust/                      ← Rust workspace
+#       ├── Cargo.toml             ← workspace 根
+#       └── kugou/                 ← 酷狗 API crate
+#           └── src/frb_api.rs     ← FRB 只扫描这个模块
+#
+# 生成：
+#   flutter_rust_bridge_codegen generate
+#
+# 每次修改 frb_api.rs 或 client.rs 的公开签名后都要重新 generate。
+
+# FRB 扫描的模块（逗号分隔）。
+#
+# - `crate::frb_api` —— 顶层函数（createClient / processLyric / …）
+# - `crate::client`  —— KuGouClient 的 impl 块
+#
+# ⚠️ 必须同时包含 client：`#[frb(opaque)]` 只标记类型，方法来自 impl 块，
+#    而 impl 块在 client.rs 里。只扫描 frb_api 会生成一个**空类**。
+#
+# 内部实现（Transport / RequestOptions / crypto 等含 reqwest::Client、
+# serde_json::Value 的类型）不在扫描范围内，因此不会导致生成失败。
+rust_input: crate::frb_api,crate::client
+
+# Rust crate 目录（相对于本文件）
+#
+# ⚠️ 必须指向 **具体的 crate**（`rust/kugou`），不能指向 workspace 根（`rust/`）。
+#    因为 FRB 要在该目录执行 `cargo expand`，而 workspace 根的 Cargo.toml 是
+#    虚拟 manifest（只有 [workspace]，没有 [package]），cargo 会报错：
+#      "manifest path ... is a virtual manifest, but this command requires
+#       running against an actual package in this workspace"
+rust_root: rust/kugou/
+
+# 生成的 Dart 文件输出位置
+dart_output: lib/src/rust
+
+# Dart 侧的入口类名，使用前需 await RustLib.init()
+dart_entrypoint_class_name: RustLib
+
+# 扫描完整依赖（类型较多时更稳）
+full_dep: true

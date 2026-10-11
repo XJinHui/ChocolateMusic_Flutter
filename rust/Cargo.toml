@@ -1,0 +1,31 @@
+# Flutter 项目的 Rust workspace
+#
+# 所有供 Flutter 调用的 Rust crate 都放在这里，一个 crate 一个子目录。
+# 新增 crate 时把它加进下面的 members 列表即可。
+#
+#   rust/
+#   ├── Cargo.toml        ← 本文件（workspace 根）
+#   ├── kugou/            ← 酷狗音乐 API
+#   └── <future-crate>/   ← 后续接入的其他 Rust 项目
+
+[workspace]
+resolver = "2"
+members = [
+    "kugou",
+]
+
+# 供各 member 用 `version.workspace = true` 之类继承（当前未使用，保留备用）
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+# ⚠️ profile 只能定义在 workspace 根，member 里写会被忽略
+[profile.release]
+lto = true
+opt-level = "z"
+strip = true
+
+[workspace.lints.rust]
+# flutter_rust_bridge 的宏会注入 `cfg(frb_expand)`，声明一下避免 warning
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

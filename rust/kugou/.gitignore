@@ -1,0 +1,4 @@
+/target
+
+# 设备身份与登录凭据（含 dfid/token，切勿提交）
+kugou_identity.json
