@@ -30,8 +30,8 @@ async fn run() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let cmd = args.first().map(String::as_str).unwrap_or("help");
 
-    // 平台从环境变量读，默认概念版（与原部署一致）
-    let platform = Platform::parse(&std::env::var("KUGOU_PLATFORM").unwrap_or_default());
+    // 平台从环境变量读，未设置时默认概念版（与原部署一致）
+    let platform = Platform::from_env();
     println!("平台: {platform:?}  appid={} clientver={}", platform.appid(), platform.clientver());
 
     let mut client = KuGouClient::with_identity_file(platform, "kugou_identity.json");

@@ -231,13 +231,25 @@ fn aes_cbc_decrypt(ct: &[u8], key: &[u8], iv: &[u8]) -> Option<Vec<u8>> {
 
 /// **裸 RSA 加密（无填充）**，对应 `cryptoRSAEncrypt`
 ///
-/// 算法：`c = m^e mod n`，其中 `m` 是把明文**左侧补零**到模长后的字节按大端解释。
+/// 算法：`c = m^e mod n`，`m` 是把明文**右侧补零**到模长后的字节按大端解释。
 ///
 /// - 输出：小写 hex，左侧补零到 `2 × 模长字节数`（1024-bit → 恒为 256 字符）
 /// - 明文上限：**128 字节**，超出直接报错
 /// - **确定性**：同一明文每次结果相同（与 PKCS#1 v1.5 不同）
 ///
 /// 调用方通常会 `.to_uppercase()`。
+///
+/// ## ⚠️ 是「右侧补零」，不是「左补零」
+///
+/// 原实现是：
+///
+/// ```js
+/// padded = new Uint8Array(keyLength);
+/// padded.set(buffer);          // ⚠️ set() 默认从 offset 0 开始 → 消息在**开头**
+/// ```
+///
+/// 也就是消息占**高位**、低位补零。写成「左补零」会得到完全不同的密文，
+/// 上游解不出来 —— 表现为 `error_code: 20006`（err signature）。
 pub fn rsa_raw_encrypt(data: &[u8], public_key_pem: &str) -> Result<String, CryptoError> {
     let key = parse_public_key(public_key_pem)?;
 
@@ -253,9 +265,9 @@ pub fn rsa_raw_encrypt(data: &[u8], public_key_pem: &str) -> Result<String, Cryp
         });
     }
 
-    // 左侧补零到大端模长
+    // ⚠️ 消息在**前**，右侧补零
     let mut padded = vec![0u8; key_len];
-    padded[key_len - data.len()..].copy_from_slice(data);
+    padded[..data.len()].copy_from_slice(data);
 
     let m = BigUint::from_bytes_be(&padded);
     let c = m.modpow(&e, &n);
@@ -348,5 +360,33 @@ mod tests {
     fn raw_rsa_rejects_oversize() {
         let big = vec![0u8; 129];
         assert!(rsa_raw_encrypt(&big, PUBLIC_RSA_KEY).is_err());
+    }
+
+    /// 黄金向量：与 Node 的 `cryptoRSAEncrypt` 对拍（无填充 RSA 是确定性的）
+    ///
+    /// ⚠️ 这个向量锁死的是「**右侧补零**」这个方向。
+    ///
+    /// 曾经写成「左补零」（消息在低位），结果 `/login/token` 与 `/login/cellphone`
+    /// 全部报 `error_code: 20006`（err signature）—— 上游用私钥解 `pk` 解不出来，
+    /// 就拿不到解密 `params` 用的 AES 密钥，于是判定签名错。
+    ///
+    /// 根源是 JS 的 `Uint8Array.prototype.set(array)` **默认从 offset 0 开始写**：
+    ///
+    /// ```js
+    /// padded = new Uint8Array(keyLength);
+    /// padded.set(buffer);      // ⚠️ 消息在开头，右侧补零 —— 不是左补零
+    /// ```
+    #[test]
+    fn raw_rsa_matches_node_golden_vector() {
+        let plain = br#"{"clienttime_ms":1234567890123,"key":"0123456789abcdef"}"#;
+
+        assert_eq!(
+            rsa_raw_encrypt(plain, PUBLIC_LITE_RSA_KEY).unwrap(),
+            "235c2bb114bbeb83c294282e15b665edebd695cef9a4a4456c7482fd484be72b7c6aeaf9692f3db7dfb101ce8513349c68f603c3855b5cff741311e77fa0ad1d562b61688118e164f02bcc4f7eb3b2dce55e1d0d7566f18fd0b1ee27ef2a4cf621ed09c22e3b4a2a35b56795625569a35cd82254cbb922bb13324d59a301be58"
+        );
+        assert_eq!(
+            rsa_raw_encrypt(plain, PUBLIC_RSA_KEY).unwrap(),
+            "b4a0f95451613ca41e562014b8e0050a2a5c2a589133c3a1a12db82c7d7fffa5ed3cbf9c81819f94add989a358cf4abcd7c559abbe2350969aefb823916d4438277a01f5ee515c6eb7fb13cb7b4c2c5974e504f8cc0088ffecbd8d861a7c115d0b717948678ab061a8d3f67af3bf00b0269e18aea9a84f659604d4e6f3df0298"
+        );
     }
 }

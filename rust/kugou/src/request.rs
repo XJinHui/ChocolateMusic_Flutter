@@ -311,6 +311,11 @@ impl Transport {
         p.insert("clientver".into(), Value::from(self.platform.clientver()));
         p.insert("clienttime".into(), Value::from(clienttime));
 
+        // ⚠️ 只有账号里确实有凭据时才带上。
+        //
+        // 原实现是从 **Cookie** 取（`options.cookie.token`），而 Dart 客户端
+        // 从不发 Cookie —— 所以对 KuGou.dart 的请求，这两个值只进 body、不进 query。
+        // 但带上它们本身不影响上游校验（已实测），所以这里保持「有就带」。
         if !self.account.token.is_empty() {
             p.insert("token".into(), Value::String(self.account.token.clone()));
         }
@@ -402,7 +407,14 @@ impl Transport {
         }
 
         // ⑨ 组装
-        let base_url = opt.base_url.as_deref().unwrap_or(DEFAULT_BASE_URL);
+        //
+        // `KUGOU_BASE_URL` 可覆盖目标域名 —— 排障用：指向本地回显服务器就能
+        // 抓到 Rust 实际发出的原始 HTTP 请求，再和原 Node 服务的对比。
+        let base_url = std::env::var("KUGOU_BASE_URL")
+            .ok()
+            .filter(|s| !s.is_empty())
+            .or_else(|| opt.base_url.clone())
+            .unwrap_or_else(|| DEFAULT_BASE_URL.to_string());
         let url = format!("{}{}", base_url.trim_end_matches('/'), opt.url);
 
         let mut req = self.http.request(
@@ -427,6 +439,16 @@ impl Transport {
             }
         }
 
+        // ⚠️ 必须显式设置。
+        //
+        // axios 在 `data` 是对象时会自动带上 `Content-Type: application/json`，
+        // 而 reqwest 对 `Vec<u8>` 请求体**不会**自动加。
+        // 缺了它上游可能不解析 body，导致签名（覆盖 body 文本）对不上 ——
+        // 表现就是 `error_code: 20006`（err signature）。
+        if opt.data.is_some() {
+            req = req.header("Content-Type", "application/json");
+        }
+
         // query 参数：全部转成字符串
         let query: Vec<(String, String)> = params
             .iter()
@@ -436,6 +458,24 @@ impl Transport {
 
         if let Some(data) = &opt.data {
             req = req.body(data.clone());
+        }
+
+        // 调试：`KUGOU_DEBUG=1` 时把实际发出去的请求打出来
+        //
+        // 排查 `error_code: 20006`（err signature）时很有用 —— 对照原 Node 服务
+        // 发出的同一条请求，逐字段比对 query 与 body。
+        if std::env::var("KUGOU_DEBUG").is_ok() {
+            eprintln!("┌─ KuGou 请求 ─────────────────────────────");
+            eprintln!("│ {url}");
+            eprintln!("│ query:");
+            for (k, v) in &query {
+                eprintln!("│   {k} = {v}");
+            }
+            match &opt.data {
+                Some(d) => eprintln!("│ body: {}", String::from_utf8_lossy(d)),
+                None => eprintln!("│ body: (空)"),
+            }
+            eprintln!("└──────────────────────────────────────────");
         }
 
         // ⑬ 发送

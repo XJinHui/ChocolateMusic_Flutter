@@ -212,13 +212,22 @@ impl KuGouClient {
     }
 
     /// 应用一次登录结果
+    ///
+    /// ⚠️ 只在字段**非空**时覆盖 —— 登录失败的响应体里 `data` 可能是个空对象，
+    /// 无条件覆盖会把已有的 token 清掉。
     pub fn apply_login(&mut self, r: &LoginResult) {
-        self.transport.account.token = r.token.clone();
+        if !r.token.is_empty() {
+            self.transport.account.token = r.token.clone();
+        }
         if !r.userid.is_empty() {
             self.transport.account.userid = r.userid.clone();
         }
-        self.transport.account.vip_type = r.vip_type;
-        self.transport.account.vip_token = r.vip_token.clone();
+        if r.vip_type != 0 {
+            self.transport.account.vip_type = r.vip_type;
+        }
+        if !r.vip_token.is_empty() {
+            self.transport.account.vip_token = r.vip_token.clone();
+        }
         if !r.t1.is_empty() {
             self.transport.account.t1 = r.t1.clone();
         }

@@ -68,12 +68,63 @@ impl Platform {
         "Android15-1070-11083-46-0-DiscoveryDRADProtocol-wifi"
     }
 
-    /// 解析字符串（`"lite"` → `Lite`，其余 → `Standard`）
+    /// 解析字符串（`"lite"` → `Lite`，其余含空串 → `Standard`）
+    ///
+    /// ⚠️ **空串映射到 `Standard`**，与原项目 `.env` 的默认值一致
+    /// （`KuGouMusicApi/.env.example` 里 `platform=''`，注释写「默认为手机版」）。
+    /// 注意这与 [`Platform::default`] 的 `Lite` **不同** —— 那个是给
+    /// 「没显式指定平台」的 Rust 调用方用的默认值。
     pub fn parse(s: &str) -> Self {
         if s.eq_ignore_ascii_case("lite") {
             Platform::Lite
         } else {
             Platform::Standard
         }
+    }
+
+    /// 从环境变量 `KUGOU_PLATFORM` 读平台
+    ///
+    /// 这是对原项目 `.env` 里 `platform=lite` 的等价物，但**只是 CLI 的便利入口** ——
+    /// 库本身把平台做成随客户端实例传递的值对象，所以同一进程可以同时跑两个平台。
+    ///
+    /// ⚠️ 与原项目不同：原项目 `process.env.platform` 是**全局**的，一个进程只能是一种。
+    /// 未设置时返回 [`Platform::Lite`]（与原部署一致），而不是 `Standard`。
+    pub fn from_env() -> Self {
+        match std::env::var("KUGOU_PLATFORM") {
+            Ok(s) if !s.trim().is_empty() => Self::parse(s.trim()),
+            _ => Platform::Lite,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_maps_empty_to_standard() {
+        // 与原项目 .env 默认值一致
+        assert_eq!(Platform::parse(""), Platform::Standard);
+        assert_eq!(Platform::parse("standard"), Platform::Standard);
+        assert_eq!(Platform::parse("LITE"), Platform::Lite);
+        assert_eq!(Platform::parse("lite"), Platform::Lite);
+    }
+
+    #[test]
+    fn default_is_lite() {
+        assert_eq!(Platform::default(), Platform::Lite);
+    }
+
+    #[test]
+    fn platform_constants_differ() {
+        // 两个平台的所有常量都必须不同 —— 否则切换平台就失去意义了
+        assert_ne!(Platform::Lite.appid(), Platform::Standard.appid());
+        assert_ne!(Platform::Lite.clientver(), Platform::Standard.clientver());
+        assert_ne!(Platform::Lite.android_salt(), Platform::Standard.android_salt());
+        assert_ne!(Platform::Lite.sign_key_salt(), Platform::Standard.sign_key_salt());
+        assert_ne!(
+            Platform::Lite.rsa_public_key(),
+            Platform::Standard.rsa_public_key()
+        );
     }
 }
