@@ -1342,6 +1342,11 @@ class RustLibWire implements BaseWire {
     offset,
   );
 
+  void wire__netease__client__NetEaseClient_bootstrap(
+    NativePortType port_,
+    int that,
+  ) => wasmModule.wire__netease__client__NetEaseClient_bootstrap(port_, that);
+
   void wire__netease__client__NetEaseClient_captcha_sent(
     NativePortType port_,
     int that,
@@ -1366,6 +1371,11 @@ class RustLibWire implements BaseWire {
     NativePortType port_,
     int that,
   ) => wasmModule.wire__netease__client__NetEaseClient_has_music_a(port_, that);
+
+  void wire__netease__client__NetEaseClient_has_nmtid(
+    NativePortType port_,
+    int that,
+  ) => wasmModule.wire__netease__client__NetEaseClient_has_nmtid(port_, that);
 
   void wire__netease__client__NetEaseClient_login_cellphone(
     NativePortType port_,
@@ -2141,6 +2151,11 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
     int offset,
   );
 
+  external void wire__netease__client__NetEaseClient_bootstrap(
+    NativePortType port_,
+    int that,
+  );
+
   external void wire__netease__client__NetEaseClient_captcha_sent(
     NativePortType port_,
     int that,
@@ -2158,6 +2173,11 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
   );
 
   external void wire__netease__client__NetEaseClient_has_music_a(
+    NativePortType port_,
+    int that,
+  );
+
+  external void wire__netease__client__NetEaseClient_has_nmtid(
     NativePortType port_,
     int that,
   );

@@ -6,8 +6,12 @@
 // 只测**免登录接口**与**纯函数**，不会改动任何账号数据。
 // 需要登录的接口（歌单、推荐等）请手动在 App 里验证。
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:chocolate_music/Cloud/NetEaseCloud.dart';
 import 'package:chocolate_music/src/rust/frb_generated.dart';
@@ -38,6 +42,63 @@ void main() {
       expect(supported, contains('/ad/get'));
       expect(supported, contains('/register/anonimous'));
     });
+  });
+
+  group('启动流程（MUSIC_A / NMTID）', () {
+    // ------------------------------------------------------------------
+    //  回归：登录类接口恒返回 -462「请完成验证操作」
+    //
+    //  网易云用两个**服务端下发**的身份令牌做风控，精简版最初一个都没接：
+    //
+    //    令牌      从哪来                        缺了的症状
+    //    MUSIC_A   /register/anonimous (xeapi)   二维码登录 -462
+    //    NMTID     eapi 响应的 Set-Cookie        手机号登录 -462
+    //
+    //  NMTID 尤其隐蔽 —— 原实现是「前几次 eapi 请求**故意不带** NMTID，
+    //  从 Set-Cookie 捡回服务端下发的值再全局复用」，而精简版跳过了探测、
+    //  直接伪造 `00O`+38位hex。伪造值过不了风控。
+    //
+    //  实测（本机同一时刻）：
+    //    伪造的 NMTID  → {"code":-462,...}  请完成验证操作
+    //    服务端的 NMTID → {"msg":"账号或密码错误","code":502}  ← 与 Node 服务逐字一致
+    // ------------------------------------------------------------------
+
+    test('createClient 会补齐服务端下发的 NMTID 并落盘', () async {
+      final dir = await getApplicationDocumentsDirectory();
+      final path = '${dir.path}/netease_bootstrap_identity.json';
+      final f = File(path);
+
+      // 从**干净状态**开始，确保真的走了一遍探测（而不是读到旧文件）
+      if (await f.exists()) await f.delete();
+
+      final client = await ne.createClient(identityPath: path);
+
+      expect(
+        await client.hasNmtid(),
+        isTrue,
+        reason: '拿不到 NMTID 时登录类接口会返回 -462',
+      );
+
+      // 必须落盘 —— 否则每次启动都要重新探测
+      final saved = jsonDecode(await f.readAsString()) as Map<String, dynamic>;
+      expect(saved['nmtid'], isA<String>());
+      expect(saved['nmtid'], isNotEmpty);
+
+      if (await f.exists()) await f.delete();
+    }, timeout: const Timeout(Duration(minutes: 3)));
+
+    test('手机号登录不再被风控拦成 -462', () async {
+      // 用假手机号 + 假密码：只关心**有没有过风控**，不关心凭据对不对。
+      // 过不了风控时恒为 -462；过了则是 502「账号或密码错误」之类。
+      final r = await Neteasecloud.dio.get(
+        '/login/cellphone?phone=13800138000&password=definitely_wrong',
+      );
+      expect(
+        r.data['code'],
+        isNot(-462),
+        reason: 'NMTID 缺失时这里恒为 -462（请完成验证操作）: ${r.data}',
+      );
+    }, timeout: const Timeout(Duration(minutes: 2)));
   });
 
   group('dio adapter（NetEaseCloud.dart 的真实路径）', () {

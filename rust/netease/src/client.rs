@@ -72,7 +72,8 @@ impl NetEaseClient {
         let device = DeviceIdentity::load_or_create(path);
 
         Self {
-            transport: Transport::new(device),
+            // ⚠️ 路径也要给 Transport —— 探测到的 NMTID 由它负责落盘
+            transport: Transport::with_identity_path(device, Some(path.to_path_buf())),
             identity_path: Some(path.to_path_buf()),
         }
     }
@@ -104,9 +105,73 @@ impl NetEaseClient {
         self.transport.device.has_music_a()
     }
 
+    /// 是否已拿到服务端下发的 `NMTID`
+    pub fn has_nmtid(&self) -> bool {
+        self.transport.nmtid_state().value.is_some()
+    }
+
     /// 记下匿名 token（由 [`Self::register_anonymous`] 或调用方写入）
     pub fn set_music_a(&mut self, token: impl Into<String>) {
         self.transport.device.music_a = token.into();
+    }
+
+    // ========================================================
+    //  启动流程
+    // ========================================================
+
+    /// 补齐两个**服务端下发**的身份令牌
+    ///
+    /// 对应原 Node 服务的启动段（`app.js` → `generateConfig`）加第一次 eapi 请求。
+    ///
+    /// | 令牌 | 从哪来 | 缺了会怎样 |
+    /// | --- | --- | --- |
+    /// | `MUSIC_A` | `/register/anonimous`（xeapi） | `/login/qr/check` → `-462` |
+    /// | `NMTID` | **eapi 响应的 `Set-Cookie`** | `/login/cellphone` → `-462` |
+    ///
+    /// `-462` 是网易云的风控拦截（`请完成验证操作`），客户端拿它没有任何办法 ——
+    /// 必须让请求本身带上这两个令牌。
+    ///
+    /// 两者都已持久化在身份文件里时**一次网络请求都不发**。
+    /// 任一步失败都**不算致命**：照常返回，只是后续请求风控更严。
+    ///
+    /// 返回若干条人类可读的说明，供调用方打日志。
+    pub async fn bootstrap(&mut self) -> Vec<String> {
+        let mut notes = Vec::new();
+
+        // ① 匿名注册 → MUSIC_A
+        if self.has_music_a() {
+            notes.push("MUSIC_A: 已有，跳过注册".into());
+        } else {
+            match self.register_anonymous("").await {
+                Ok(t) if !t.is_empty() => notes.push("MUSIC_A: 注册成功".into()),
+                Ok(_) => notes.push("MUSIC_A: 上游未返回 anonymousToken".into()),
+                Err(e) => notes.push(format!("MUSIC_A: 注册失败（{e}）")),
+            }
+        }
+
+        // ② NMTID 探测
+        //
+        // ⚠️ **只有 eapi 响应才会下发 NMTID**，所以这里主动打一次 eapi 路由。
+        //    选 `/login/qr/key`：它本来就要在扫码登录时调，且无副作用
+        //    （只是服务端建一个待扫码的 key）。
+        if self.has_nmtid() {
+            notes.push("NMTID: 已有，跳过探测".into());
+        } else {
+            let r = self
+                .raw_request(
+                    "/login/qr/key".into(),
+                    std::collections::HashMap::new(),
+                    String::new(),
+                )
+                .await;
+            match r {
+                Ok(_) if self.has_nmtid() => notes.push("NMTID: 探测成功".into()),
+                Ok(_) => notes.push("NMTID: 上游未下发，本次只能用伪造值".into()),
+                Err(e) => notes.push(format!("NMTID: 探测失败（{e}）")),
+            }
+        }
+
+        notes
     }
 
     // ========================================================

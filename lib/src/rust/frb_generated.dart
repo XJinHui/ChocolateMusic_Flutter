@@ -74,7 +74,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 2052803620;
+  int get rustContentHash => -1409944290;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -333,6 +333,10 @@ abstract class RustLibApi extends BaseApi {
     required int offset,
   });
 
+  Future<List<String>> neteaseClientNetEaseClientBootstrap({
+    required NetEaseClient that,
+  });
+
   Future<ServerResponse> neteaseClientNetEaseClientCaptchaSent({
     required NetEaseClient that,
     required String cookie,
@@ -346,6 +350,10 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<bool> neteaseClientNetEaseClientHasMusicA({
+    required NetEaseClient that,
+  });
+
+  Future<bool> neteaseClientNetEaseClientHasNmtid({
     required NetEaseClient that,
   });
 
@@ -2568,6 +2576,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<List<String>> neteaseClientNetEaseClientBootstrap({
+    required NetEaseClient that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          return wire.wire__netease__client__NetEaseClient_bootstrap(
+            port_,
+            arg0,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_list_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseClientNetEaseClientBootstrapConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientBootstrapConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_bootstrap",
+        argNames: ["that"],
+      );
+
+  @override
   Future<ServerResponse> neteaseClientNetEaseClientCaptchaSent({
     required NetEaseClient that,
     required String cookie,
@@ -2691,6 +2732,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kNeteaseClientNetEaseClientHasMusicAConstMeta =>
       const TaskConstMeta(
         debugName: "NetEaseClient_has_music_a",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<bool> neteaseClientNetEaseClientHasNmtid({
+    required NetEaseClient that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNetEaseClient(
+                that,
+              );
+          return wire.wire__netease__client__NetEaseClient_has_nmtid(
+            port_,
+            arg0,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_bool,
+          decodeErrorData: null,
+        ),
+        constMeta: kNeteaseClientNetEaseClientHasNmtidConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kNeteaseClientNetEaseClientHasNmtidConstMeta =>
+      const TaskConstMeta(
+        debugName: "NetEaseClient_has_nmtid",
         argNames: ["that"],
       );
 
@@ -6027,6 +6101,25 @@ class NetEaseClientImpl extends RustOpaque implements NetEaseClient {
     offset: offset,
   );
 
+  /// 补齐两个**服务端下发**的身份令牌
+  ///
+  /// 对应原 Node 服务的启动段（`app.js` → `generateConfig`）加第一次 eapi 请求。
+  ///
+  /// | 令牌 | 从哪来 | 缺了会怎样 |
+  /// | --- | --- | --- |
+  /// | `MUSIC_A` | `/register/anonimous`（xeapi） | `/login/qr/check` → `-462` |
+  /// | `NMTID` | **eapi 响应的 `Set-Cookie`** | `/login/cellphone` → `-462` |
+  ///
+  /// `-462` 是网易云的风控拦截（`请完成验证操作`），客户端拿它没有任何办法 ——
+  /// 必须让请求本身带上这两个令牌。
+  ///
+  /// 两者都已持久化在身份文件里时**一次网络请求都不发**。
+  /// 任一步失败都**不算致命**：照常返回，只是后续请求风控更严。
+  ///
+  /// 返回若干条人类可读的说明，供调用方打日志。
+  Future<List<String>> bootstrap() =>
+      RustLib.instance.api.neteaseClientNetEaseClientBootstrap(that: this);
+
   /// 发送手机验证码
   Future<ServerResponse> captchaSent({
     required String cookie,
@@ -6044,6 +6137,10 @@ class NetEaseClientImpl extends RustOpaque implements NetEaseClient {
   /// 是否已拿到匿名 token
   Future<bool> hasMusicA() =>
       RustLib.instance.api.neteaseClientNetEaseClientHasMusicA(that: this);
+
+  /// 是否已拿到服务端下发的 `NMTID`
+  Future<bool> hasNmtid() =>
+      RustLib.instance.api.neteaseClientNetEaseClientHasNmtid(that: this);
 
   /// 手机验证码登录
   Future<ServerResponse> loginCellphone({

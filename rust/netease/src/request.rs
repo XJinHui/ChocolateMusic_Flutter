@@ -19,7 +19,9 @@
 
 use serde_json::{json, Value};
 
-use crate::cookie::{cookie_to_json, cookie_to_string, eapi_header_cookie, process_cookie};
+use crate::cookie::{
+    cookie_to_json, cookie_to_string, eapi_header_cookie, extract_nmtid, process_cookie,
+};
 use crate::device::DeviceIdentity;
 use crate::protocol::{self, eapi_body, weapi_body};
 use crate::{now_ms, Crypto, Error, Result};
@@ -175,6 +177,15 @@ pub struct Transport {
     /// 原实现把它存在 `os.tmpdir()/xeapi_public_key`；这里只放内存 ——
     /// 反正每次启动都会重新拉一次，省一个文件。
     xeapi_key: std::sync::Mutex<Option<crate::xeapi::PublicKeyState>>,
+
+    /// NMTID 探测状态（见 [`crate::cookie::NmtidState`]）
+    ///
+    /// 用 `Mutex` 是因为它在 `send(&self)` 里被写 —— 响应的 `Set-Cookie`
+    /// 会把服务端下发的值捡回来。
+    nmtid: std::sync::Mutex<crate::cookie::NmtidState>,
+
+    /// 身份文件路径。有它才能把探测到的 NMTID 落盘（没有就只活在内存里）。
+    identity_path: Option<std::path::PathBuf>,
 }
 
 // ============================================================
@@ -238,13 +249,66 @@ fn ipv4_only() -> bool {
     )
 }
 
+/// 域名覆盖（**仅调试用**）
+///
+/// 设 `NETEASE_DOMAIN=http://127.0.0.1:9999` 后，weapi / eapi / xeapi 三个
+/// **请求**域名全部改指它 —— 把请求打到本地 echo server，就能逐字节对比
+/// 与原 Node 服务发出的那条请求的差异。排查签名 / 风控类问题很有用。
+///
+/// ⚠️ **不覆盖** xeapi 公钥接口（`interface.music.163.com`）—— 那是换取加密
+///    公钥用的，必须走真服务器，否则整条 xeapi 链路起不来。
+pub fn domain(default: &str) -> String {
+    std::env::var("NETEASE_DOMAIN").unwrap_or_else(|_| default.to_string())
+}
+
 impl Transport {
     pub fn new(device: DeviceIdentity) -> Self {
+        Self::with_identity_path(device, None)
+    }
+
+    /// 带身份文件路径构造 —— NMTID 探测到之后会写回去
+    pub fn with_identity_path(
+        device: DeviceIdentity,
+        identity_path: Option<std::path::PathBuf>,
+    ) -> Self {
+        let nmtid = crate::cookie::NmtidState::new(device.nmtid.clone());
+
         Self {
             http: http_client(),
             device,
             xeapi_key: std::sync::Mutex::new(None),
+            nmtid: std::sync::Mutex::new(nmtid),
+            identity_path,
         }
+    }
+
+    /// 当前 NMTID 状态（克隆一份，避免锁跨 await）
+    pub fn nmtid_state(&self) -> crate::cookie::NmtidState {
+        self.nmtid.lock().unwrap().clone()
+    }
+
+    /// 记下服务端下发的 NMTID，并尽力落盘
+    ///
+    /// 落盘失败不影响本次运行 —— 只是下次启动要重新探测一遍。
+    fn capture_nmtid(&self, value: String) {
+        {
+            let mut g = self.nmtid.lock().unwrap();
+            if g.value.is_some() {
+                return; // 已经有了，不再覆盖
+            }
+            g.value = Some(value.clone());
+        }
+
+        if let Some(p) = &self.identity_path {
+            let mut device = self.device.clone();
+            device.nmtid = value;
+            let _ = device.save(p);
+        }
+    }
+
+    /// 消耗一次 NMTID 探测机会（对应 Node 的 `NMTID_RETRIES_LEFT--`）
+    fn consume_nmtid_probe(&self) {
+        self.nmtid.lock().unwrap().consume_retry();
     }
 
     /// 发一次请求，**连接阶段**失败时重试
@@ -334,7 +398,7 @@ impl Transport {
         let state = self.xeapi_key().await?;
 
         let raw_cookie = cookie_to_json(cookie_str);
-        let cookie = process_cookie(raw_cookie, Crypto::Xeapi, &self.device);
+        let cookie = process_cookie(raw_cookie, Crypto::Xeapi, &self.device, &self.nmtid_state());
 
         // ---- 这几个字段既进请求头，也覆盖进 Cookie ----
         let os = match cookie.get("os").map(String::as_str) {
@@ -370,7 +434,7 @@ impl Transport {
         // ---- 加密 ----
         let body = crate::xeapi::xeapi(uri, &data, &state, &crate::xeapi::PlaintextOptions::default())?;
 
-        let url = format!("{XEAPI_DOMAIN}/xeapi/{}", strip_api(uri));
+        let url = format!("{}/xeapi/{}", domain(XEAPI_DOMAIN), strip_api(uri));
 
         // 这两个头在**每次重试里都一样**，先算好 —— 放进闭包会重复请求反作弊服务
         let music_u = cookie.get("MUSIC_U").filter(|s| !s.is_empty()).cloned();
@@ -441,7 +505,19 @@ impl Transport {
     pub async fn send(&self, opt: RequestOptions) -> Result<ApiResponse> {
         // ① 解析 + 注入设备身份
         let raw_cookie = cookie_to_json(&opt.cookie);
-        let cookie = process_cookie(raw_cookie, opt.crypto, &self.device);
+        let nmtid_state = self.nmtid_state();
+
+        // 本次是不是一次「NMTID 探测请求」—— 对应 Node 里那两处同名判断：
+        //
+        //     crypto === 'eapi' && !NMTID && NMTID_RETRIES_LEFT > 0 && !cookie.NMTID
+        //
+        // ⚠️ 看的是**调用方传进来的** cookie（`opt.cookie`）里有没有 NMTID，
+        //    不是 `process_cookie` 之后的产物 —— 与 Node 一致。
+        let probing = opt.crypto == Crypto::Eapi
+            && !raw_cookie.contains_key("NMTID")
+            && nmtid_state.should_probe();
+
+        let cookie = process_cookie(raw_cookie, opt.crypto, &self.device, &nmtid_state);
 
         // ② 反作弊 token（xeapi / 部分 weapi 需要）
         let anti_cheat = if opt.check_token {
@@ -459,6 +535,13 @@ impl Transport {
                 data["csrf_token"] = json!(cookie.get("__csrf").cloned().unwrap_or_default());
                 data["e_r"] = json!(false);
 
+                // 调试：`NETEASE_DEBUG=1` 时打印明文 JSON，可与原 Node 实现逐字段对比
+                if std::env::var("NETEASE_DEBUG").is_ok() {
+                    eprintln!("┌─ weapi 明文 ({}) ──", opt.uri);
+                    eprintln!("│ {data}");
+                    eprintln!("└──────────────────────");
+                }
+
                 let p = protocol::weapi(&data)?;
                 let mut h = vec![
                     ("Cookie".to_string(), cookie_to_string(&cookie)),
@@ -472,7 +555,7 @@ impl Transport {
                     // ⚠️ weapi 下反作弊 token 在 **Header**
                     h.push(("X-antiCheatToken".to_string(), t.to_string()));
                 }
-                (format!("{DOMAIN}/weapi/{}", strip_api(&opt.uri)), h, weapi_body(&p))
+                (format!("{}/weapi/{}", domain(DOMAIN), strip_api(&opt.uri)), h, weapi_body(&p))
             }
 
             Crypto::Eapi => {
@@ -497,7 +580,7 @@ impl Transport {
                     ),
                 ];
                 (
-                    format!("{EAPI_DOMAIN}/eapi/{}", strip_api(&opt.uri)),
+                    format!("{}/eapi/{}", domain(EAPI_DOMAIN), strip_api(&opt.uri)),
                     h,
                     eapi_body(&params),
                 )
@@ -528,6 +611,19 @@ impl Transport {
             .await?;
 
         // ⑤ Set-Cookie（剥掉属性，只留 k=v）
+        //
+        // ⚠️ NMTID 采集必须在 `clean_set_cookie` **之前** —— 对应 Node 是在
+        //    `Set-Cookie` **原文**上跑 `/(?:^|;\s*)NMTID=([^;]+)/`。
+        if probing {
+            self.consume_nmtid_probe();
+            for v in resp.headers().get_all(reqwest::header::SET_COOKIE).iter() {
+                if let Some(t) = v.to_str().ok().and_then(extract_nmtid) {
+                    self.capture_nmtid(t);
+                    break;
+                }
+            }
+        }
+
         let cookies: Vec<String> = resp
             .headers()
             .get_all(reqwest::header::SET_COOKIE)

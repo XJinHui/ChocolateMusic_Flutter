@@ -319,6 +319,113 @@ cd rust/netease && cargo run --release --example probe
 
 ---
 
+### 11. ⚠️ 登录恒返回 `-462` —— 缺两个**服务端下发**的身份令牌
+
+症状是登录类接口全部失败：
+
+```json
+{"code":-462,"message":"请完成验证操作",
+ "data":{"verifyType":40,"verifyUrl":"https://st.music.163.com/encrypt-pages", ...}}
+```
+
+严重时连 `/song/detail`、`/search` 这种免登录接口也会 `-462`。
+
+`-462` 是网易云的**风控拦截**，客户端拿它没有任何办法 —— 只能让请求本身
+带上它要的令牌。精简版最初漏了两个，都是**服务端下发**的：
+
+| 令牌 | 从哪来 | 缺了的症状 |
+| --- | --- | --- |
+| `MUSIC_A` | `/register/anonimous`（xeapi） | 二维码登录 / 免登录接口 → `-462` |
+| `NMTID` | **eapi 响应的 `Set-Cookie`** | 手机号登录 → `-462` |
+
+#### 怎么定位的
+
+对照「本地跑的原版 Node 服务」与 Rust —— **同机、同 IP、同一时刻**：
+
+| | `/login/qr/check` | `/login/cellphone` | `/song/detail` |
+| --- | --- | --- | --- |
+| Node | `801 等待扫码` | `账号或密码错误` | 正常返回 |
+| Rust | `-462` | `-462` | `-462` |
+
+同机同 IP 就能排除「IP 被风控」；换全新设备身份仍然 `-462`，排除「设备信誉」。
+剩下的只能是请求内容。把两边的请求打到本地 echo server 逐字段比，cookie 里
+**只有这两个键不一样**。
+
+再用**注入法**坐实：把 Node 那侧拿到的 `MUSIC_A` / `NMTID` 手动塞进 Rust 的
+身份文件，`-462` 立刻消失、结果与 Node 逐字一致。
+
+> 实测（同一时刻）：
+>
+> | NMTID | `/login/cellphone` |
+> | --- | --- |
+> | 伪造的 `00O`+hex | `{"code":-462,...}` 请完成验证操作 |
+> | 服务端下发的值 | `{"msg":"账号或密码错误","code":502}` |
+
+#### 坑在哪
+
+**① `MUSIC_A`：从来没注册过**
+
+原 Node 服务的 `app.js` 启动第一件事就是 `/register/anonimous`，拿到 `MUSIC_A`
+写进 `anonymous_token` 文件，之后 `util/request.js` 用它兜底 cookie。
+精简版有 `register_anonymous()` 方法，但**没有任何地方调用它** ——
+`music_a` 恒为空，`process_cookie` 于是整条 `MUSIC_A` 都不带。
+
+**② `NMTID`：伪造了，但伪造的过不了风控**
+
+原实现是「前几次 eapi 请求**故意不带** NMTID，从响应的 `Set-Cookie` 里把服务端
+下发的值捡回来，之后全局复用；3 次都没捡到才永久伪造一个」。
+
+精简版按文档记的「原实现缺陷 #2（计数只减不增）」把整段探测**跳过了**，
+直接 `'00O' + random(19)` 伪造 —— 而这正是风控要看的设备令牌。
+
+#### 修法
+
+见 `cookie.rs` 的 `NmtidState` 与 `client.rs` 的 `bootstrap()`：
+
+```rust
+// cookie.rs —— process_cookie 的三分支，逐条对应 Node 的 if/else-if
+if !out.contains_key("NMTID") {
+    if let Some(v) = &nmtid.value {           // ① 已探测到 → 用服务端的
+        out.insert("NMTID".into(), v.clone());
+    } else if crypto != Crypto::Eapi || !nmtid.should_probe() {
+        out.insert("NMTID".into(), format!("00O{}", random_hex_lower(38)));  // ③ 伪造
+    }
+    // ④ 其余（eapi 且还能探测）→ **整个不带**，让服务端下发
+}
+```
+
+```rust
+// client.rs —— 启动时补齐两个令牌；都已有则一次网络请求都不发
+let notes = client.bootstrap().await;
+```
+
+`create_client`（FRB 入口）会自动调用 `bootstrap`，所以 Dart 侧不用改。
+
+两个令牌都**持久化在身份文件里**（原 Node 的 NMTID 只在进程内有效，
+这里存下来省掉每次启动的探测往返）。
+
+#### 怎么自查
+
+```bash
+cd rust/netease
+cargo run --release -- bootstrap     # 打印 MUSIC_A / NMTID 的获取情况
+cargo run --release -- info          # 看 MUSIC_A 是否已获取
+```
+
+#### ⚠️ `/register/anonimous` 会间歇性 400
+
+它**本身就会失败**（原版 Node 服务一样），大概是按 IP 限流。表现是
+`bootstrap` 打印 `MUSIC_A: 上游未返回 anonymousToken`。
+
+- 这是上游行为，**不是实现差异** —— 我拿 Node 的原版模块直接调，同样 400
+- 不影响其它接口：`MUSIC_A` 为空时照常发请求，只是风控更严
+- `bootstrap` 每次启动都会重试，拿到就落盘
+
+> 调试期间我反复删身份文件、短时间内打了上百次请求，把 IP 的信誉打坏了，
+> 一度连 `/song/detail` 都 `-462`。**别频繁换设备身份** —— 那是最明显的风控特征。
+
+---
+
 ## Dart 侧接入：dio adapter
 
 `KuGou.dart`（1600+ 行）与 `NetEaseCloud.dart`（1500+ 行）的解析代码**一行都没改** ——

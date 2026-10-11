@@ -7,7 +7,7 @@ import '../../frb_generated.dart';
 import 'client.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-/// 创建客户端
+/// 创建客户端，并把**启动流程**跑完
 ///
 /// - `identity_path`：设备身份文件的**绝对路径**。
 ///   移动端请用 `path_provider` 的 `getApplicationDocumentsDirectory()`，
@@ -16,6 +16,21 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 ///
 /// ⚠️ 设备身份**必须持久化** —— 原 Node 实现每次启动都换 `deviceId`，
 /// 这是最明显的风控特征。
+///
+/// ## 启动流程（对应原 Node 服务的 `app.js` 启动段）
+///
+/// 补齐两个**服务端下发**的身份令牌，缺了会被风控拦成 `-462`：
+///
+/// | 令牌 | 从哪来 | 缺了的症状 |
+/// | --- | --- | --- |
+/// | `MUSIC_A` | `/register/anonimous`（xeapi） | 二维码登录 `-462` |
+/// | `NMTID` | **eapi 响应的 `Set-Cookie`** | 手机号登录 `-462` |
+///
+/// 两者都已持久化在身份文件里时**不发任何请求**，所以只有首次运行（或换了
+/// 身份文件）才会慢一点。
+///
+/// ⚠️ 会阻塞到两个令牌都尝试完（含网络往返）。失败不算致命 —— 照常返回客户端。
+/// 离线首次启动最坏要等两个 `connect_timeout`。
 Future<NetEaseClient> createClient({required String identityPath}) =>
     RustLib.instance.api.neteaseFrbApiCreateClient(identityPath: identityPath);
 

@@ -43,6 +43,16 @@ pub struct DeviceIdentity {
     /// 匿名注册得到的 `MUSIC_A`；未注册时为空
     #[serde(default)]
     pub music_a: String,
+
+    /// 服务端下发的 `NMTID`（设备识别 cookie）；未探测到时为空
+    ///
+    /// ⚠️ **必须用服务端下发的值** —— 伪造的过不了风控，登录类接口会返回
+    /// `-462`。详见 [`crate::cookie::NmtidState`]。
+    ///
+    /// 原 Node 实现把它放在模块级变量里（进程内有效、重启即丢），这里持久化 ——
+    /// 省掉每次启动的探测往返，且与 `device_id` 绑定更自然。
+    #[serde(default)]
+    pub nmtid: String,
 }
 
 impl DeviceIdentity {
@@ -58,6 +68,7 @@ impl DeviceIdentity {
             ntes_nnid: format!("{ntes_nuid},{now}"),
             ntes_nuid,
             music_a: String::new(),
+            nmtid: String::new(),
         }
     }
 

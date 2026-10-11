@@ -31,7 +31,7 @@ async fn run() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let cmd = args.first().map(String::as_str).unwrap_or("help");
 
-    let client = NetEaseClient::with_identity_file(IDENTITY_FILE);
+    let mut client = NetEaseClient::with_identity_file(IDENTITY_FILE);
 
     match cmd {
         "help" | "-h" | "--help" => print_help(),
@@ -51,6 +51,42 @@ async fn run() -> Result<()> {
             for r in NetEaseClient::unsupported_routes() {
                 println!("  {r}");
             }
+        }
+
+        // ---------- 匿名注册 ----------
+        //
+        // 对应 Node 的 `app.js` 启动流程：服务起来第一件事就是注册匿名 token，
+        // 之后 `util/request.js` 用它兜底 cookie 里的 `MUSIC_A`。
+        // 没有它，未登录状态下风控会明显更凶（登录类接口直接回 -462）。
+        "register" => {
+            let cookie = std::env::var("NETEASE_COOKIE").unwrap_or_default();
+            if client.has_music_a() {
+                println!("MUSIC_A 已存在，跳过。要强制重注册请删掉 {IDENTITY_FILE}");
+            } else {
+                match client.register_anonymous(&cookie).await {
+                    Ok(t) if !t.is_empty() => {
+                        let head: String = t.chars().take(8).collect();
+                        println!("MUSIC_A = {head}…（共 {} 字符，已写入 {IDENTITY_FILE}）", t.len());
+                    }
+                    Ok(_) => println!("上游没返回 anonymousToken"),
+                    Err(e) => println!("注册失败: {e}"),
+                }
+            }
+        }
+
+        // ---------- 启动流程 ----------
+        //
+        // 补齐两个**服务端下发**的身份令牌（MUSIC_A / NMTID）。
+        // 缺了会被风控拦成 `-462`「请完成验证操作」—— 详见 client.rs 的 `bootstrap`。
+        // App 侧由 `create_client` 自动调用。
+        "bootstrap" | "init" => {
+            for note in client.bootstrap().await {
+                println!("{note}");
+            }
+            println!();
+            println!("deviceId = {}", client.device_id());
+            println!("MUSIC_A  = {}", if client.has_music_a() { "已获取" } else { "未获取" });
+            println!("NMTID    = {}", if client.has_nmtid() { "已获取" } else { "未获取" });
         }
 
         // ---------- 任意路由直通 ----------
@@ -110,6 +146,8 @@ fn print_help() {
 
 用法:
   cargo run -- info                         查看设备身份与路由清单
+  cargo run -- bootstrap                    补齐 MUSIC_A / NMTID（登录前必须）
+  cargo run -- register                     只注册匿名 token（拿 MUSIC_A）
   cargo run -- raw <路由> [k=v ...]         直通任意路由
   cargo run -- qr                           生成登录二维码
 

@@ -42,7 +42,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueNom,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 2052803620;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1409944290;
 
 // Section: executor
 
@@ -2678,6 +2678,51 @@ fn wire__netease__client__NetEaseClient_artist_songs_impl(
         },
     )
 }
+fn wire__netease__client__NetEaseClient_bootstrap_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    that: impl CstDecode<
+        RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NetEaseClient>>,
+    >,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "NetEaseClient_bootstrap",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, true,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref_mut().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let mut api_that_guard = api_that_guard.unwrap();
+                        let output_ok = Ok::<_, ()>(
+                            netease::client::NetEaseClient::bootstrap(&mut *api_that_guard).await,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__netease__client__NetEaseClient_captcha_sent_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     that: impl CstDecode<
@@ -2820,6 +2865,44 @@ fn wire__netease__client__NetEaseClient_has_music_a_impl(
                     let output_ok = Ok::<_, ()>(netease::client::NetEaseClient::has_music_a(
                         &*api_that_guard,
                     ))?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__netease__client__NetEaseClient_has_nmtid_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    that: impl CstDecode<
+        RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NetEaseClient>>,
+    >,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::DcoCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "NetEaseClient_has_nmtid",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.cst_decode();
+            move |context| {
+                transform_result_dco::<_, _, ()>((move || {
+                    let mut api_that_guard = None;
+                    let decode_indices_ =
+                        flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                            flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                &api_that, 0, false,
+                            ),
+                        ]);
+                    for i in decode_indices_ {
+                        match i {
+                            0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                            _ => unreachable!(),
+                        }
+                    }
+                    let api_that_guard = api_that_guard.unwrap();
+                    let output_ok =
+                        Ok::<_, ()>(netease::client::NetEaseClient::has_nmtid(&*api_that_guard))?;
                     std::result::Result::Ok(output_ok)
                 })())
             }
@@ -4277,7 +4360,7 @@ fn wire__netease__frb_api__create_client_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     identity_path: impl CstDecode<String>,
 ) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::DcoCodec, _, _>(
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "create_client",
             port: Some(port_),
@@ -4285,12 +4368,15 @@ fn wire__netease__frb_api__create_client_impl(
         },
         move || {
             let api_identity_path = identity_path.cst_decode();
-            move |context| {
-                transform_result_dco::<_, _, ()>((move || {
-                    let output_ok =
-                        Ok::<_, ()>(netease::frb_api::create_client(api_identity_path))?;
-                    std::result::Result::Ok(output_ok)
-                })())
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok =
+                            Ok::<_, ()>(netease::frb_api::create_client(api_identity_path).await)?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
             }
         },
     )
@@ -6853,6 +6939,14 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_chocolate_music_wire__netease__client__NetEaseClient_bootstrap(
+        port_: i64,
+        that: usize,
+    ) {
+        wire__netease__client__NetEaseClient_bootstrap_impl(port_, that)
+    }
+
+    #[unsafe(no_mangle)]
     pub extern "C" fn frbgen_chocolate_music_wire__netease__client__NetEaseClient_captcha_sent(
         port_: i64,
         that: usize,
@@ -6883,6 +6977,14 @@ mod io {
         that: usize,
     ) {
         wire__netease__client__NetEaseClient_has_music_a_impl(port_, that)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_chocolate_music_wire__netease__client__NetEaseClient_has_nmtid(
+        port_: i64,
+        that: usize,
+    ) {
+        wire__netease__client__NetEaseClient_has_nmtid_impl(port_, that)
     }
 
     #[unsafe(no_mangle)]
@@ -8650,6 +8752,14 @@ mod web {
     }
 
     #[wasm_bindgen]
+    pub fn wire__netease__client__NetEaseClient_bootstrap(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
+    ) {
+        wire__netease__client__NetEaseClient_bootstrap_impl(port_, that)
+    }
+
+    #[wasm_bindgen]
     pub fn wire__netease__client__NetEaseClient_captcha_sent(
         port_: flutter_rust_bridge::for_generated::MessagePort,
         that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
@@ -8680,6 +8790,14 @@ mod web {
         that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
     ) {
         wire__netease__client__NetEaseClient_has_music_a_impl(port_, that)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__netease__client__NetEaseClient_has_nmtid(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
+    ) {
+        wire__netease__client__NetEaseClient_has_nmtid_impl(port_, that)
     }
 
     #[wasm_bindgen]

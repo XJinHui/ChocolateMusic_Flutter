@@ -35,6 +35,24 @@ abstract class NetEaseClient implements RustOpaqueInterface {
     required int offset,
   });
 
+  /// 补齐两个**服务端下发**的身份令牌
+  ///
+  /// 对应原 Node 服务的启动段（`app.js` → `generateConfig`）加第一次 eapi 请求。
+  ///
+  /// | 令牌 | 从哪来 | 缺了会怎样 |
+  /// | --- | --- | --- |
+  /// | `MUSIC_A` | `/register/anonimous`（xeapi） | `/login/qr/check` → `-462` |
+  /// | `NMTID` | **eapi 响应的 `Set-Cookie`** | `/login/cellphone` → `-462` |
+  ///
+  /// `-462` 是网易云的风控拦截（`请完成验证操作`），客户端拿它没有任何办法 ——
+  /// 必须让请求本身带上这两个令牌。
+  ///
+  /// 两者都已持久化在身份文件里时**一次网络请求都不发**。
+  /// 任一步失败都**不算致命**：照常返回，只是后续请求风控更严。
+  ///
+  /// 返回若干条人类可读的说明，供调用方打日志。
+  Future<List<String>> bootstrap();
+
   /// 发送手机验证码
   Future<ServerResponse> captchaSent({
     required String cookie,
@@ -49,6 +67,9 @@ abstract class NetEaseClient implements RustOpaqueInterface {
 
   /// 是否已拿到匿名 token
   Future<bool> hasMusicA();
+
+  /// 是否已拿到服务端下发的 `NMTID`
+  Future<bool> hasNmtid();
 
   /// 手机验证码登录
   Future<ServerResponse> loginCellphone({

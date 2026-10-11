@@ -125,9 +125,75 @@ fn encode(s: &str) -> String {
     urlencoding::encode(s).into_owned()
 }
 
+/// 从一条 `Set-Cookie` **原文**里取 `NMTID` 的值
+///
+/// 对应 Node 的 `x.match(/(?:^|;\s*)NMTID=([^;]+)/)` —— 注意是在**原文**上匹配，
+/// 所以必须在剥属性（`clean_set_cookie`）**之前**调用。
+pub fn extract_nmtid(set_cookie: &str) -> Option<String> {
+    set_cookie
+        .split(';')
+        .map(str::trim)
+        .find_map(|p| p.strip_prefix("NMTID="))
+        .filter(|v| !v.is_empty())
+        .map(str::to_string)
+}
+
 // ============================================================
 //  设备身份注入
 // ============================================================
+
+/// NMTID 探测状态
+///
+/// 对应 Node `util/request.js` 顶部的两个模块级变量：
+///
+/// ```js
+/// let NMTID = ''
+/// let NMTID_RETRIES_LEFT = 3
+/// ```
+///
+/// ## 为什么要探测
+///
+/// `NMTID` 是网易云的**设备识别 cookie**，由服务端下发。原实现的做法是：
+/// 前几次 eapi 请求**故意不带** NMTID，从响应的 `Set-Cookie` 里把服务端下发的
+/// 值捡回来，之后全局复用；3 次都没捡到才永久伪造一个。
+///
+/// ⚠️ **伪造的值过不了风控**。实测（本机，同一时刻）：
+///
+/// | NMTID | `/login/cellphone` 结果 |
+/// | --- | --- |
+/// | 伪造的 `00O`+hex | `code: -462`「请完成验证操作」 |
+/// | 服务端下发的值 | `账号或密码错误`（与 Node 服务逐字一致） |
+///
+/// 精简版最初「跳过探测、直接伪造」（见其文档里记的原实现缺陷 #2：
+/// 计数只减不增），结果就是登录类接口恒返回 -462。
+#[derive(Debug, Clone, Default)]
+pub struct NmtidState {
+    /// 服务端下发的 NMTID；`None` = 还没探测到
+    pub value: Option<String>,
+
+    /// 还能探测几次（Node 初值 3，**只减不增** —— 这一点保持原样）
+    pub retries_left: u8,
+}
+
+impl NmtidState {
+    /// 用已持久化的值初始化；没有则进入「可探测」状态
+    pub fn new(persisted: String) -> Self {
+        Self {
+            value: (!persisted.is_empty()).then_some(persisted),
+            retries_left: 3,
+        }
+    }
+
+    /// 是否还应该发探测请求（即：本次 eapi 请求**故意不带** NMTID）
+    pub fn should_probe(&self) -> bool {
+        self.value.is_none() && self.retries_left > 0
+    }
+
+    /// 消耗一次探测机会
+    pub fn consume_retry(&mut self) {
+        self.retries_left = self.retries_left.saturating_sub(1);
+    }
+}
 
 /// 补齐设备身份（对应 `processCookieObject`）
 ///
@@ -136,6 +202,7 @@ pub fn process_cookie(
     cookie: CookieMap,
     crypto: Crypto,
     device: &DeviceIdentity,
+    nmtid: &NmtidState,
 ) -> CookieMap {
     let profile = os_profile(cookie.get("os").map(String::as_str).unwrap_or(""));
 
@@ -156,22 +223,26 @@ pub fn process_cookie(
     entry(&mut out, "channel", || profile.channel.into());
     entry(&mut out, "appver", || profile.appver.into());
 
-    // ③ NMTID
+    // ③ NMTID —— 三分支，与 Node 的 `processCookieObject` 逐条对应：
     //
-    // ⚠️ 精简版**跳过探测**：原实现是「前 3 次 eapi 请求不带 NMTID，捕获服务端
-    //    下发值后全局复用，3 次后永久伪造」（其缺陷 #2：计数只减不增）。
-    //    这里直接按它的终态伪造。
+    //   ① 调用方传进来的 cookie 里已有     → 用它的
+    //   ② 已探测到服务端下发的值           → 用服务端的
+    //   ③ 没机会探测（非 eapi / 次数用完）  → 伪造
+    //   ④ 其余（eapi 且还能探测）          → **整个不带**，让服务端下发
+    //
+    // ⚠️ 第 ④ 条是关键。见 [`NmtidState`] 的文档：伪造的 NMTID 会触发 -462。
     if !out.contains_key("NMTID") {
-        out.insert("NMTID".into(), format!("00O{}", random_hex_lower(38)));
+        if let Some(v) = &nmtid.value {
+            out.insert("NMTID".into(), v.clone());
+        } else if crypto != Crypto::Eapi || !nmtid.should_probe() {
+            out.insert("NMTID".into(), format!("00O{}", random_hex_lower(38)));
+        }
     }
 
     // ④ 匿名 MUSIC_A 回退
     if !out.contains_key("MUSIC_U") && !device.music_a.is_empty() {
         entry(&mut out, "MUSIC_A", || device.music_a.clone());
     }
-
-    // ⑤ 只有 eapi 分支需要用到 NMTID；其他分支原实现也会带上，保持一致
-    let _ = crypto;
 
     out
 }
@@ -267,7 +338,13 @@ mod tests {
             ntes_nuid: "0".repeat(64),
             ntes_nnid: format!("{},1700000000000", "0".repeat(64)),
             music_a: "MUSIC_A_TOKEN".into(),
+            nmtid: String::new(),
         }
+    }
+
+    /// 还没探测到 NMTID 的初始状态（Node 的 `NMTID=''` + `RETRIES_LEFT=3`）
+    fn fresh_nmtid() -> NmtidState {
+        NmtidState::new(String::new())
     }
 
     #[test]
@@ -302,7 +379,7 @@ mod tests {
     #[test]
     fn process_cookie_injects_device_identity() {
         let d = device();
-        let out = process_cookie(CookieMap::new(), Crypto::Eapi, &d);
+        let out = process_cookie(CookieMap::new(), Crypto::Weapi, &d, &fresh_nmtid());
 
         assert_eq!(out.get("deviceId").unwrap(), &d.device_id);
         assert_eq!(out.get("_ntes_nuid").unwrap(), &d.ntes_nuid);
@@ -320,10 +397,97 @@ mod tests {
         // 匿名回退
         assert_eq!(out.get("MUSIC_A").unwrap(), "MUSIC_A_TOKEN");
 
-        // NMTID = "00O" + 38 hex
+        // weapi 不在探测之列 → 直接伪造 NMTID = "00O" + 38 hex
         let nmtid = out.get("NMTID").unwrap();
         assert!(nmtid.starts_with("00O"));
         assert_eq!(nmtid.len(), 41);
+    }
+
+    // ---- NMTID 三分支（对应 Node `processCookieObject` 的 if/else-if）----
+
+    #[test]
+    fn eapi_probe_omits_nmtid_entirely() {
+        // 还没探测到、还有次数、又是 eapi → **整个不带**，等服务端下发
+        let out = process_cookie(CookieMap::new(), Crypto::Eapi, &device(), &fresh_nmtid());
+        assert!(
+            !out.contains_key("NMTID"),
+            "探测请求不该带 NMTID，实际: {:?}",
+            out.get("NMTID")
+        );
+    }
+
+    #[test]
+    fn uses_server_issued_nmtid_once_captured() {
+        let state = NmtidState {
+            value: Some("00OXs5_AHPHOyIjYEwlpVTh31nhj8QAAAGhK-ICkQ".into()),
+            retries_left: 3,
+        };
+
+        // eapi 与 weapi 都用服务端下发的值
+        for crypto in [Crypto::Eapi, Crypto::Weapi] {
+            let out = process_cookie(CookieMap::new(), crypto, &device(), &state);
+            assert_eq!(
+                out.get("NMTID").unwrap(),
+                "00OXs5_AHPHOyIjYEwlpVTh31nhj8QAAAGhK-ICkQ",
+                "crypto = {crypto:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn fabricates_nmtid_when_probe_budget_exhausted() {
+        let state = NmtidState {
+            value: None,
+            retries_left: 0,
+        };
+        let out = process_cookie(CookieMap::new(), Crypto::Eapi, &device(), &state);
+        let nmtid = out.get("NMTID").expect("次数用完就该伪造");
+        assert!(nmtid.starts_with("00O"));
+        assert_eq!(nmtid.len(), 41);
+    }
+
+    #[test]
+    fn caller_supplied_nmtid_wins() {
+        // cookie 里本来就有 → 谁都不覆盖（Node: `if (cookie.NMTID)`）
+        let mut input = CookieMap::new();
+        input.insert("NMTID".into(), "CALLER".into());
+
+        let state = NmtidState {
+            value: Some("SERVER".into()),
+            retries_left: 3,
+        };
+        let out = process_cookie(input, Crypto::Eapi, &device(), &state);
+        assert_eq!(out.get("NMTID").unwrap(), "CALLER");
+    }
+
+    #[test]
+    fn probe_budget_only_decreases() {
+        let mut s = fresh_nmtid();
+        assert!(s.should_probe());
+        for _ in 0..3 {
+            s.consume_retry();
+        }
+        assert!(!s.should_probe());
+        // 再消耗也不会下溢（Node 的计数只减不增）
+        s.consume_retry();
+        assert_eq!(s.retries_left, 0);
+    }
+
+    #[test]
+    fn extract_nmtid_reads_from_raw_set_cookie() {
+        assert_eq!(
+            extract_nmtid("NMTID=ABC; Path=/; Domain=.music.163.com"),
+            Some("ABC".into())
+        );
+        assert_eq!(
+            extract_nmtid("MUSIC_U=x; NMTID=DEF; Expires=Wed, 08 Oct 2036"),
+            Some("DEF".into())
+        );
+        // 空值不算
+        assert_eq!(extract_nmtid("NMTID=; Path=/"), None);
+        // 只是键名里含 NMTID 不算（Node 的正则要求是完整键名）
+        assert_eq!(extract_nmtid("X-NMTID=BAD; Path=/"), None);
+        assert_eq!(extract_nmtid("MUSIC_U=x"), None);
     }
 
     #[test]
@@ -333,7 +497,7 @@ mod tests {
         input.insert("os".into(), "iphone".into());
         input.insert("MUSIC_U".into(), "U".into());
 
-        let out = process_cookie(input, Crypto::Weapi, &d);
+        let out = process_cookie(input, Crypto::Weapi, &d, &fresh_nmtid());
 
         // ⚠️ `os` 是「cookie 优先，缺了才用 profile」——
         //    所以传 'iphone' 后它**保持** 'iphone'，不会被换成 profile 里的 'iPhone OS'。

@@ -2709,6 +2709,18 @@ class RustLibWire implements BaseWire {
             )
           >();
 
+  void wire__netease__client__NetEaseClient_bootstrap(int port_, int that) {
+    return _wire__netease__client__NetEaseClient_bootstrap(port_, that);
+  }
+
+  late final _wire__netease__client__NetEaseClient_bootstrapPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_bootstrap',
+      );
+  late final _wire__netease__client__NetEaseClient_bootstrap =
+      _wire__netease__client__NetEaseClient_bootstrapPtr
+          .asFunction<void Function(int, int)>();
+
   void wire__netease__client__NetEaseClient_captcha_sent(
     int port_,
     int that,
@@ -2781,6 +2793,18 @@ class RustLibWire implements BaseWire {
       );
   late final _wire__netease__client__NetEaseClient_has_music_a =
       _wire__netease__client__NetEaseClient_has_music_aPtr
+          .asFunction<void Function(int, int)>();
+
+  void wire__netease__client__NetEaseClient_has_nmtid(int port_, int that) {
+    return _wire__netease__client__NetEaseClient_has_nmtid(port_, that);
+  }
+
+  late final _wire__netease__client__NetEaseClient_has_nmtidPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
+        'frbgen_chocolate_music_wire__netease__client__NetEaseClient_has_nmtid',
+      );
+  late final _wire__netease__client__NetEaseClient_has_nmtid =
+      _wire__netease__client__NetEaseClient_has_nmtidPtr
           .asFunction<void Function(int, int)>();
 
   void wire__netease__client__NetEaseClient_login_cellphone(
