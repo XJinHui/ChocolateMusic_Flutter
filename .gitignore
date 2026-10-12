@@ -49,3 +49,7 @@ app.*.map.json
 .env
 .env.local
 .env.*.local
+
+# 本地工具产生的目录
+.tmp_appdata/
+.workbuddy/
