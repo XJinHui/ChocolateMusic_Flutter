@@ -92,6 +92,12 @@ cd rust && cargo test
 
 同时感谢 [media_kit](https://github.com/media-kit/media-kit)（播放内核）、[flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge)（Rust ↔ Dart 绑定）等开源项目。
 
+## 许可
+
+本项目采用 [MIT 协议](LICENSE)。上面致谢的两个接口实现参考项目（api-enhanced、KuGouMusicApi）也都是 MIT，协议兼容。
+
+发布包里附带的第三方组件仍归各自协议所有。其中 [media_kit](https://github.com/media-kit/media-kit) 在 Windows 上捆绑的 `libmpv-2.dll` 来自 [mpv](https://github.com/mpv-player/mpv)，按 mpv 自己的说明其协议为 GPLv2+ 或 LGPLv2.1+（取决于构建时是否用 `-Dgpl=false` 排除 GPL-only 文件），不在本项目的 MIT 授权范围内。
+
 ## 免责声明
 
 本项目仅供学习与研究使用，所有音乐数据与版权归各平台所有。请勿用于商业用途，请支持正版音乐。
