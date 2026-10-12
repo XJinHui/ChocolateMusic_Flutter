@@ -5,7 +5,10 @@ edition = "2021"
 description = "网易云音乐 API 的本地 Rust 实现（直连上游，含 weapi/eapi/xeapi 加密）"
 
 [dependencies]
-reqwest = { version = "0.12", features = ["json", "gzip"] }
+# ⚠️ 必须显式用 rustls，不能走默认的 native-tls：
+#    native-tls 在 Android 上落到 OpenSSL，而 NDK 不提供可链接的 OpenSSL，
+#    交叉编译会直接失败。rustls 是纯 Rust，无 C 依赖。
+reqwest = { version = "0.12", default-features = false, features = ["json", "gzip", "rustls-tls", "charset", "http2"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 # ⚠️ preserve_order：JS 的 JSON.stringify 保持插入顺序，weapi/eapi 的明文要与之对齐
