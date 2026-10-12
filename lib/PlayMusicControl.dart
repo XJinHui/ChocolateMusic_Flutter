@@ -40,7 +40,7 @@ class PlayMusicControl {
     // 播放 / 暂停
     _subs.add(
       player.stream.playing.listen((isPlaying) {
-        this.management.setting.play = isPlaying; // 若 Management 没这个字段就删掉
+        this.management.playbackState.play = isPlaying; // 若 Management 没这个字段就删掉
         this.management.refresh();
         print('播放状态: ${isPlaying}');
       }),
@@ -96,10 +96,10 @@ class PlayMusicControl {
     this.management.progressNotifier.value = 0;
     this.management.musicDuration = 0;
 
-    var id = this.management.setting.id;
-    await this.getMusicUrl(this.management.setting.id);
+    var id = this.management.playbackState.id;
+    await this.getMusicUrl(this.management.playbackState.id);
 
-    if (id != this.management.setting.id) {
+    if (id != this.management.playbackState.id) {
       // 播放设置更新过程中，歌曲发生了变化，放弃当前播放请求
       return;
     }
@@ -109,7 +109,7 @@ class PlayMusicControl {
       return;
     }
 
-    getMusicLyric(this.management.setting.id);
+    getMusicLyric(this.management.playbackState.id);
 
     if (this.currentUrl == this.url) {
       // 同一首，重播即可
@@ -123,7 +123,7 @@ class PlayMusicControl {
 
   nextMusic() {
     if (this.playMusicList.length == 0 &&
-        this.management.setting.playlistId == '') {
+        this.management.playbackState.playlistId == '') {
       if (this.management.recommendList.music.length == 0) {
         this.play();
         return;
@@ -131,11 +131,11 @@ class PlayMusicControl {
 
       for (var i = 0; i < this.management.recommendList.music.length; i++) {
         if (this.management.recommendList.music[i].id ==
-            this.management.setting.id) {
+            this.management.playbackState.id) {
           var lastIndex = (i + 1) % this.management.recommendList.music.length;
           this.management.updataPlayMusicSettings(
             this.management.recommendList.music[lastIndex],
-            playlistType: this.management.setting.playlistType,
+            playlistType: this.management.playbackState.playlistType,
           );
           break;
         }
@@ -143,24 +143,24 @@ class PlayMusicControl {
         if (i == this.management.recommendList.music.length - 1) {
           this.management.updataPlayMusicSettings(
             this.management.recommendList.music[0],
-            playlistType: this.management.setting.playlistType,
+            playlistType: this.management.playbackState.playlistType,
           );
         }
       }
     } else {
       for (var i = 0; i < this.playMusicList.length; i++) {
-        if (this.playMusicList[i].id == this.management.setting.id) {
+        if (this.playMusicList[i].id == this.management.playbackState.id) {
           var nextIndex = (i + 1) % this.playMusicList.length;
           this.management.updataPlayMusicSettings(
             this.playMusicList[nextIndex],
-            playlistType: this.management.setting.playlistType,
+            playlistType: this.management.playbackState.playlistType,
           );
           break;
         }
         if (i == this.playMusicList.length - 1) {
           this.management.updataPlayMusicSettings(
             this.playMusicList[0],
-            playlistType: this.management.setting.playlistType,
+            playlistType: this.management.playbackState.playlistType,
           );
         }
       }
@@ -171,7 +171,7 @@ class PlayMusicControl {
 
   lastMusic() {
     if (this.playMusicList.length == 0 &&
-        this.management.setting.playlistId == '') {
+        this.management.playbackState.playlistId == '') {
       if (this.management.recommendList.music.length == 0) {
         this.play();
         return;
@@ -179,13 +179,13 @@ class PlayMusicControl {
 
       for (var i = 0; i < this.management.recommendList.music.length; i++) {
         if (this.management.recommendList.music[i].id ==
-            this.management.setting.id) {
+            this.management.playbackState.id) {
           var lastIndex =
               (i - 1 + this.management.recommendList.music.length) %
               this.management.recommendList.music.length;
           this.management.updataPlayMusicSettings(
             this.management.recommendList.music[lastIndex],
-            playlistType: this.management.setting.playlistType,
+            playlistType: this.management.playbackState.playlistType,
           );
           break;
         }
@@ -193,18 +193,18 @@ class PlayMusicControl {
         if (i == this.management.recommendList.music.length - 1) {
           this.management.updataPlayMusicSettings(
             this.management.recommendList.music[0],
-            playlistType: this.management.setting.playlistType,
+            playlistType: this.management.playbackState.playlistType,
           );
         }
       }
     } else {
       for (var i = 0; i < this.playMusicList.length; i++) {
-        if (this.playMusicList[i].id == this.management.setting.id) {
+        if (this.playMusicList[i].id == this.management.playbackState.id) {
           var lastIndex =
               (i - 1 + this.playMusicList.length) % this.playMusicList.length;
           this.management.updataPlayMusicSettings(
             this.playMusicList[lastIndex],
-            playlistType: this.management.setting.playlistType,
+            playlistType: this.management.playbackState.playlistType,
           );
           break;
         }
@@ -212,7 +212,7 @@ class PlayMusicControl {
         if (i == this.playMusicList.length - 1) {
           this.management.updataPlayMusicSettings(
             this.playMusicList[0],
-            playlistType: this.management.setting.playlistType,
+            playlistType: this.management.playbackState.playlistType,
           );
         }
       }
@@ -247,11 +247,12 @@ class PlayMusicControl {
 
     var qualityTier = this.management.setting.qualityTier;
 
-    if (this.management.setting.id == '${this.management.setting.singer} - ${this.management.setting.name}') {
+    if (this.management.playbackState.id ==
+        '${this.management.playbackState.singer} - ${this.management.playbackState.name}') {
       // 播放本地下载音乐
       var musicData = await this.management.musicManagement.searchMusicData(
-        this.management.setting.name,
-        this.management.setting.singer,
+        this.management.playbackState.name,
+        this.management.playbackState.singer,
         0,
       );
 
@@ -265,8 +266,8 @@ class PlayMusicControl {
     }
 
     var musicData = await this.management.musicManagement.searchMusicData(
-      this.management.setting.name,
-      this.management.setting.singer,
+      this.management.playbackState.name,
+      this.management.playbackState.singer,
       this.management.setting.qualityTier,
     );
 
@@ -290,7 +291,7 @@ class PlayMusicControl {
     );
 
     if (url != '') {
-      if (musicId == this.management.setting.id) {
+      if (musicId == this.management.playbackState.id) {
         this.url = url;
       }
 
@@ -312,7 +313,7 @@ class PlayMusicControl {
     this._lyricLineIndex = -1;
     this.management.lyricLineNotifier.value = -1;
     this.management.displayLyric =
-        '${this.management.setting.name} - ${this.management.setting.singer}';
+        '${this.management.playbackState.name} - ${this.management.playbackState.singer}';
 
     if (this.lyricList.containsKey(musicId)) {
       this.management.displayLyricList = this.lyricList[musicId]!;
@@ -331,7 +332,7 @@ class PlayMusicControl {
     }
 
 
-    var lyric = await this.management.musicManagement.searchLyric(this.management.setting.name, this.management.setting.singer);
+    var lyric = await this.management.musicManagement.searchLyric(this.management.playbackState.name, this.management.playbackState.singer);
 
     // var lyric = '';
     if (lyric == '') {
@@ -348,7 +349,7 @@ class PlayMusicControl {
         lyricList = this.parseLyric(lyric);
       }
 
-      if (musicId == this.management.setting.id) {
+      if (musicId == this.management.playbackState.id) {
         if (lyricType) {
           this.lyric = this.enhancedLyricToLyric(lyric);
         } else {

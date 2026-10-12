@@ -53,7 +53,8 @@ class Management extends ChangeNotifier {
     notifyListeners(); // 通知所有监听者（含 Computer.dart 的 ListenableBuilder）
   }
 
-  late Setting setting; // 设置数据，包含当前播放歌曲信息、播放状态、音量等
+  late Setting setting; // 设置数据，包含音量、播放模式、音质、下载路径等
+  late PlaybackState playbackState; // 播放状态数据，包含当前播放歌曲信息、播放状态、播放列表等
   late int logining = 0; // 登录状态，0正在登录，1登录成功，-1未登录
 
   late List<String> collectionList = []; // 收藏列表，存储已收藏的歌单/专辑/歌手id，登录后获取，退出登录后清空
@@ -165,9 +166,19 @@ class Management extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 登录尝试的世代号，每开一轮登录（[startLogin]）自增。
+  ///
+  /// 二维码轮询是每 2 秒一次的长跑循环，跨得过一次「关掉登录界面又打开」。
+  /// 只看 [loginType] 认不出它属于哪一轮：关界面时它被复位成 -1，可下一轮
+  /// 一开又变回 0，上一轮的循环醒来会以为自己还活着，跟本轮的新循环一起轮询
+  /// 同一个二维码 key —— 扫一次把账号加两遍。世代号让每个循环认得出自己的轮次。
+  int _loginAttempt = 0;
+
+  int get loginAttempt => _loginAttempt;
+
   /// 通知所有依赖 Management 的页面重新读取共享状态。
   ///
-  /// Management 中的模型目前仍是可变对象（例如 setting.play、
+  /// Management 中的模型目前仍是可变对象（例如 playbackState.play、
   /// recommendList.music），这些嵌套字段不会经过 Dart 的 setter，
   /// 因此所有完成状态写入的入口都应调用这个方法。
   void refresh() {
@@ -187,6 +198,13 @@ class Management extends ChangeNotifier {
       await this.fileManage.writeSetting(this.setting);
     }
 
+    if (await fileManage.checkFile('data/playback-state.json')) {
+      // await this.readPlaybackState();
+      this.playbackState = await this.fileManage.readPlaybackState();
+    } else {
+      await this.fileManage.writePlaybackState(this.playbackState);
+    }
+
     if (await fileManage.checkFile('data/accountData.json')) {
       this.accountData = await this.fileManage.readAccountData();
     } else {
@@ -201,7 +219,7 @@ class Management extends ChangeNotifier {
 
     await musicManagement.init();
 
-    this.setting.play = false;
+    this.playbackState.play = false;
 
     if (this.accountData.login[0] != -1) {
       var status = await this.login();
@@ -211,7 +229,7 @@ class Management extends ChangeNotifier {
         this.recommendList.music = [];
         await this.createrRecommend();
 
-        if (this.setting.id != '') {
+        if (this.playbackState.id != '') {
           this.playMusicControl.play(type: 'pause');
           this.getInitialPlaylist();
         }
@@ -231,7 +249,7 @@ class Management extends ChangeNotifier {
     this.accountData.login = [-1, -1];
     this.account = Account(cover: '', nickname: '', type: '');
     ;
-    var setting = Setting(
+    this.playbackState = PlaybackState(
       name: '',
       singer: '',
       singerId: '',
@@ -241,18 +259,11 @@ class Management extends ChangeNotifier {
       cover: '',
       like: false,
       id: '',
-      playType: 0,
-      volume: 100,
-      volumeType: true,
       play: false,
       playlistId: '',
       playlistType: 0,
-      qualityTier: 0,
-      downloadQualityTier: 0,
-      downloadPath: this.setting.downloadPath,
     );
-    this.setting = setting;
-    this.fileManage.writeSetting(this.setting);
+    this.fileManage.writePlaybackState(this.playbackState);
     refresh();
   }
 
@@ -316,6 +327,9 @@ class Management extends ChangeNotifier {
   }
 
   startLogin() {
+    // 先推进世代号：上一轮残留的轮询循环看到它变了就会退出，
+    // 否则下面把 loginType 复位成 0 会让它们以为自己还活着。
+    _loginAttempt++;
     this.loginType = 0;
     this.KuGouCloud.qrCodeType = 0;
     this.NeteasecloudCloud.qrCodeType = 0;
@@ -324,8 +338,8 @@ class Management extends ChangeNotifier {
   /// 放弃进行中的登录尝试，退出登录界面时调用。
   ///
   /// 二维码登录会在 [KuGouCloud] / [NeteasecloudCloud] 里各起一个每 2 秒
-  /// 轮询 `/login/qr/check` 的循环，二者都以 `loginType != 0` 判断本次尝试
-  /// 是否已被放弃。退出登录界面时不复位状态，这些请求就会一直发下去。
+  /// 轮询 `/login/qr/check` 的循环，它们以 `loginType != 0` 或世代号变了
+  /// 判断本次尝试是否已被放弃。退出登录界面时不复位状态，这些请求就会一直发下去。
   ///
   /// 只有仍在进行中(0)的尝试才复位；已经成功(1)或失败(2)的不动，
   /// 免得把结果覆盖掉。
@@ -416,7 +430,8 @@ class Management extends ChangeNotifier {
     this.recommendList.music = await this.cloud.getRecommendMusics(12);
     // print('生成推荐歌曲列表: ${this.recommendList.music}');
 
-    if (this.setting.playlistId == '' && this.recommendList.music.length > 0) {
+    if (this.playbackState.playlistId == '' &&
+        this.recommendList.music.length > 0) {
       if (this.playMusicList.length == 0) {
         this.playMusicList = List.from(this.recommendList.music);
         this.currentPlayMusicList = List.from(this.recommendList.music);
@@ -490,14 +505,14 @@ class Management extends ChangeNotifier {
   }
 
   playMusic(Music music) {
-    var playListType = this.setting.playlistType;
-    var playListId = this.setting.playlistId;
+    var playListType = this.playbackState.playlistType;
+    var playListId = this.playbackState.playlistId;
 
     this.updataPlayMusicSettings(music);
     print('当前播放列表类型: ${playListType} 当前播放列表id: ${playListId}');
 
-    if (playListType != this.setting.playlistType ||
-        playListId != this.setting.playlistId) {
+    if (playListType != this.playbackState.playlistType ||
+        playListId != this.playbackState.playlistId) {
       this.playMusicList = this.displayMusics;
 
       this.getPlayList();
@@ -508,7 +523,7 @@ class Management extends ChangeNotifier {
   switchMusic(Music music) {
     this.updataPlayMusicSettings(
       music,
-      playlistType: this.setting.playlistType,
+      playlistType: this.playbackState.playlistType,
     );
     this.playMusicControl.play();
   }
@@ -516,66 +531,66 @@ class Management extends ChangeNotifier {
   updataPlayMusicSettings(Music music, {playlistType = -1}) {
     var time = formatTime(music.time);
 
-    this.setting.name = music.name;
-    this.setting.singer = music.singer;
-    this.setting.singerId = music.singerId;
-    this.setting.album = music.album;
-    this.setting.albumId = music.albumId;
-    this.setting.time = time;
-    this.setting.cover = music.cover;
-    this.setting.id = music.id;
+    this.playbackState.name = music.name;
+    this.playbackState.singer = music.singer;
+    this.playbackState.singerId = music.singerId;
+    this.playbackState.album = music.album;
+    this.playbackState.albumId = music.albumId;
+    this.playbackState.time = time;
+    this.playbackState.cover = music.cover;
+    this.playbackState.id = music.id;
 
     if (playlistType != -1) {
-      this.setting.playlistType = playlistType;
+      this.playbackState.playlistType = playlistType;
     } else {
       if (this.displayList is Playlist) {
-        this.setting.playlistId = (this.displayList as Playlist).listId;
-        this.setting.playlistType = 0;
+        this.playbackState.playlistId = (this.displayList as Playlist).listId;
+        this.playbackState.playlistType = 0;
       } else if (this.displayList is Album) {
-        this.setting.playlistId = (this.displayList as Album).albumId;
-        this.setting.playlistType = 1;
+        this.playbackState.playlistId = (this.displayList as Album).albumId;
+        this.playbackState.playlistType = 1;
       } else if (this.displayList is Singer) {
-        this.setting.playlistId = (this.displayList as Singer).singerId;
-        this.setting.playlistType = 2;
+        this.playbackState.playlistId = (this.displayList as Singer).singerId;
+        this.playbackState.playlistType = 2;
       }
     }
 
-    this.updateSetting();
+    this.updatePlaybackState();
   }
 
   getInitialPlaylist() async {
-    if (this.setting.playlistId == '') {
+    if (this.playbackState.playlistId == '') {
       print('当前没有播放列表');
       return;
     }
 
-    if (this.setting.playlistType == 0) {
-      if (this.setting.playlistId == 'Download') {
+    if (this.playbackState.playlistType == 0) {
+      if (this.playbackState.playlistId == 'Download') {
         return;
       } else {
         this.playMusicList = await this.cloud.getPlaylistMusic(
-          this.setting.playlistId,
+          this.playbackState.playlistId,
         );
       }
 
       if (this.playMusicList.length != 0) {
-        this.playlistMusics[this.setting.playlistId] = this.playMusicList;
+        this.playlistMusics[this.playbackState.playlistId] = this.playMusicList;
       }
-    } else if (this.setting.playlistType == 1) {
+    } else if (this.playbackState.playlistType == 1) {
       this.playMusicList = await this.cloud.getAlbumMusic(
-        this.setting.playlistId,
+        this.playbackState.playlistId,
       );
 
       if (this.playMusicList.length != 0) {
-        this.albumMusic[this.setting.playlistId] = this.playMusicList;
+        this.albumMusic[this.playbackState.playlistId] = this.playMusicList;
       }
-    } else if (this.setting.playlistType == 2) {
+    } else if (this.playbackState.playlistType == 2) {
       this.playMusicList = await this.cloud.getSingerMusic(
-        this.setting.playlistId,
+        this.playbackState.playlistId,
       );
 
       if (this.playMusicList.length != 0) {
-        this.singerMusic[this.setting.playlistId] = this.playMusicList;
+        this.singerMusic[this.playbackState.playlistId] = this.playMusicList;
       }
     } else {
       this.playMusicList = List.of(this.recommendList.music);
@@ -727,7 +742,7 @@ class Management extends ChangeNotifier {
         .toList();
 
     int index = this.currentPlayMusicList.indexWhere(
-      (item) => item.id == this.setting.id,
+      (item) => item.id == this.playbackState.id,
     );
 
     if (index == -1) {
@@ -736,7 +751,7 @@ class Management extends ChangeNotifier {
     } else {
       this.currentPlayMusicList.insert(index + 1, music);
       int playIndex = this.playMusicControl.playMusicList.indexWhere(
-        (item) => item.id == this.setting.id,
+        (item) => item.id == this.playbackState.id,
       );
       if (playIndex != -1) {
         this.playMusicControl.playMusicList.insert(playIndex + 1, music);
@@ -809,7 +824,8 @@ class Management extends ChangeNotifier {
 
   Future<bool> addMusicToPlaylist(String listId, String musicId) async {
     if (await this.cloud.addMusicToPlaylist(listId, musicId) as bool) {
-      if (this.setting.playlistId == listId && this.setting.playlistType == 0) {
+      if (this.playbackState.playlistId == listId &&
+          this.playbackState.playlistType == 0) {
         var index = this.currentPlayMusicList.indexWhere(
           (item) => item.id == musicId,
         );
@@ -817,8 +833,8 @@ class Management extends ChangeNotifier {
         if (index == -1) {
           this.cloud.getMusicsDetails([musicId]).then((List<Music> musics) {
             if (musics.length > 0 &&
-                this.setting.playlistId == listId &&
-                this.setting.playlistType == 0) {
+                this.playbackState.playlistId == listId &&
+                this.playbackState.playlistType == 0) {
               this.currentPlayMusicList.insert(0, musics[0]);
               this.playMusicControl.playMusicList.insert(0, musics[0]);
             }
@@ -885,11 +901,20 @@ class Management extends ChangeNotifier {
   }
 
   loginByQrCode() async {
-    // loginType 一旦不为 0，说明这次尝试已被放弃（退出了登录界面）或已由
-    // 其它方式结束，本地轮询也该停下，否则每开一次登录界面就会残留一个
-    // 永远转下去的循环。
-    while (this.loginType == 0) {
+    // 本循环只服务开启它时的这一轮登录。世代号变了（关掉登录界面又打开了一轮）
+    // 或 loginType 不再为 0（这轮已被放弃或已出结果），都该停下，否则每开一次
+    // 登录界面就会残留一个永远转下去的循环。
+    final int attempt = _loginAttempt;
+    bool stillThisAttempt() => _loginAttempt == attempt && this.loginType == 0;
+
+    while (stillThisAttempt()) {
       await Future.delayed(const Duration(milliseconds: 10));
+      // 延时期间这一轮可能已经结束，醒来要重新认一次，
+      // 否则会把新一轮的扫码结果当成本轮的。
+      if (!stillThisAttempt()) {
+        return;
+      }
+
       if (this.KuGouCloud.qrCodeType == 1 ||
           this.NeteasecloudCloud.qrCodeType == 1) {
         this.loginType = 1;
@@ -897,7 +922,7 @@ class Management extends ChangeNotifier {
         updateAccount();
         createrRecommend(type: 1);
         print('二维码登录成功');
-        break;
+        return;
       }
     }
   }
@@ -970,21 +995,21 @@ class Management extends ChangeNotifier {
     this.musicProgress = 0;
     this.progressNotifier.value = 0;
 
-    this.setting.name = '';
-    this.setting.singer = '';
-    this.setting.singerId = '';
-    this.setting.album = '';
-    this.setting.albumId = '';
-    this.setting.time = '00:00';
-    this.setting.cover = '';
-    this.setting.id = '';
-    this.setting.playlistId = '';
-    this.setting.playlistType = 0;
-    this.setting.play = false;
+    this.playbackState.name = '';
+    this.playbackState.singer = '';
+    this.playbackState.singerId = '';
+    this.playbackState.album = '';
+    this.playbackState.albumId = '';
+    this.playbackState.time = '00:00';
+    this.playbackState.cover = '';
+    this.playbackState.id = '';
+    this.playbackState.playlistId = '';
+    this.playbackState.playlistType = 0;
+    this.playbackState.play = false;
 
     this.playMusicControl.stop();
 
-    this.updateSetting();
+    this.updatePlaybackState();
     this.searchKeyword = '';
     this.searchList = new RecommendList();
     refresh();
@@ -1054,8 +1079,24 @@ class Management extends ChangeNotifier {
     return true;
   }
 
+  updatePlaybackState() async {
+    // 更新播放状态
+    refresh();
+    await this.fileManage.writePlaybackState(this.playbackState);
+    print('播放状态更新成功');
+  }
+
   Management._internal() {
     this.setting = Setting(
+      playType: 0,
+      volume: 100,
+      volumeType: true,
+      qualityTier: 0,
+      downloadQualityTier: 0,
+      downloadPath: '',
+    );
+
+    this.playbackState = PlaybackState(
       name: '',
       singer: '',
       singerId: '',
@@ -1065,15 +1106,9 @@ class Management extends ChangeNotifier {
       cover: '',
       like: false,
       id: '',
-      playType: 0,
-      volume: 100,
-      volumeType: true,
       play: false,
       playlistId: '',
       playlistType: 0,
-      qualityTier: 0,
-      downloadQualityTier: 0,
-      downloadPath: '',
     );
 
     init();

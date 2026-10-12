@@ -38,6 +38,19 @@ class FileManage {
     await file.writeAsString(jsonEncode(setting.toJson()));
   }
 
+  readPlaybackState() async {
+    final file = File('${this.exeDir}/data/playback-state.json');
+
+    // 读取文件内容
+    final content = await file.readAsString();
+    return PlaybackState.fromJson(jsonDecode(content));
+  }
+
+  writePlaybackState(PlaybackState playbackState) async {
+    final file = File('${this.exeDir}/data/playback-state.json');
+    await file.writeAsString(jsonEncode(playbackState.toJson()));
+  }
+
   readAccountData() async {
     final file = File('${this.exeDir}/data/accountData.json');
 

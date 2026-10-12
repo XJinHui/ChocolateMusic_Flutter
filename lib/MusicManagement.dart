@@ -244,7 +244,7 @@ class MusicManagement {
       this.localMusics.add(item);
     }
 
-    if (this.management.setting.playlistId == 'Download') {
+    if (this.management.playbackState.playlistId == 'Download') {
       this.management.playMusicList = this.localMusics;
       this.management.getPlayList();
     }

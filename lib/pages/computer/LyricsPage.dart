@@ -61,7 +61,7 @@ class _LyricsPageState extends State<LyricsPage> {
                       sigmaY: _bgBlurSigma,
                     ),
                     child: RemoteImage(
-                      Management().setting.cover,
+                      Management().playbackState.cover,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -179,7 +179,7 @@ class _MusicDisplayWidgetState extends State<MusicDisplayWidget> {
                 child: LyricsCoverAnchor(
                   destination: true,
                   child: RemoteImage(
-                    Management().setting.cover,
+                    Management().playbackState.cover,
                     headers: const {
                       'User-Agent':
                           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
@@ -261,7 +261,7 @@ class _LyricsDisplayWidgetState extends State<LyricsDisplayWidget> {
                 SizedBox(height: h * 0.1),
 
                 Text(
-                  Management().setting.name,
+                  Management().playbackState.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.left,
@@ -275,7 +275,7 @@ class _LyricsDisplayWidgetState extends State<LyricsDisplayWidget> {
                 SizedBox(height: 5),
 
                 Text(
-                  Management().setting.singer,
+                  Management().playbackState.singer,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.left,
@@ -369,7 +369,7 @@ class _PlayControlButtonState extends State<PlayControlButton> {
           },
           // child: Icon(BootstrapIcons.pause_circle_fill, color: Colors.black, size: 35,), // 播放图标
           child: Icon(
-            management.setting.play
+            management.playbackState.play
                 ? BootstrapIcons.pause_fill
                 : BootstrapIcons.play_fill,
             color: Colors.white,
@@ -514,7 +514,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar> {
                 Expanded(child: SizedBox()), // 占位
 
                 Text(
-                  management.setting.time,
+                  management.playbackState.time,
                   style: TextStyle(color: Colors.white),
                 ), // 总时间
               ],

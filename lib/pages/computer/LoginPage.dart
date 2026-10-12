@@ -19,6 +19,25 @@ class _LoginPageState extends State<LoginPage> {
   String _selectedService = 'KuGou';
   int loginChoose = 0;
 
+  @override
+  void dispose() {
+    // 退出登录界面即放弃本次登录。不复位状态的话，云端那两条每 2 秒一次的
+    // 二维码轮询会一直请求下去。
+    //
+    // ⚠️ 钩子挂在 LoginPage 上，不能挂在它内部的 AccountLogin 上：手机号表单
+    // 与二维码页是同一个槽位上的两种 widget，来回切换会 dispose 掉前者。
+    // 那样一点二维码图标就放弃了本次登录，二维码轮询随之退出 —— 二维码显示着，
+    // 却永远等不到扫码结果。
+    //
+    // dispose 运行在卸载阶段（widget tree is locked），此时 notifyListeners
+    // 会把登录界面之外的监听者写崩，所以推迟到本帧末尾再复位。
+    final Management management = widget.management;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      management.cancelLogin();
+    });
+    super.dispose();
+  }
+
   Alignment _selectedAlignment() {
     switch (_selectedService) {
       case 'KuGou':
@@ -247,15 +266,6 @@ class _AccountLoginState extends State<AccountLogin> {
 
   @override
   void dispose() {
-    // 退出登录界面即放弃本次登录。不复位状态的话，云端那两条每 2 秒一次的
-    // 二维码轮询会一直请求下去。
-    //
-    // dispose 运行在卸载阶段（widget tree is locked），此时 notifyListeners
-    // 会把登录界面之外的监听者写崩，所以推迟到本帧末尾再复位。
-    final Management management = this.management;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      management.cancelLogin();
-    });
     _countdownTimer?.cancel();
     for (final TextEditingController controller in _phoneControllers.values) {
       controller.dispose();

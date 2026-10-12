@@ -148,7 +148,7 @@ class Neteasecloud implements CloudService {
       var response = await Neteasecloud.dio.get(
         '/login/cellphone?phone=${mobile}&captcha=${code}',
       );
-
+      // print('手机号登录响应: ${response.data}');
       if (response.statusCode != 200 || response.data["code"] != 200) {
         print('登录失败');
         return false;
@@ -199,8 +199,20 @@ class Neteasecloud implements CloudService {
     var n = 0;
     var response;
 
+    // 本循环只服务开启它时的这一轮登录。两个条件缺一不可：世代号变了说明
+    // 登录界面被关掉又重开了一轮，loginType 不为 0 说明这轮已被放弃或已出结果。
+    //
+    // 光看 loginType 是不够的 —— 关界面时它变 -1，下一轮一开又变回 0，
+    // 本循环醒来会以为自己还活着，跟新一轮的循环一起轮询同一个二维码 key
+    // （key 是共享字段，已被新一轮覆盖）。扫一次下面那段入列就跑两遍，
+    // 账号会重复。
+    final int attempt = this.management.loginAttempt;
+    bool abandoned() =>
+        this.management.loginAttempt != attempt ||
+        this.management.loginType != 0;
+
     while (n != 803) {
-      if (this.management.loginType != 0) {
+      if (abandoned()) {
         return false;
       }
 
@@ -211,13 +223,21 @@ class Neteasecloud implements CloudService {
         '/login/qr/check?key=${this.key}&timestamp=${timestamp}',
       );
 
-      // print(response.data);
+      // 请求期间这一轮可能已经结束，别把结果算到自己头上。
+      if (abandoned()) {
+        return false;
+      }
 
       n = response.data['code'];
-
       if (n == 800) {
         this.qrCodeType = 2;
         return false;
+      }
+
+      // 扫到了就直接去下面收尾。多睡这一轮不只是白等 2 秒，
+      // 还会在收尾前留出一段没人认领的窗口。
+      if (n == 803) {
+        break;
       }
 
       await Future.delayed(const Duration(seconds: 2));

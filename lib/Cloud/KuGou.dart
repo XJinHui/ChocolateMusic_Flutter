@@ -38,8 +38,6 @@ class KuGou implements CloudService {
   static Dio _createDio() {
     final dio = Dio(
       BaseOptions(
-        baseUrl: "https://kugou.xjinhui.asia/",
-        // baseUrl: "http://120.77.173.68:4000",
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 30),
       ),
@@ -90,7 +88,7 @@ class KuGou implements CloudService {
 
     int currentSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    if (this.userData.t_expire_time < currentSeconds) {
+    if (this.userData.t_expire_time < currentSeconds && this.userData.t_expire_time != 0) {
       return false;
     }
 
@@ -242,8 +240,20 @@ class KuGou implements CloudService {
     var n = 0;
     var response;
 
+    // 本循环只服务开启它时的这一轮登录。两个条件缺一不可：世代号变了说明
+    // 登录界面被关掉又重开了一轮，loginType 不为 0 说明这轮已被放弃或已出结果。
+    //
+    // 光看 loginType 是不够的 —— 关界面时它变 -1，下一轮一开又变回 0，
+    // 本循环醒来会以为自己还活着，跟新一轮的循环一起轮询同一个二维码 key
+    // （key 是共享字段，已被新一轮覆盖）。扫一次下面那段入列就跑两遍，
+    // 账号会重复。
+    final int attempt = this.management.loginAttempt;
+    bool abandoned() =>
+        this.management.loginAttempt != attempt ||
+        this.management.loginType != 0;
+
     while (n != 4) {
-      if (this.management.loginType != 0) {
+      if (abandoned()) {
         return false;
       }
 
@@ -252,13 +262,21 @@ class KuGou implements CloudService {
         '/login/qr/check?key=${this.key}&timestamp=${timestamp}',
       );
 
-      // print(response.data);
+      // 请求期间这一轮可能已经结束，别把结果算到自己头上。
+      if (abandoned()) {
+        return false;
+      }
 
       n = response.data['data']['status'];
-
       if (n == 0) {
         this.qrCodeType = 2;
         return false;
+      }
+
+      // 扫到了就直接去下面收尾。多睡这一轮不只是白等 2 秒，
+      // 还会在收尾前留出一段没人认领的窗口。
+      if (n == 4) {
+        break;
       }
 
       await Future.delayed(const Duration(seconds: 2));
@@ -284,17 +302,25 @@ class KuGou implements CloudService {
       'dfid': dfid,
     };
 
-    await this.refreshToken();
-    // this.mainUrl = mainUrl
-    print('登录成功${this.userData}');
-
+    // 先把新账号登记进列表、把登录索引指过来，再刷新 token。
+    //
+    // refreshToken() 收尾会把刷新结果写回 `data[0][login[1]]`，也就是「当前
+    // 登录的那一条」。这一步若排在登记之前，写的就是上一个已登录账号的位置：
+    // 新账号会顶掉原来那个，紧接着下面又追加一份新账号，列表里从此变成两条
+    // 一样的新账号、原账号消失。没登录时 login[1] 是 -1，那句写入抛
+    // RangeError 被 refreshToken 自己吞掉，所以只有「已登录再加账号」才会中招。
     var list = this.accountData.data[0];
     list.add(this.userData);
     var num = list.length - 1; // 添加后的索引（即原来的长度）
     this.accountData.data[0][num] = this.userData;
 
-    print('${this.accountData}');
     this.accountData.login = [0, num];
+
+    await this.refreshToken();
+    // this.mainUrl = mainUrl
+    print('登录成功${this.userData}');
+
+    print('${this.accountData}');
 
     this.token = this.userData.token;
     // this.mainUrl = mainUrl
@@ -315,7 +341,7 @@ class KuGou implements CloudService {
         '/login/token?timestamp=${timestamp}',
         queryParameters: this.params,
       );
-
+      // print('refreshToken 响应: ${jsonEncode(response.data)}');
       if (response.statusCode != 200 || response.data["status"] != 1) {
         print('token刷新失败');
         return false;

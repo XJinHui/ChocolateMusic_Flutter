@@ -33,12 +33,21 @@ class _AccountLoginDialogState extends State<_AccountLoginDialog> {
     // setter 会立刻 notifyListeners，对话框子树之外的监听者（导航栏、
     // 账号页等）此时被标脏就会触发 "setState() called during build"。
     // 推迟到本帧构建结束再写入。
+    //
+    // 复位用 startLogin() 而不是只写 loginType：扫码成功后云服务那边会把
+    // qrCodeType 置 1 并一直留着，而 Management.loginByQrCode() 正是靠它判断
+    // 「本次」有没有扫成功。只复位 loginType 的话，新弹窗一取回二维码就会被
+    // 这个上一次的残留值判成登录成功 —— 界面闪一下就自己关掉。
+    //
+    // 取二维码也一并挪到复位之后：二维码一回来就会起轮询，轮询以
+    // loginType == 0 为继续条件，先取码后复位会让它一上来就退出。
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _management.loginType = 0;
+      if (!mounted) {
+        return;
       }
+      _management.startLogin();
+      unawaited(_loadQrCodesInBackground());
     });
-    unawaited(_loadQrCodesInBackground());
   }
 
   @override

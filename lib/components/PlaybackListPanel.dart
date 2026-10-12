@@ -407,7 +407,7 @@ class _PlayMusicWidgetState extends State<PlayMusicWidget> {
                       width: 20,
                       child: Align(
                         alignment: Alignment.center,
-                        child: management.setting.id == widget.music.id
+                        child: management.playbackState.id == widget.music.id
                             ? Icon(
                                 BootstrapIcons.play_fill,
                                 size: 25,
@@ -474,7 +474,7 @@ class _PlayMusicWidgetState extends State<PlayMusicWidget> {
                           textAlign: TextAlign.left,
                           style: TextStyle(
                             fontSize: 18,
-                            color: management.setting.id == widget.music.id
+                            color: management.playbackState.id == widget.music.id
                                 ? AppColors.selectedText
                                 : AppColors.musicNameColor,
                             fontWeight: FontWeight.bold,
@@ -488,7 +488,7 @@ class _PlayMusicWidgetState extends State<PlayMusicWidget> {
                           textAlign: TextAlign.left,
                           style: TextStyle(
                             fontSize: 16,
-                            color: management.setting.id == widget.music.id
+                            color: management.playbackState.id == widget.music.id
                                 ? AppColors.selectedText
                                 : AppColors.musicSingerColor,
                           ),

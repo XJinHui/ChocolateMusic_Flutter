@@ -97,26 +97,26 @@ class _PlaybackControlBarState extends State<PlaybackControlBar> {
                   GestureDetector(
                     onTap: () {
                       // 处理喜欢按钮点击事件
-                      Management().like(Management().setting.id).then((
+                      Management().like(Management().playbackState.id).then((
                         bool success,
                       ) {
                         // 更新收藏状态
                         final isCollected =
                             Management().cloud.collectionList.contains(
-                              Management().setting.id,
+                              Management().playbackState.id,
                             ) ??
                             false;
                         if (success) {
                           showMusicToast(
                             context,
                             message:
-                                '歌曲 《${Management().setting.name}》 ${isCollected ? '收藏' : '取消收藏'}成功',
+                                '歌曲 《${Management().playbackState.name}》 ${isCollected ? '收藏' : '取消收藏'}成功',
                           );
                         } else {
                           showMusicToast(
                             context,
                             message:
-                                '歌曲 《${Management().setting.name}》 ${isCollected ? '取消收藏' : '收藏'}失败',
+                                '歌曲 《${Management().playbackState.name}》 ${isCollected ? '取消收藏' : '收藏'}失败',
                             success: false,
                           );
                         }
@@ -125,7 +125,7 @@ class _PlaybackControlBarState extends State<PlaybackControlBar> {
                     child:
                         widget.management.account.type != '' &&
                             widget.management.cloud.collectionList.contains(
-                              widget.management.setting.id,
+                              widget.management.playbackState.id,
                             )
                         ? Icon(
                             BootstrapIcons.heart_fill,
@@ -187,7 +187,7 @@ class _MusicDataState extends State<MusicData> {
             curve: _coverPressed ? Curves.easeOut : Curves.easeOutBack,
             child: LyricsCoverAnchor(
               child: RemoteImage(
-                management.setting.cover,
+                management.playbackState.cover,
                 headers: const {
                   'User-Agent':
                       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
@@ -227,7 +227,7 @@ class _MusicDataState extends State<MusicData> {
             crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
             children: [
               Text(
-                management.setting.name,
+                management.playbackState.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.left,
@@ -241,7 +241,7 @@ class _MusicDataState extends State<MusicData> {
               SizedBox(height: 5),
 
               Text(
-                management.setting.singer,
+                management.playbackState.singer,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.left,
@@ -314,7 +314,7 @@ class _PlayControlButtonState extends State<PlayControlButton> {
           },
           // child: Icon(BootstrapIcons.pause_circle_fill, color: Colors.black, size: 35,), // 播放图标
           child: Icon(
-            management.setting.play
+            management.playbackState.play
                 ? BootstrapIcons.pause_circle_fill
                 : BootstrapIcons.play_circle_fill,
             color: Colors.black,
@@ -452,7 +452,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar> {
 
             SizedBox(width: 10), // 时间和进度条之间的间距
             Text(
-              management.setting.time,
+              management.playbackState.time,
               style: TextStyle(color: AppColors.musicTimeColor),
             ), // 总时间
           ],

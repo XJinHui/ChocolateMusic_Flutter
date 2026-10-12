@@ -193,6 +193,57 @@ class Album {
 }
 
 class Setting {
+  // 播放类型（0 可作为默认值，数字类型）(0 -> 顺序播放，1 -> 随机播放，2 -> 单曲循环)
+  int playType;
+
+  // 音量大小（100 为默认值，数字类型）
+  double volume;
+
+  // 音量类型（布尔值，可理解为「是否静音/音量模式」等）
+  bool volumeType;
+
+  // 音质等级 (0 -> 标准， 1 -> 高品质， 2 -> 无损)
+  int qualityTier;
+
+  // 下载音质等级 (0 -> 标准， 1 -> 高品质， 2 -> 无损)
+  int downloadQualityTier;
+
+  // 下载地址(默认项目/Music)
+  String downloadPath;
+
+  Setting({
+    required this.playType,
+    required this.volume,
+    required this.volumeType,
+    required this.qualityTier,
+    required this.downloadQualityTier,
+    required this.downloadPath,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'playType': playType,
+      'volume': volume,
+      'volumeType': volumeType,
+      'qualityTier': qualityTier,
+      'downloadQualityTier': downloadQualityTier,
+      'downloadPath': downloadPath,
+    };
+  }
+
+  factory Setting.fromJson(Map<String, dynamic> json) {
+    return Setting(
+      playType: json['playType'],
+      volume: json['volume'],
+      volumeType: json['volumeType'],
+      qualityTier: json['qualityTier'],
+      downloadQualityTier: json['downloadQualityTier'],
+      downloadPath: json['downloadPath'],
+    );
+  }
+}
+
+class PlaybackState{
   // 歌曲名
   String name;
 
@@ -220,15 +271,6 @@ class Setting {
   // 歌曲ID
   String id;
 
-  // 播放类型（0 可作为默认值，数字类型）(0 -> 顺序播放，1 -> 随机播放，2 -> 单曲循环)
-  int playType;
-
-  // 音量大小（100 为默认值，数字类型）
-  double volume;
-
-  // 音量类型（布尔值，可理解为「是否静音/音量模式」等）
-  bool volumeType;
-
   // 是否正在播放
   bool play;
 
@@ -238,16 +280,7 @@ class Setting {
   // 播放列表类型（0 -> 歌单， 1 -> 专辑， 2 -> 歌手）
   int playlistType;
 
-  // 音质等级 (0 -> 标准， 1 -> 高品质， 2 -> 无损)
-  int qualityTier;
-
-  // 下载音质等级 (0 -> 标准， 1 -> 高品质， 2 -> 无损)
-  int downloadQualityTier;
-
-  // 默认项目/Music
-  String downloadPath;
-
-  Setting({
+  PlaybackState({
     required this.name,
     required this.singer,
     required this.singerId,
@@ -257,15 +290,9 @@ class Setting {
     required this.cover,
     required this.like,
     required this.id,
-    required this.playType,
-    required this.volume,
-    required this.volumeType,
     required this.play,
     required this.playlistId,
     required this.playlistType,
-    required this.qualityTier,
-    required this.downloadQualityTier,
-    required this.downloadPath,
   });
 
   Map<String, dynamic> toJson() {
@@ -279,20 +306,14 @@ class Setting {
       'cover': cover,
       'like': like,
       'id': id,
-      'playType': playType,
-      'volume': volume,
-      'volumeType': volumeType,
       'play': play,
       'playlistId': playlistId,
       'playlistType': playlistType,
-      'qualityTier': qualityTier,
-      'downloadQualityTier': downloadQualityTier,
-      'downloadPath': downloadPath,
     };
   }
 
-  factory Setting.fromJson(Map<String, dynamic> json) {
-    return Setting(
+  factory PlaybackState.fromJson(Map<String, dynamic> json) {
+    return PlaybackState(
       name: json['name'],
       singer: json['singer'],
       singerId: json['singerId'],
@@ -302,15 +323,9 @@ class Setting {
       cover: json['cover'],
       like: json['like'],
       id: json['id'],
-      playType: json['playType'],
-      volume: json['volume'],
-      volumeType: json['volumeType'],
       play: json['play'],
       playlistId: json['playlistId'],
       playlistType: json['playlistType'],
-      qualityTier: json['qualityTier'],
-      downloadQualityTier: json['downloadQualityTier'],
-      downloadPath: json['downloadPath'],
     );
   }
 }

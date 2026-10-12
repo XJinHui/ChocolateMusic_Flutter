@@ -45,12 +45,12 @@ class _ChocolateNavBarState extends State<ChocolateNavBar> {
       'title': '我喜欢',
       'pageId': 'LikedPage',
     },
-    {
-      'icon': BootstrapIcons.clock,
-      'selectedIcon': BootstrapIcons.clock_fill,
-      'title': '最近播放',
-      'pageId': 'RecentPage',
-    },
+    // {
+    //   'icon': BootstrapIcons.clock,
+    //   'selectedIcon': BootstrapIcons.clock_fill,
+    //   'title': '最近播放',
+    //   'pageId': 'RecentPage',
+    // },
     {
       'icon': BootstrapIcons.arrow_down_square,
       'selectedIcon': BootstrapIcons.arrow_down_square_fill,

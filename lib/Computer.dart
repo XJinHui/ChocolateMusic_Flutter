@@ -40,7 +40,7 @@ class _ComputerHomePageState extends State<ComputerHomePage> {
             onDismiss: () => Management().playlistShow = false,
             child: LyricsTransitionHost(
               visible: Management().lyricShow,
-              coverUrl: Management().setting.cover,
+              coverUrl: Management().playbackState.cover,
               page: LyricsPage(),
               child: Container(
                 color: AppColors.background,
