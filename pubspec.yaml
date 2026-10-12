@@ -39,6 +39,7 @@ dependencies:
   flutter_svg: ^2.2.0
   dio: ^5.11.0
   path_provider: ^2.1.6
+  file_selector: ^1.0.3
   crypto: ^3.0.7
   media_kit: ^1.2.6 # Primary package.
   media_kit_libs_audio: ^1.0.7 # Native audio dependencies.

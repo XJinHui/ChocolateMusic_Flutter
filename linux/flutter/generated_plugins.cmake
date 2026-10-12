@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   bitsdojo_window_linux
   desktop_multi_window
+  file_selector_linux
   media_kit_libs_linux
   screen_retriever_linux
   window_manager

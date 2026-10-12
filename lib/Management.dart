@@ -1039,6 +1039,21 @@ class Management extends ChangeNotifier {
     print('设置更新成功');
   }
 
+  /// 应用新的下载目录：先把本地音乐库切到新目录，成功后再写入设置。
+  ///
+  /// [path] 传空串表示恢复默认目录（可执行文件同级的 Music 文件夹）。
+  /// 目录不可用时返回 false，设置和音乐库都保持原样，避免设置里记着一个
+  /// 实际用不了的路径。
+  Future<bool> applyDownloadPath(String path) async {
+    if (!await this.musicManagement.applyDownloadDir(path)) {
+      return false;
+    }
+
+    this.setting.downloadPath = path;
+    await this.updateSetting();
+    return true;
+  }
+
   Management._internal() {
     this.setting = Setting(
       name: '',

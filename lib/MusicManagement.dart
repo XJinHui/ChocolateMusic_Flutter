@@ -32,12 +32,46 @@ class MusicManagement {
     this.management = management;
   }
 
+  /// 默认下载目录：用户没有在设置里指定时使用，位于可执行文件同级。
+  String get defaultDownloadDir => p.join(this.exeDir, 'Music');
+
+  /// 切换下载目录：重建歌词 / 临时目录并重新扫描本地音乐。
+  ///
+  /// [path] 传空串表示恢复默认目录。目录建不出来（路径非法或没有写权限）时
+  /// 返回 false，并且不改动任何已有状态。
+  Future<bool> applyDownloadDir(String path) async {
+    final String target = path.isNotEmpty ? path : defaultDownloadDir;
+
+    try {
+      await Directory(target).create(recursive: true);
+    } catch (e) {
+      print('下载目录不可用：$target，$e');
+      return false;
+    }
+
+    this.downloadDir = target;
+
+    this.lyricDir = p.join(this.downloadDir, 'Lyric');
+    await checkCreateFolder(lyricDir);
+
+    this.tempDir = p.join(this.downloadDir, '.tmp');
+    await Directory(tempDir).create(recursive: true);
+
+    // scanFolder 是增量累加（localMusics.add），换目录前必须先清空，
+    // 否则旧目录扫出来的歌会残留在本地列表里。
+    this.localMusics = [];
+    this.lyricPath = {};
+    await this.scanFolder();
+
+    return true;
+  }
+
   init() async {
     // 初始化音乐管理
     // 解析并创建下载目录
     this.downloadDir = this.management.setting.downloadPath.isNotEmpty
         ? this.management.setting.downloadPath
-        : p.join(this.exeDir, 'Music');
+        : defaultDownloadDir;
     await checkCreateFolder(downloadDir);
 
     // 解析并创建歌词目录
