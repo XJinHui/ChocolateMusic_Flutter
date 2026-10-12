@@ -308,7 +308,7 @@ class _PlaylistDateState extends State<PlaylistDate> {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            SearchBar(),
+            SearchBar(listVersion: widget.management.displayListVersion),
 
             SizedBox(
               height:
@@ -447,7 +447,11 @@ class MusicListSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Music> musics = management.displayMusics;
-    final List<Music> displayMusics = management.displayListSearchMusic.length != 0 ? management.displayListSearchMusic : management.displayMusics;
+    // 搜索态由 Management 上的关键词决定，不能用结果列表是否为空来判断：
+    // 搜了但没命中时结果列表就是空的，那样会被当成「没在搜索」而显示整个歌单。
+    final List<Music> displayMusics = management.isListSearching
+        ? management.displayListSearchMusic
+        : management.displayMusics;
 
     return SliverFixedExtentList(
       itemExtent: rowExtent,
@@ -476,13 +480,34 @@ class MusicListSliver extends StatelessWidget {
 }
 
 class SearchBar extends StatefulWidget {
-  const SearchBar({super.key});
+  /// 当前显示列表（歌单/专辑/歌手）的切换计数，取自 [Management.displayListVersion]。
+  ///
+  /// 它一变就说明换了列表，输入框里上一个列表的关键词已经没有意义，需要清掉。
+  final int listVersion;
+
+  const SearchBar({super.key, required this.listVersion});
 
   @override
   State<SearchBar> createState() => _SearchBarState();
 }
 
 class _SearchBarState extends State<SearchBar> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void didUpdateWidget(SearchBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.listVersion != widget.listVersion) {
+      _controller.clear();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -493,7 +518,7 @@ class _SearchBarState extends State<SearchBar> {
         borderRadius: BorderRadius.circular(15),
       ),
       child: TextField(
-        // controller: _controller,
+        controller: _controller,
         cursorHeight: 18,        // 关键：光标高度，比字号略大即可
         cursorWidth: 1.5,        // 可选：细一点更精致
         decoration: InputDecoration(
@@ -515,7 +540,7 @@ class _SearchBarState extends State<SearchBar> {
         ),
         onChanged: (value) {
           // 处理搜索输入变化
-          print('搜索输入: $value');
+          // print('搜索输入: $value');
           Management().listSearch(value.trim());
         }
       ),

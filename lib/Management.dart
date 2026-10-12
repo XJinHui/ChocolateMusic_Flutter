@@ -91,6 +91,24 @@ class Management extends ChangeNotifier {
 
   late List<Music> displayListSearchMusic = []; // 显示的搜索音乐列表
 
+  /// 歌单内搜索的当前关键词，空字符串表示没有在搜索。
+  ///
+  /// 搜索态需要独立的标志位：只看 [displayListSearchMusic] 是否为空的话，
+  /// 「搜了但没命中」和「没在搜索」两种情况分不开，前者会回退显示整个歌单。
+  String _displayListSearchKeyword = '';
+
+  /// 当前是否处于歌单内搜索状态。
+  bool get isListSearching => _displayListSearchKeyword.isNotEmpty;
+
+  /// 显示列表（歌单/专辑/歌手）的切换计数，每次 [clearListSearch] 自增。
+  ///
+  /// 搜索结果 [displayListSearchMusic] 是挂在单例上的全局状态，换列表时
+  /// 必须丢弃，搜索框也要据此清掉上一轮输入。用计数而不是比较列表 id，
+  /// 是为了让「重复点开同一个歌单」也能正确复位。
+  int _displayListVersion = 0;
+
+  int get displayListVersion => _displayListVersion;
+
   late Map<String, List<Music>> playlistMusics = {}; // 歌单id-歌曲列表
   late Map<String, List<Music>> albumMusic = {}; // 专辑id-歌曲列表
   late Map<String, List<Music>> singerMusic = {}; // 歌手id-歌曲列表
@@ -626,6 +644,9 @@ class Management extends ChangeNotifier {
   }
 
   getDisplayPlaylist(Playlist playlist, {bool type = false}) async {
+    // 换了歌单，上一个歌单的搜索结果作废
+    clearListSearch();
+
     // 获取歌单音乐
     if (this.playlistMusics.containsKey(playlist.listId)) {
       var displayMusics = this.playlistMusics[playlist.listId];
@@ -652,6 +673,9 @@ class Management extends ChangeNotifier {
   }
 
   getDisplayAlbum(Album album) async {
+    // 换了专辑，上一个列表的搜索结果作废
+    clearListSearch();
+
     // 获取专辑音乐
     if (this.albumMusic.containsKey(album.albumId)) {
       var displayMusics = this.albumMusic[album.albumId];
@@ -678,6 +702,9 @@ class Management extends ChangeNotifier {
   }
 
   getDisplaySinger(Singer singer) async {
+    // 换了歌手，上一个列表的搜索结果作废
+    clearListSearch();
+
     // 获取歌手音乐
     if (this.singerMusic.containsKey(singer.singerId)) {
       List<Music> displayMusics = this.singerMusic[singer.singerId] ?? [];
@@ -784,9 +811,26 @@ class Management extends ChangeNotifier {
     }
   }
 
+  /// 进入一个新的显示列表（歌单/专辑/歌手）时调用。
+  ///
+  /// 搜索结果 [displayListSearchMusic] 不随页面切换自动失效：不清掉的话，
+  /// 新歌单会继续渲染上一个歌单的搜索结果，而且搜索态一旦打开就再也没有
+  /// 关闭路径——它只由 [isListSearching] 背后的关键词决定。
+  void clearListSearch() {
+    _displayListVersion++;
+    _displayListSearchKeyword = '';
+    displayListSearchMusic = [];
+    notifyListeners();
+  }
+
   listSearch(String keyword) {
+    this._displayListSearchKeyword = keyword;
     this.displayListSearchMusic = [];
-    if (this.displayMusics.length == 0) {
+
+    // 关键词为空表示退出搜索，列表回到完整歌单。
+    // 这里不能继续往下走：contains('') 恒为 true，会把整个歌单当成「全部命中」。
+    if (keyword.isEmpty) {
+      refresh();
       return;
     }
 
@@ -867,6 +911,10 @@ class Management extends ChangeNotifier {
         this.playlistMusics[listId]?.removeWhere((item) => item.id == musicId);
         this.playlistMusicVersion++; // 触发监听
       }
+
+      // 搜索结果列表和 displayMusics 是两个 List 实例（元素是同一批 Music），
+      // 不一起移除的话，开着搜索删歌时那一行会留在屏幕上。
+      this.displayListSearchMusic.removeWhere((item) => item.id == musicId);
 
       refresh();
 
