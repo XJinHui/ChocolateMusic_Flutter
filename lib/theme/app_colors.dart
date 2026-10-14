@@ -38,6 +38,9 @@ class AppColors {
   // 普通状态文字颜色
   static const Color normalText = Color(0xFF000000);
 
+  // 空状态提示文字颜色（无搜索结果等）
+  static const Color emptyHintText = Color(0xFF999999);
+
   // 悬浮状态颜色
   static const Color floating = Color(0xFFE6E6E6);
   static const Color lyricPgaeFloating = Color(0x55F0F0F0);

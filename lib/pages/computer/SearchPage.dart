@@ -15,6 +15,28 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
+    final RecommendList searchList = Management().searchList;
+    final bool hasAlbum = searchList.album.isNotEmpty;
+    final bool hasSinger = searchList.singer.isNotEmpty;
+    final bool hasMusic = searchList.music.isNotEmpty;
+
+    // 搜过了却三个模块都没结果时，给一句明确的提示。只判断「列表为空」是不够的：
+    // 搜索页只由搜索提交进入，但登出会清掉关键词和结果，此时页面上的空
+    // 不该说成「没有搜到」。
+    if (Management().searchKeyword.isNotEmpty &&
+        !hasAlbum &&
+        !hasSinger &&
+        !hasMusic) {
+      return Center(
+        child: Text(
+          '无搜索结果',
+          style: TextStyle(fontSize: 16, color: AppColors.emptyHintText),
+        ),
+      );
+    }
+
+    // 各模块按「有没有数据」决定是否出现：空模块连同标题、间距一起收起，
+    // 免得搜索页在没有结果时留出一片空白。
     return Container(
       // padding: EdgeInsets.only(left: 20, right: 20),
       child: EdgeFadeMask(
@@ -22,30 +44,36 @@ class _SearchPageState extends State<SearchPage> {
           slivers: [
             SliverToBoxAdapter(child: SizedBox(height: 20)),
 
-            SliverToBoxAdapter(child: SearchAlbumList()),
+            if (hasAlbum) ...[
+              SliverToBoxAdapter(child: SearchAlbumList()),
 
-            SliverToBoxAdapter(child: SizedBox(height: 10)),
+              SliverToBoxAdapter(child: SizedBox(height: 10)),
+            ],
 
-            SliverToBoxAdapter(child: SearchSingerList()),
+            if (hasSinger) ...[
+              SliverToBoxAdapter(child: SearchSingerList()),
 
-            SliverToBoxAdapter(child: SizedBox(height: 10)),
+              SliverToBoxAdapter(child: SizedBox(height: 10)),
+            ],
 
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: SearchTitle(
-                  title: '歌曲',
-                  icon: BootstrapIcons.music_note_beamed,
+            if (hasMusic) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: SearchTitle(
+                    title: '歌曲',
+                    icon: BootstrapIcons.music_note_beamed,
+                  ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(child: SizedBox(height: 10)),
+              SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-            // 歌曲列表：sliver 直接放在 slivers 里，左右留白交给 SliverPadding
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              sliver: SearchMusicListSliver(),
-            ),
+              // 歌曲列表：sliver 直接放在 slivers 里，左右留白交给 SliverPadding
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                sliver: SearchMusicListSliver(),
+              ),
+            ],
           ],
         ),
       ),
@@ -61,6 +89,11 @@ class SearchAlbumList extends StatefulWidget {
 class _SearchAlbumListState extends State<SearchAlbumList> {
   @override
   Widget build(BuildContext context) {
+    final List<Album> albums = Management().searchList.album;
+    if (albums.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       padding: EdgeInsets.only(left: 20, right: 20),
       child: Column(
@@ -73,14 +106,11 @@ class _SearchAlbumListState extends State<SearchAlbumList> {
             height: 200,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: Management().searchList.album.length,
+              itemCount: albums.length,
               itemBuilder: (BuildContext context, int index) {
                 return Padding(
                   padding: EdgeInsets.only(right: 10), // 水平方向用 right
-                  child: AlbumWidget(
-                    album: Management().searchList.album[index],
-                    size: 150,
-                  ),
+                  child: AlbumWidget(album: albums[index], size: 150),
                 );
               },
             ),
@@ -99,6 +129,11 @@ class SearchSingerList extends StatefulWidget {
 class _SearchSingerListState extends State<SearchSingerList> {
   @override
   Widget build(BuildContext context) {
+    final List<Singer> singers = Management().searchList.singer;
+    if (singers.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       padding: EdgeInsets.only(left: 20, right: 20),
       child: Column(
@@ -111,14 +146,11 @@ class _SearchSingerListState extends State<SearchSingerList> {
             height: 200,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: Management().searchList.singer.length,
+              itemCount: singers.length,
               itemBuilder: (BuildContext context, int index) {
                 return Padding(
                   padding: EdgeInsets.only(right: 10), // 水平方向用 right
-                  child: SingerWidget(
-                    singer: Management().searchList.singer[index],
-                    size: 150,
-                  ),
+                  child: SingerWidget(singer: singers[index], size: 150),
                 );
               },
             ),

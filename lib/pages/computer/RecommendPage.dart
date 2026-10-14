@@ -42,6 +42,12 @@ class _RecommendPlaylistState extends State<RecommendPlaylist> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Playlist> playlists = management.recommendList.playlist;
+    // 没有数据时整块（标题、内边距）都不出现，免得留下一片空白占位。
+    if (playlists.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         double availableWidth = constraints.maxWidth; // 获取可用的最大宽度
@@ -83,13 +89,11 @@ class _RecommendPlaylistState extends State<RecommendPlaylist> {
                 spacing: 15,
                 runSpacing: 15,
                 children: [
-                  for (int i = 0; i < num * 2; i++)
-                    if (management.recommendList.playlist.length > i)
-                      // for (var item in management.recommendList.playlist)
-                      PlaylistWidget(
-                        playlist: management.recommendList.playlist[i],
-                        size: size >= 200 ? 200 : size, // 每行显示5个，减去间距
-                      ),
+                  for (int i = 0; i < num * 2 && i < playlists.length; i++)
+                    PlaylistWidget(
+                      playlist: playlists[i],
+                      size: size >= 200 ? 200 : size, // 每行显示5个，减去间距
+                    ),
                 ],
               ),
             ],
@@ -110,6 +114,12 @@ class _RecommendAlbumsState extends State<RecommendAlbums> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Album> albums = management.recommendList.album;
+    // 没有数据时整块（标题、内边距）都不出现，免得留下一片空白占位。
+    if (albums.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         double availableWidth = constraints.maxWidth; // 获取可用的最大宽度
@@ -151,13 +161,11 @@ class _RecommendAlbumsState extends State<RecommendAlbums> {
                 spacing: 15,
                 runSpacing: 15,
                 children: [
-                  for (int i = 0; i < num * 2; i++)
-                    if (management.recommendList.album.length > i)
-                      // for (var item in management.recommendList.album)
-                      AlbumWidget(
-                        album: management.recommendList.album[i],
-                        size: size >= 200 ? 200 : size, // 每行显示5个，减去间距
-                      ),
+                  for (int i = 0; i < num * 2 && i < albums.length; i++)
+                    AlbumWidget(
+                      album: albums[i],
+                      size: size >= 200 ? 200 : size, // 每行显示5个，减去间距
+                    ),
                 ],
               ),
             ],
@@ -178,6 +186,12 @@ class _RecommendSingersState extends State<RecommendSingers> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Singer> singers = management.recommendList.singer;
+    // 没有数据时整块（标题、内边距）都不出现，免得留下一片空白占位。
+    if (singers.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         double availableWidth = constraints.maxWidth; // 获取可用的最大宽度
@@ -219,24 +233,11 @@ class _RecommendSingersState extends State<RecommendSingers> {
                 spacing: 15,
                 runSpacing: 15,
                 children: [
-                  // for (int i = 0; i < num * 2; i++)
-                  //   PlaylistWidget(
-                  //     playlist: Playlist(
-                  //       name: '周杰伦',
-                  //       listId: '1',
-                  //       cover:
-                  //       'https://img2.kuwo.cn/star/albumcover/120/s4s11/89/774616642.jpg',
-                  //       audioCount: 5,
-                  //     ),
-                  //     size: size >= 200 ? 200 : size, // 每行显示5个，减去间距
-                  //   ),
-                  for (int i = 0; i < num * 2; i++)
-                    if (management.recommendList.singer.length > i)
-                      // for (var item in management.recommendList.singer)
-                      SingerWidget(
-                        singer: management.recommendList.singer[i],
-                        size: size >= 200 ? 200 : size, // 每行显示5个，减去间距
-                      ),
+                  for (int i = 0; i < num * 2 && i < singers.length; i++)
+                    SingerWidget(
+                      singer: singers[i],
+                      size: size >= 200 ? 200 : size, // 每行显示5个，减去间距
+                    ),
                 ],
               ),
             ],
@@ -257,6 +258,12 @@ class _RecommendMusicsState extends State<RecommendMusics> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Music> musics = management.recommendList.music;
+    // 没有数据时整块（标题、内边距）都不出现，免得留下一片空白占位。
+    if (musics.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         double availableWidth = constraints.maxWidth; // 获取可用的最大宽度
@@ -301,7 +308,7 @@ class _RecommendMusicsState extends State<RecommendMusics> {
                 spacing: 20,
                 runSpacing: 15,
                 children: [
-                  for (var item in management.recommendList.music)
+                  for (var item in musics)
                     RecommendMusicWidget(music: item, width: width),
                 ],
               ),
