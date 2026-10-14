@@ -94,6 +94,51 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  /// 手机号 / 二维码两种登录方式的切换按钮，选中时浅蓝底 + 蓝边。
+  Widget _loginModeButton({
+    required int value,
+    required IconData icon,
+    required String tooltip,
+  }) {
+    final bool isSelected = loginChoose == value;
+
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        // 默认只认子节点那片区域，圆形的空白处点不动；
+        // 显式铺满整个按钮，50×50 的圆里点到哪儿都算数。
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          if (isSelected) {
+            return;
+          }
+          setState(() {
+            loginChoose = value;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.selected : AppColors.transparent,
+            borderRadius: BorderRadius.circular(60), // 圆角
+            border: Border.all(
+              color: isSelected ? AppColors.selectedText : AppColors.border,
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            icon,
+            color: isSelected ? AppColors.selectedText : Colors.black,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _serviceSelector() {
     return SizedBox(
       width: 280,
@@ -178,50 +223,18 @@ class _LoginPageState extends State<LoginPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      loginChoose = 0;
-                    });
-                  },
-                  // child: Icon(BootstrapIcons.pause_circle_fill, color: Colors.black, size: 35,), // 播放图标
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(60), // 圆角
-                      border: Border.all(color: AppColors.border, width: 1),
-                    ),
-                    child: Icon(
-                      BootstrapIcons.phone,
-                      color: Colors.black,
-                      size: 20,
-                    ), // 播放图标
-                  ),
+                _loginModeButton(
+                  value: 0,
+                  icon: BootstrapIcons.phone,
+                  tooltip: '手机号登录',
                 ),
 
                 SizedBox(width: 20),
 
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      loginChoose = 1;
-                    });
-                  },
-                  // child: Icon(BootstrapIcons.pause_circle_fill, color: Colors.black, size: 35,), // 播放图标
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(60), // 圆角
-                      border: Border.all(color: AppColors.border, width: 1),
-                    ),
-                    child: Icon(
-                      BootstrapIcons.qr_code_scan,
-                      color: Colors.black,
-                      size: 20,
-                    ), // 播放图标
-                  ),
+                _loginModeButton(
+                  value: 1,
+                  icon: BootstrapIcons.qr_code_scan,
+                  tooltip: '二维码登录',
                 ),
               ],
             ),
@@ -537,6 +550,9 @@ class QrCodeLogin extends StatefulWidget {
 class _QrCodeLoginState extends State<QrCodeLogin> {
   late Management management = Management();
 
+  /// 正在重新取码。取码期间按钮置灰并转圈，避免连点重复起轮询。
+  bool _refreshing = false;
+
   Widget _errorBox() {
     return Container(
       width: 200,
@@ -573,24 +589,78 @@ class _QrCodeLoginState extends State<QrCodeLogin> {
     }
   }
 
+  Widget _qrCodeBox() {
+    if (!_refreshing) {
+      return _qrCodeImage();
+    }
+
+    return Container(
+      width: 200,
+      height: 200,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.panel,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const SizedBox.square(
+        dimension: 28,
+        child: CircularProgressIndicator(strokeWidth: 2.5),
+      ),
+    );
+  }
+
+  /// 重新取一张二维码。
+  ///
+  /// 走 [Management.refreshQrCode]，它会把本轮登录的世代号推进一格再取码：
+  /// 上一轮还挂在旧二维码上的轮询循环就此退出，不会跟新一轮抢同一个 key。
+  Future<void> _refreshQrCode() async {
+    if (_refreshing) {
+      return;
+    }
+
+    setState(() {
+      _refreshing = true;
+    });
+
+    try {
+      await management.refreshQrCode();
+    } catch (error) {
+      print('刷新二维码异常: $error');
+    } finally {
+      // 取码期间界面可能已经被关掉，卸载后再 setState 会抛异常。
+      if (mounted) {
+        setState(() {
+          _refreshing = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         AnimatedBuilder(
           animation: management,
-          builder: (_, _) => _qrCodeImage(),
+          builder: (_, _) => _qrCodeBox(),
         ),
 
         SizedBox(height: 10),
 
         ElevatedButton.icon(
-          onPressed: () {
-            /* 点击逻辑 */
-          },
-          icon: const Icon(size: 16, BootstrapIcons.arrow_clockwise),
-          label: const Text(
-            '刷新二维码',
+          onPressed: _refreshing ? null : _refreshQrCode,
+          icon: _refreshing
+              ? const SizedBox.square(
+                  dimension: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(size: 16, BootstrapIcons.arrow_clockwise),
+          label: Text(
+            _refreshing ? '刷新中...' : '刷新二维码',
             style: TextStyle(
               fontSize: 16, // 自定义字体大小
               fontWeight: FontWeight.w500, // 顺便可以调字重
@@ -600,6 +670,9 @@ class _QrCodeLoginState extends State<QrCodeLogin> {
             backgroundColor: Color(0xff46a7ff),
             // 如果背景色较深，建议同时设置文字/图标颜色（前景色）
             foregroundColor: Colors.white,
+            // 置灰时不换成默认灰底，保持与可点时一致的外观。
+            disabledBackgroundColor: Color(0xff46a7ff),
+            disabledForegroundColor: Colors.white,
 
             minimumSize: const Size(55, 45),
 

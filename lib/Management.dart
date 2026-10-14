@@ -948,6 +948,17 @@ class Management extends ChangeNotifier {
     loginByQrCode();
   }
 
+  /// 重新取一张二维码，供登录界面的「刷新二维码」按钮调用。
+  ///
+  /// 必须先 [startLogin]：二维码取回后云服务会另起一轮每 2 秒的扫码轮询，
+  /// 而上一轮的循环还挂在旧二维码的 key 上（key 是共享字段，取新码时被覆盖）。
+  /// 世代号一变，旧循环醒来就会自行退出；只重新取码的话，新旧两个循环会一起
+  /// 轮询同一个 key，扫一次把账号加两遍。
+  Future<void> refreshQrCode() async {
+    startLogin();
+    await getQrCode();
+  }
+
   loginByQrCode() async {
     // 本循环只服务开启它时的这一轮登录。世代号变了（关掉登录界面又打开了一轮）
     // 或 loginType 不再为 0（这轮已被放弃或已出结果），都该停下，否则每开一次
