@@ -20,13 +20,13 @@ import uuid
 
 OWNER = "xjhwht"
 REPO = "chocolate-music_-flutter"
-TAG = "v1.0.1"
-RELEASE_NAME = "巧克力音乐 v1.0.1"
-NOTES = "docs/releases/v1.0.1.md"
+TAG = "v1.0.2"
+RELEASE_NAME = "巧克力音乐 v1.0.2"
+NOTES = "docs/releases/v1.0.2.md"
 ASSETS = [
-    "dist/chocolate_music-1.0.1-setup.exe",
+    "dist/chocolate_music-1.0.2-setup.exe",
     "dist/chocolate_music-portable.exe",
-    "dist/chocolate_music-1.0.1-windows-x64.zip",
+    "dist/chocolate_music-1.0.2-windows-x64.zip",
 ]
 
 API = "https://gitee.com/api/v5"

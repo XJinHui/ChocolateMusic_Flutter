@@ -12,7 +12,7 @@
 
 #define AppName "巧克力音乐"
 #define AppNameEn "Chocolate Music"
-#define AppVersion "1.0.1"
+#define AppVersion "1.0.2"
 #define AppPublisher "com.xjh.chocolatemusic"
 #define AppExeName "chocolate_music.exe"
 ; release 产物目录，相对本脚本所在位置
