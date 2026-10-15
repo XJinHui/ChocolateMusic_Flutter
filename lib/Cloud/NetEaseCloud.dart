@@ -37,7 +37,6 @@ class Neteasecloud implements CloudService {
   static Dio _createDio() {
     final dio = Dio(
       BaseOptions(
-        baseUrl: "https://neteasecloud.xjinhui.asia",
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
       ),
@@ -1020,10 +1019,10 @@ class Neteasecloud implements CloudService {
     }
   }
 
-  getMusicUrl(String musicId, {String bitrate = 'exhigh'}) async {
+  getMusicUrl(String musicId, {String bitrate = '128000'}) async {
     try {
       var response = await Neteasecloud.dio.get(
-        '/song/url?id=${musicId}&level=${bitrate}',
+        '/song/url?id=${musicId}&br=${bitrate}',
         options: Options(headers: {'Cookie': this.cookies}),
       );
 
@@ -1054,10 +1053,10 @@ class Neteasecloud implements CloudService {
     }
   }
 
-  getMatchtMusicUrl(String musicId, {String level = 'exhigh'}) async {
+  getMatchtMusicUrl(String musicId, {String level = '128000'}) async {
     try {
       var response = await Neteasecloud.dio.get(
-        '/song/url?id=${musicId}&level=${level}&unblock=true',
+        '/song/url?id=${musicId}&br=${level}&unblock=true',
         options: Options(headers: {'Cookie': this.cookies}),
       );
 
@@ -1286,7 +1285,7 @@ class Neteasecloud implements CloudService {
   getLikeStatus(String musicId) async {}
 
   chooseMusicQuality(String musicId, {int quality = 0}) async {
-    var qualityGrade = ['standard', 'exhigh', 'lossless'];
+    var qualityGrade = ['128000', '320000', '999000'];
     if (this.vipCookies != '') {
       var url = await this.getMusicUrl(musicId, bitrate: qualityGrade[quality]);
       return url;
