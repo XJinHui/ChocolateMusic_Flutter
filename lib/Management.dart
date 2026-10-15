@@ -472,17 +472,27 @@ class Management extends ChangeNotifier {
     if (this.accountData.login[0] == -1) {
       return;
     }
-    //生成推荐歌手列表
-    if (type == 1 ||
-        this.recommendListDate[this.accountData.login[0]].singer.length == 0) {
-      this.recommendList.singer = await this.cloud.getRecommendSingers(12);
-      // print('生成推荐歌手列表: ${this.recommendList.singer}');
+    final cached = this.recommendListDate[this.accountData.login[0]].singer;
 
+    //生成推荐歌手列表
+    if (type == 1 || cached.length == 0) {
+      final singers = await this.cloud.getRecommendSingers(12);
+      // print('生成推荐歌手列表: ${singers}');
+
+      // 云端失败时返回的是空列表而不是抛异常，此时保留原有推荐并跳过落盘，
+      // 否则一次网络抖动就会把界面和磁盘缓存一起清空。
+      if (singers.isEmpty) {
+        print('推荐歌手刷新失败，保留原有列表');
+        this.recommendList.singer = cached;
+        refresh();
+        return;
+      }
+
+      this.recommendList.singer = singers;
       this.updateRecommendListDate();
     } else {
-      this.recommendList.singer =
-          this.recommendListDate[this.accountData.login[0]].singer;
-      // print('读取推荐歌手列表: ${this.recommendList.singer}');
+      this.recommendList.singer = cached;
+      // print('读取推荐歌手列表: ${cached}');
     }
   }
 
@@ -490,17 +500,26 @@ class Management extends ChangeNotifier {
     if (this.accountData.login[0] == -1) {
       return;
     }
-    //生成推荐专辑列表
-    if (type == 1 ||
-        this.recommendListDate[this.accountData.login[0]].album.length == 0) {
-      this.recommendList.album = await this.cloud.getRecommendAlbum(12);
-      // print('生成推荐专辑列表: ${this.recommendList.album}');
+    final cached = this.recommendListDate[this.accountData.login[0]].album;
 
+    //生成推荐专辑列表
+    if (type == 1 || cached.length == 0) {
+      final albums = await this.cloud.getRecommendAlbum(12);
+      // print('生成推荐专辑列表: ${albums}');
+
+      // 同歌手：失败返回空列表，保留原有推荐并跳过落盘。
+      if (albums.isEmpty) {
+        print('推荐专辑刷新失败，保留原有列表');
+        this.recommendList.album = cached;
+        refresh();
+        return;
+      }
+
+      this.recommendList.album = albums;
       this.updateRecommendListDate();
     } else {
-      this.recommendList.album =
-          this.recommendListDate[this.accountData.login[0]].album;
-      // print('读取推荐专辑列表: ${this.recommendList.album}');
+      this.recommendList.album = cached;
+      // print('读取推荐专辑列表: ${cached}');
     }
   }
 
@@ -508,17 +527,26 @@ class Management extends ChangeNotifier {
     if (this.accountData.login[0] == -1) {
       return;
     }
+    final cached = this.recommendListDate[this.accountData.login[0]].playlist;
+
     //生成推荐歌单列表
-    if (type == 1 ||
-        this.recommendListDate[this.accountData.login[0]].playlist.length ==
-            0) {
-      this.recommendList.playlist = await this.cloud.getRecommendPlaylists(12);
-      // print('生成推荐歌单列表: ${this.recommendList.playlist}');
+    if (type == 1 || cached.length == 0) {
+      final playlists = await this.cloud.getRecommendPlaylists(12);
+      // print('生成推荐歌单列表: ${playlists}');
+
+      // 同歌手：失败返回空列表，保留原有推荐并跳过落盘。
+      if (playlists.isEmpty) {
+        print('推荐歌单刷新失败，保留原有列表');
+        this.recommendList.playlist = cached;
+        refresh();
+        return;
+      }
+
+      this.recommendList.playlist = playlists;
       this.updateRecommendListDate();
     } else {
-      this.recommendList.playlist =
-          this.recommendListDate[this.accountData.login[0]].playlist;
-      // print('读取推荐歌单列表: ${this.recommendList.playlist}');
+      this.recommendList.playlist = cached;
+      // print('读取推荐歌单列表: ${cached}');
     }
   }
 

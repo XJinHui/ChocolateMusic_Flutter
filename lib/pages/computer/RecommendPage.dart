@@ -80,7 +80,6 @@ class _RecommendPlaylistState extends State<RecommendPlaylist> {
               //     fontWeight: FontWeight.bold,
               //   ),
               // ),
-
               RecommendTitle(title: '歌单', icon: BootstrapIcons.music_note_list),
 
               SizedBox(height: 15),
@@ -152,7 +151,6 @@ class _RecommendAlbumsState extends State<RecommendAlbums> {
               //     fontWeight: FontWeight.bold,
               //   ),
               // ),
-
               RecommendTitle(title: '专辑', icon: BootstrapIcons.disc),
 
               SizedBox(height: 15),
@@ -224,7 +222,6 @@ class _RecommendSingersState extends State<RecommendSingers> {
               //     fontWeight: FontWeight.bold,
               //   ),
               // ),
-
               RecommendTitle(title: '歌手', icon: BootstrapIcons.person),
 
               SizedBox(height: 15),
@@ -299,8 +296,10 @@ class _RecommendMusicsState extends State<RecommendMusics> {
               //     fontWeight: FontWeight.bold,
               //   ),
               // ),
-
-              RecommendTitle(title: '歌曲', icon: BootstrapIcons.music_note_beamed),
+              RecommendTitle(
+                title: '歌曲',
+                icon: BootstrapIcons.music_note_beamed,
+              ),
 
               SizedBox(height: 15),
 
@@ -320,36 +319,85 @@ class _RecommendMusicsState extends State<RecommendMusics> {
   }
 }
 
-class RecommendTitle extends StatelessWidget {
+class RecommendTitle extends StatefulWidget {
   final String title;
   final IconData icon;
 
-  const RecommendTitle({
-    super.key,
-    required this.title,
-    required this.icon,
-  });
+  const RecommendTitle({super.key, required this.title, required this.icon});
+
+  @override
+  State<RecommendTitle> createState() => _RecommendTitleState();
+}
+
+class _RecommendTitleState extends State<RecommendTitle>
+    with SingleTickerProviderStateMixin {
+  bool isHovering = false;
+
+  /// 刷新请求进行中：图标匀速旋转，同时用来拦住重复点击。
+  bool isRefreshing = false;
+
+  /// 旋转一圈的时长，也是单次刷新动画的最短时长。
+  static const Duration _spinCycle = Duration(milliseconds: 900);
+
+  late final AnimationController _rotation;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotation = AnimationController(vsync: this, duration: _spinCycle);
+  }
+
+  @override
+  void dispose() {
+    _rotation.dispose();
+    super.dispose();
+  }
+
+  /// 执行一次刷新请求，期间让按钮图标转起来。
+  Future<void> _refresh(Future<void> Function() request) async {
+    if (isRefreshing) {
+      return; // 连点只发一次请求
+    }
+    setState(() {
+      isRefreshing = true;
+    });
+    _rotation.repeat();
+
+    try {
+      await request();
+    } catch (error) {
+      print('刷新推荐失败: ${error}');
+    }
+
+    // 接口很快时动画也不能一闪而过，否则看起来像没反应。补足当前这一圈剩下
+    // 的部分，正好停在整圈的位置上，不会中途硬切回起始角度。
+    final remain = (1 - _rotation.value) * _spinCycle.inMilliseconds;
+    await Future.delayed(Duration(milliseconds: remain.round()));
+
+    if (mounted) {
+      _rotation.reset();
+      setState(() {
+        isRefreshing = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-      Container(
-      width: 30,
-      height: 30,
-      decoration: BoxDecoration(
-        color: AppColors.panel,
-        borderRadius: BorderRadius.circular(8),
-      ),
-        child: Icon(
-          this.icon,
-          size: 20,
-          color: AppColors.buttonIcon,
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: AppColors.panel,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(widget.icon, size: 20, color: AppColors.buttonIcon),
         ),
-      ),
 
-        SizedBox(width: 10,),
+        SizedBox(width: 10),
 
         Text(
           '为你推荐',
@@ -368,10 +416,76 @@ class RecommendTitle extends StatelessWidget {
         ),
 
         Text(
-          this.title,
-          style: TextStyle(
-            fontSize: 20,
-            color: AppColors.normalText,
+          widget.title,
+          style: TextStyle(fontSize: 20, color: AppColors.normalText),
+        ),
+
+        Expanded(child: SizedBox()), // 占位，推到最右边
+
+        GestureDetector(
+          onTap: () {
+            // 处理点击设置按钮事件
+            // Management().selectedPage = 'SettingsPage';
+            if (widget.title == '歌曲') {
+              Management().displayList = Playlist(
+                name: '',
+                listId: '',
+                cover: '',
+                audioCount: 0,
+              );
+              Management().displayMusics = List.of(
+                Management().recommendList.music,
+              );
+              Management().playMusic(Management().recommendList.music[0]);
+              print('播放音乐: ${Management().recommendList.music[0].name}');
+            } else if (widget.title == '专辑') {
+              _refresh(() => Management().createrRecommendAlbums(type: 1));
+              print('刷新专辑推荐');
+            } else if (widget.title == '歌单') {
+              _refresh(() => Management().createrRecommendPlaylists(type: 1));
+              print('刷新歌单推荐');
+            } else if (widget.title == '歌手') {
+              _refresh(() => Management().createrRecommendSingers(type: 1));
+              print('刷新歌手推荐');
+            }
+          },
+          child: MouseRegion(
+            onEnter: (_) {
+              setState(() {
+                isHovering = true;
+              });
+            },
+            onExit: (_) {
+              setState(() {
+                isHovering = false;
+              });
+            },
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: isHovering ? AppColors.floating : AppColors.panel,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: widget.title != '歌曲'
+                  // 刷新按钮：初始保持原来的倾斜角度，请求期间从该角度转圈。
+                  ? RotatedBox(
+                      quarterTurns: 45,
+                      child: RotationTransition(
+                        turns: _rotation,
+                        child: Icon(
+                          BootstrapIcons.arrow_clockwise,
+                          size: 20,
+                          color: AppColors.buttonIcon,
+                        ),
+                      ),
+                    )
+                  : Icon(
+                      BootstrapIcons.play,
+                      size: 20,
+                      color: AppColors.buttonIcon,
+                    ),
+            ),
           ),
         ),
       ],
