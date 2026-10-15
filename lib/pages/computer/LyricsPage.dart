@@ -542,6 +542,11 @@ class _DisplayLyricState extends State<DisplayLyric> {
   /// 上和下的留白会按这个比例自动分配，第一行与最后一行都能落到该位置。
   static const double _lineAnchor = 1 / 4;
 
+  /// 歌词列表上下渐隐的过渡区高度，取视口高度的比例。
+  /// 顶部向下 _fadeExtent 由全透明渐变到不透明，底部对称，中间全清晰。
+  /// 要比 _lineAnchor 小，当前行（落在 _lineAnchor 处）才不会跟着被淡掉。
+  static const double _fadeExtent = 0.15;
+
   final Management _management = Management();
   final ScrollController _scrollController = ScrollController();
 
@@ -642,38 +647,63 @@ class _DisplayLyricState extends State<DisplayLyric> {
             // 滚轮 / 拖拽滚动仍然照常（那由 Scrollable 自己负责）。
             return ScrollConfiguration(
               behavior: const _NoScrollbarBehavior(),
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                padding: EdgeInsets.only(
-                  top: viewportHeight * _lineAnchor,
-                  bottom: viewportHeight * (1 - _lineAnchor),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (int i = 0; i < lyricList.length; i++)
-                      KeyedSubtree(
-                        key: _lineKeys[i],
-                        // 用行索引判断当前行：同一时间戳可能有多行歌词，
-                        // 用 time 比较会同时点亮多行。
-                        //
-                        // 点击跳转交给 _LyricLine（那里包在 Text 外面）：
-                        // 包在这一层会把整行、包括文字右侧的空白都变成点击区域，
-                        // 因为 ListTile 内部无条件套了一层 InkWell，
-                        // 而 InkWell 的 GestureDetector 用的是 HitTestBehavior.opaque。
-                        child: _LyricLine(
-                          lyric: lyricList[i].lyric,
-                          isCurrent: i == currentIndex,
-                          onTap: () {
-                            // 点击歌词文字跳转播放进度
-                            _management.playMusicControl.changeProgress(
-                              lyricList[i].time,
-                            );
-                            print('点击歌词行跳转播放进度: ${lyricList[i].time}');
-                          },
+              // 上下渐隐：把歌词列表当成一张图，用「顶部透明 → 中间不透明 →
+              // 底部透明」的遮罩裁掉它两端的透明度。
+              //
+              // 遮罩铺在 ShaderMask 自己的区域上，也就是这个滚动视口，
+              // 所以它固定在屏幕上，滚动时不会跟着歌词一起跑 ——
+              // 这正是想要的效果：歌词从上下两端淡入淡出。
+              //
+              // ShaderMask 不影响命中测试，歌词的点击跳转照常。
+              child: ShaderMask(
+                blendMode: BlendMode.dstIn,
+                shaderCallback: (Rect bounds) {
+                  return LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    // dstIn 只看 alpha，颜色用白色占位即可。
+                    colors: const [
+                      Colors.transparent,
+                      Colors.white,
+                      Colors.white,
+                      Colors.transparent,
+                    ],
+                    stops: [0.0, _fadeExtent, 1 - _fadeExtent, 1.0],
+                  ).createShader(bounds);
+                },
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  padding: EdgeInsets.only(
+                    top: viewportHeight * _lineAnchor,
+                    bottom: viewportHeight * (1 - _lineAnchor),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (int i = 0; i < lyricList.length; i++)
+                        KeyedSubtree(
+                          key: _lineKeys[i],
+                          // 用行索引判断当前行：同一时间戳可能有多行歌词，
+                          // 用 time 比较会同时点亮多行。
+                          //
+                          // 点击跳转交给 _LyricLine（那里包在 Text 外面）：
+                          // 包在这一层会把整行、包括文字右侧的空白都变成点击区域，
+                          // 因为 ListTile 内部无条件套了一层 InkWell，
+                          // 而 InkWell 的 GestureDetector 用的是 HitTestBehavior.opaque。
+                          child: _LyricLine(
+                            lyric: lyricList[i].lyric,
+                            isCurrent: i == currentIndex,
+                            onTap: () {
+                              // 点击歌词文字跳转播放进度
+                              _management.playMusicControl.changeProgress(
+                                lyricList[i].time,
+                              );
+                              print('点击歌词行跳转播放进度: ${lyricList[i].time}');
+                            },
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
